@@ -38,6 +38,29 @@ When adding a new key:
 Only variables beginning with `VITE_` may be exposed to frontend browser code.
 Database credentials and the Google Books API key belong in the backend.
 
+## Book-provider configuration
+
+Book search uses Google Books first and Open Library as a fallback. Add the
+backend-only provider values to the ignored `.env` file:
+
+```dotenv
+GOOGLE_BOOKS_API_KEY=YOUR_RESTRICTED_GOOGLE_BOOKS_KEY
+OPEN_LIBRARY_CONTACT_EMAIL=you@example.com
+BOOK_PROVIDER_TIMEOUT_SECONDS=4
+BOOK_PROVIDER_MAX_RETRIES=1
+BOOK_SEARCH_CACHE_TTL_SECONDS=300
+```
+
+Restrict the Google key to the Books API before using it outside local
+development. If the key is blank, FastAPI skips Google Books and searches Open
+Library directly. Set the contact email so Open Library can identify and
+contact the application if its traffic causes a problem.
+
+Provider requests originate only from FastAPI. Keys, upstream URLs, and raw
+provider errors are never included in browser responses. Search results and
+empty searches are cached in memory for the configured TTL; the cache is local
+to each backend process and does not require a database migration.
+
 ## Supabase Auth configuration
 
 Create or select a Supabase development project and enable email authentication.

@@ -64,3 +64,17 @@ the database's cascades.
 
 Run `make api-generate` after changing the API contract so the frontend's
 checked-in OpenAPI types stay synchronized.
+
+## Book search providers
+
+Authenticated clients can search with `GET /api/v1/book-search?q=...`, combine
+the `title` and `author` parameters, or use
+`GET /api/v1/book-search/isbn/{isbn}`. Results from Google Books and Open
+Library share one normalized schema that can be saved as a book in Step 8.
+
+Google Books is used first when `GOOGLE_BOOKS_API_KEY` is configured. Open
+Library is tried when Google is unavailable or returns no useful results. Both
+providers have bounded timeouts and retries; successful and empty responses are
+cached briefly. If neither provider responds, the API returns a generic `503`
+that directs the parent to retry or use manual entry without exposing provider
+details.

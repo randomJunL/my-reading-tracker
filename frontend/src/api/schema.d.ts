@@ -4,6 +4,40 @@
  */
 
 export interface paths {
+  "/api/v1/book-search": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    /** Search Books */
+    get: operations["search_books_api_v1_book_search_get"];
+    put?: never;
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  "/api/v1/book-search/isbn/{isbn}": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    /** Search Book By Isbn */
+    get: operations["search_book_by_isbn_api_v1_book_search_isbn__isbn__get"];
+    put?: never;
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
   "/api/v1/health": {
     parameters: {
       query?: never;
@@ -79,6 +113,34 @@ export interface paths {
 export type webhooks = Record<string, never>;
 export interface components {
   schemas: {
+    /** BookSearchResult */
+    BookSearchResult: {
+      /** Authors */
+      authors?: string[];
+      /** Cover Url */
+      cover_url?: string | null;
+      /** Description */
+      description?: string | null;
+      /** External Source Id */
+      external_source_id: string;
+      /** Isbn 10 */
+      isbn_10?: string | null;
+      /** Isbn 13 */
+      isbn_13?: string | null;
+      /** Language */
+      language?: string | null;
+      /** Page Count */
+      page_count?: number | null;
+      /** Published Date */
+      published_date?: string | null;
+      /** Publisher */
+      publisher?: string | null;
+      source: components["schemas"]["MetadataSource"];
+      /** Subtitle */
+      subtitle?: string | null;
+      /** Title */
+      title: string;
+    };
     /** CurrentUserResponse */
     CurrentUserResponse: {
       /** Email */
@@ -115,6 +177,11 @@ export interface components {
      * @enum {string}
      */
     HouseholdRole: "owner" | "caregiver";
+    /**
+     * MetadataSource
+     * @enum {string}
+     */
+    MetadataSource: "manual" | "google_books" | "open_library";
     /** ReaderCreate */
     ReaderCreate: {
       /** Avatar Key */
@@ -178,6 +245,71 @@ export interface components {
 }
 export type $defs = Record<string, never>;
 export interface operations {
+  search_books_api_v1_book_search_get: {
+    parameters: {
+      query?: {
+        q?: string | null;
+        title?: string | null;
+        author?: string | null;
+        limit?: number;
+      };
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      /** @description Successful Response */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["BookSearchResult"][];
+        };
+      };
+      /** @description Validation Error */
+      422: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["HTTPValidationError"];
+        };
+      };
+    };
+  };
+  search_book_by_isbn_api_v1_book_search_isbn__isbn__get: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        isbn: string;
+      };
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      /** @description Successful Response */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["BookSearchResult"][];
+        };
+      };
+      /** @description Validation Error */
+      422: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["HTTPValidationError"];
+        };
+      };
+    };
+  };
   health_check_api_v1_health_get: {
     parameters: {
       query?: never;

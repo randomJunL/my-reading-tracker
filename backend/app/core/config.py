@@ -29,6 +29,11 @@ class Settings(BaseSettings):
     dev_auth_bypass: bool = False
     dev_auth_user_id: uuid.UUID = uuid.UUID("00000000-0000-4000-8000-000000000001")
     dev_auth_email: str = "developer@localhost"
+    google_books_api_key: str = ""
+    open_library_contact_email: str = ""
+    book_provider_timeout_seconds: float = Field(default=4.0, gt=0, le=30)
+    book_provider_max_retries: int = Field(default=1, ge=0, le=3)
+    book_search_cache_ttl_seconds: int = Field(default=300, ge=0, le=3600)
 
     @model_validator(mode="after")
     def prevent_production_auth_bypass(self) -> "Settings":

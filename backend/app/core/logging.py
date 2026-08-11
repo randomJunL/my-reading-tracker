@@ -46,6 +46,10 @@ def configure_logging() -> None:
         handlers=[handler],
         force=True,
     )
+    # HTTPX includes full query strings in INFO logs. Provider credentials can
+    # be query parameters, so keep its transport logging above that level.
+    logging.getLogger("httpx").setLevel(logging.WARNING)
+    logging.getLogger("httpcore").setLevel(logging.WARNING)
 
 
 class RequestLoggingMiddleware(BaseHTTPMiddleware):
