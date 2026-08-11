@@ -1,0 +1,25 @@
+name: my-reading-tracker
+
+services:
+  postgres:
+    image: postgres:17-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:-my_reading_tracker}
+      POSTGRES_USER: ${POSTGRES_USER:-my_reading_tracker}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-my_reading_tracker_local}
+    ports:
+      - "127.0.0.1:${POSTGRES_PORT:-5432}:5432"
+    volumes:
+      - my_reading_tracker_postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test:
+        - CMD-SHELL
+        - pg_isready -U ${POSTGRES_USER:-my_reading_tracker} -d ${POSTGRES_DB:-my_reading_tracker}
+      interval: 2s
+      timeout: 5s
+      retries: 15
+      start_period: 5s
+
+volumes:
+  my_reading_tracker_postgres_data:

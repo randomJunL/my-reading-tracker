@@ -1,0 +1,24 @@
+{
+  "name": "my-reading-tracker",
+  "private": true,
+  "version": "0.0.0",
+  "description": "A private family website for logging children's reading activity.",
+  "packageManager": "pnpm@10.4.0",
+  "engines": {
+    "node": ">=24 <25",
+    "pnpm": ">=10 <11"
+  },
+  "scripts": {
+    "doctor": "make doctor",
+    "setup": "make setup",
+    "db:up": "make db-up",
+    "db:down": "make db-down",
+    "db:status": "make db-status",
+    "db:logs": "make db-logs",
+    "backend:dev": "make backend-dev",
+    "backend:check": "make backend-check",
+    "frontend:dev": "make frontend-dev",
+    "frontend:check": "make frontend-check",
+    "frontend:e2e": "make frontend-e2e"
+  }
+}
