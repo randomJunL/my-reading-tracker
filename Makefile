@@ -4,7 +4,7 @@ LOCAL_NODE := $(CURDIR)/.tools/node/bin/node
 LOCAL_NPM := $(CURDIR)/.tools/node/bin/npm
 LOCAL_PNPM := $(CURDIR)/.tools/pnpm/node_modules/.bin/pnpm
 
-.PHONY: help doctor setup backend-install backend-dev backend-format \
+.PHONY: help doctor setup api-generate backend-install backend-dev backend-format \
 	backend-lint backend-typecheck backend-test backend-check backend-migrate \
 	backend-migration backend-docker-build frontend-install frontend-dev \
 	frontend-format frontend-lint frontend-test frontend-build frontend-check \
@@ -15,6 +15,7 @@ help:
 	@echo ""
 	@echo "  make doctor     Check required local tools"
 	@echo "  make setup      Create local configuration and Python environment"
+	@echo "  make api-generate Generate frontend API types from FastAPI OpenAPI"
 	@echo "  make backend-dev    Run FastAPI with automatic reload"
 	@echo "  make backend-check  Run backend formatting, linting, types, and tests"
 	@echo "  make backend-migrate Apply pending database migrations"
@@ -47,6 +48,10 @@ setup:
 	@$(MAKE) frontend-install
 	@docker compose config --quiet
 	@echo "Local configuration is ready. Run 'make db-up' to start PostgreSQL."
+
+api-generate:
+	@cd backend && ../.venv/bin/python scripts/export_openapi.py
+	@PATH="$(CURDIR)/.tools/node/bin:$$PATH" $(LOCAL_PNPM) --dir frontend api:generate
 
 backend-install:
 	@.venv/bin/python -m pip install --editable "backend[dev]"

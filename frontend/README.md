@@ -51,6 +51,8 @@ smoke test.
 - `src/api` contains API configuration and authenticated requests.
 - `src/components` contains shared UI primitives.
 - `src/features/auth` contains Supabase sessions and route protection.
+- `src/features/readers` contains generated-contract API hooks and persisted
+  reader selection.
 - `src/layouts` contains the responsive application shell.
 - `src/routes` contains route-level screens and error handling.
 - `src/test` contains shared Vitest setup.

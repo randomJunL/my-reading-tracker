@@ -49,3 +49,18 @@ secret as proof of user identity.
 Local development can use the explicitly gated identity bypass documented in
 `docs/development.md`. The settings validator prevents this bypass from being
 enabled in test or production environments.
+
+## Reader profiles
+
+The authenticated `/api/v1/readers` endpoints create, list, update, and delete
+profiles only within the current user's household. Requests for another
+household's identifiers return `404` rather than revealing that the profile
+exists.
+
+Deleting a profile that has library entries or reading sessions first returns
+`409`. After displaying a destructive confirmation, the client may repeat the
+request with `?confirm_history=true`; related reader history is then deleted by
+the database's cascades.
+
+Run `make api-generate` after changing the API contract so the frontend's
+checked-in OpenAPI types stay synchronized.

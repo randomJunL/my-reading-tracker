@@ -106,6 +106,17 @@ Run the API with automatic reload:
 make backend-dev
 ```
 
+FastAPI is also the source of truth for frontend API types. After changing an
+endpoint or Pydantic schema, regenerate the checked-in OpenAPI contract and
+TypeScript declarations:
+
+```bash
+make api-generate
+```
+
+This writes `backend/openapi.json` and `frontend/src/api/schema.d.ts`. Do not
+edit either generated file by hand.
+
 Before committing backend changes, run the complete check suite:
 
 ```bash

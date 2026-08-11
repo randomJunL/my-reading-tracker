@@ -4,6 +4,7 @@ import { AppLayout } from "@/layouts/app-layout";
 import { ProtectedRoute } from "@/features/auth/protected-route";
 import { DashboardPage } from "@/routes/dashboard-page";
 import { PlaceholderPage } from "@/routes/placeholder-page";
+import { ReadersPage } from "@/routes/readers-page";
 import { RouteErrorBoundary } from "@/routes/route-error-boundary";
 import { SignInPage } from "@/routes/sign-in-page";
 
@@ -18,7 +19,7 @@ export const router = createBrowserRouter([
         errorElement: <RouteErrorBoundary />,
         children: [
           { index: true, element: <DashboardPage /> },
-          { path: "readers", element: <PlaceholderPage /> },
+          { path: "readers", element: <ReadersPage /> },
           { path: "library", element: <PlaceholderPage /> },
           { path: "history", element: <PlaceholderPage /> },
           { path: "reports", element: <PlaceholderPage /> },

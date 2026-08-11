@@ -11,6 +11,8 @@ export class ApiError extends Error {
   }
 }
 
+type ErrorDetail = string | { message?: string };
+
 export async function apiFetch<T>(
   path: string,
   init: RequestInit = {},
@@ -34,13 +36,19 @@ export async function apiFetch<T>(
   if (!response.ok) {
     let message = "The request could not be completed";
     try {
-      const body = (await response.json()) as { detail?: string };
-      if (body.detail) message = body.detail;
+      const body = (await response.json()) as { detail?: ErrorDetail };
+      if (typeof body.detail === "string") {
+        message = body.detail;
+      } else if (body.detail?.message) {
+        message = body.detail.message;
+      }
     } catch {
       // Keep the safe fallback for non-JSON errors.
     }
     throw new ApiError(message, response.status);
   }
+
+  if (response.status === 204) return undefined as T;
 
   return (await response.json()) as T;
 }

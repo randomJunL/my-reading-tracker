@@ -15,6 +15,7 @@ import { Button } from "@/components/ui/button";
 import { APP_NAME } from "@/config/branding";
 import { useAuth } from "@/features/auth/auth";
 import { useCurrentUser } from "@/features/auth/current-user";
+import { ReaderSelector } from "@/features/readers/reader-selector";
 import { cn } from "@/lib/utils";
 
 const primaryNavigation = [
@@ -145,10 +146,13 @@ export function AppLayout() {
               </div>
             </div>
 
-            <Button>
-              <Plus className="size-4" strokeWidth={2.6} />
-              Log reading
-            </Button>
+            <div className="flex items-center gap-3">
+              <ReaderSelector />
+              <Button aria-label="Log reading">
+                <Plus className="size-4" strokeWidth={2.6} />
+                <span className="hidden md:inline">Log reading</span>
+              </Button>
+            </div>
           </div>
         </header>
 
