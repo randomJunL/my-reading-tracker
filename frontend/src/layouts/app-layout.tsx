@@ -8,7 +8,7 @@ import {
   Plus,
   Users,
 } from "lucide-react";
-import { NavLink, Outlet } from "react-router-dom";
+import { NavLink, Outlet, useNavigate } from "react-router-dom";
 
 import { BrandMark } from "@/components/brand-mark";
 import { Button } from "@/components/ui/button";
@@ -26,6 +26,7 @@ const primaryNavigation = [
 ];
 
 export function AppLayout() {
+  const navigate = useNavigate();
   const { isDevAuthBypass, user, signOut } = useAuth();
   const { data: currentUser } = useCurrentUser();
   const displayName =
@@ -148,7 +149,10 @@ export function AppLayout() {
 
             <div className="flex items-center gap-3">
               <ReaderSelector />
-              <Button aria-label="Log reading">
+              <Button
+                aria-label="Log reading"
+                onClick={() => void navigate("/log-reading")}
+              >
                 <Plus className="size-4" strokeWidth={2.6} />
                 <span className="hidden md:inline">Log reading</span>
               </Button>

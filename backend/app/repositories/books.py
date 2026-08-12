@@ -57,6 +57,18 @@ class BookRepository:
             )
         )
 
+    def has_reader_history(self, reader_id: uuid.UUID, book_id: uuid.UUID) -> bool:
+        return bool(
+            self.session.scalar(
+                select(
+                    exists().where(
+                        ReadingSession.reader_id == reader_id,
+                        ReadingSession.book_id == book_id,
+                    )
+                )
+            )
+        )
+
     def add(self, record: Book | ReaderBook) -> None:
         self.session.add(record)
 

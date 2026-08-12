@@ -67,6 +67,11 @@ manual-entry path uses the same form without calling an external provider. A
 single household book can be assigned to multiple readers with different
 reading statuses.
 
+The header's **Log reading** action opens the quick-entry screen for the
+selected reader. Today, the first library book, and independent reading are
+preselected so a normal entry only requires the number of minutes. The History
+screen supports correction and confirmed deletion of individual entries.
+
 ## Supabase Auth configuration
 
 Create or select a Supabase development project and enable email authentication.

@@ -55,6 +55,8 @@ smoke test.
   reader selection.
 - `src/features/books` contains provider search, editable import/manual entry,
   and reader-library API hooks.
+- `src/features/sessions` contains the fast reading-entry form and session API
+  hooks used by quick logging and history corrections.
 - `src/layouts` contains the responsive application shell.
 - `src/routes` contains route-level screens and error handling.
 - `src/test` contains shared Vitest setup.

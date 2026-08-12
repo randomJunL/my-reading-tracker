@@ -83,12 +83,10 @@ export function BookDetailPage() {
                 <Button
                   variant="secondary"
                   onClick={() =>
-                    void remove
-                      .mutateAsync({
-                        readerId: selectedReaderId,
-                        bookId: book.id,
-                      })
-                      .then(() => navigate("/library"))
+                    remove.mutate(
+                      { readerId: selectedReaderId, bookId: book.id },
+                      { onSuccess: () => void navigate("/library") },
+                    )
                   }
                 >
                   Remove from this reader
@@ -103,6 +101,11 @@ export function BookDetailPage() {
                 Delete book everywhere
               </Button>
             </div>
+            {remove.error ? (
+              <p role="alert" className="mt-3 text-sm text-[#943f30]">
+                {remove.error.message}
+              </p>
+            ) : null}
           </div>
         </div>
       </Card>

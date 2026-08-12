@@ -28,6 +28,10 @@ class BookHistoryConflictError(Exception):
     pass
 
 
+class ReaderBookHistoryConflictError(Exception):
+    pass
+
+
 class BookService:
     def __init__(self, session: Session) -> None:
         self.session = session
@@ -124,5 +128,7 @@ class BookService:
         assignment = self.books.get_assignment(reader_id, book_id)
         if assignment is None:
             raise ReaderBookNotFoundError
+        if self.books.has_reader_history(reader_id, book_id):
+            raise ReaderBookHistoryConflictError
         self.books.delete_assignment(assignment)
         self.session.commit()

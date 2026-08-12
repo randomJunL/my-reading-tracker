@@ -89,3 +89,16 @@ status. List requests can filter by `reader_id` and `status`.
 Deleting a book removes it from every reader. If reading sessions reference the
 book, the first delete returns `409`; the client must show the destructive
 history warning before repeating with `?confirm_history=true`.
+
+## Reading sessions
+
+The household-scoped `/api/v1/reading-sessions` endpoints create, list, edit,
+and delete reading entries. Minutes must be positive, pages cannot be negative,
+and an end page cannot precede its start page. Sessions support independent,
+with-adult, read-aloud, and audiobook activities.
+
+A session requires the book to be in that reader's library. Logging the first
+session moves a planned book to reading; marking a session as finished moves it
+to finished and records its completion date. Multiple sessions for the same
+reader and book remain distinct records. A reader-book assignment with history
+cannot be removed until its sessions are deleted.

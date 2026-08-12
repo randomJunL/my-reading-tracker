@@ -20,6 +20,7 @@ from app.services.books import (
     BookNotFoundError,
     BookService,
     ReaderBookConflictError,
+    ReaderBookHistoryConflictError,
     ReaderBookNotFoundError,
     ReaderNotFoundError,
 )
@@ -166,6 +167,14 @@ def remove_reader_book(
         BookService(session).remove_assignment(reader_id, book_id, context.household.id)
     except (ReaderNotFoundError, BookNotFoundError, ReaderBookNotFoundError) as error:
         raise _not_found("Reader book") from error
+    except ReaderBookHistoryConflictError as error:
+        raise HTTPException(
+            status_code=409,
+            detail=(
+                "This book has reading history for the reader. "
+                "Delete those sessions before removing it from the library."
+            ),
+        ) from error
     return Response(status_code=204)
 
 

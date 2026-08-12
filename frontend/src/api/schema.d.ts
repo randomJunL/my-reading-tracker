@@ -181,10 +181,52 @@ export interface paths {
     patch: operations["update_reader_book_api_v1_readers__reader_id__books__book_id__patch"];
     trace?: never;
   };
+  "/api/v1/reading-sessions": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    /** List Reading Sessions */
+    get: operations["list_reading_sessions_api_v1_reading_sessions_get"];
+    put?: never;
+    /** Create Reading Session */
+    post: operations["create_reading_session_api_v1_reading_sessions_post"];
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  "/api/v1/reading-sessions/{session_id}": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    /** Get Reading Session */
+    get: operations["get_reading_session_api_v1_reading_sessions__session_id__get"];
+    put?: never;
+    post?: never;
+    /** Delete Reading Session */
+    delete: operations["delete_reading_session_api_v1_reading_sessions__session_id__delete"];
+    options?: never;
+    head?: never;
+    /** Update Reading Session */
+    patch: operations["update_reading_session_api_v1_reading_sessions__session_id__patch"];
+    trace?: never;
+  };
 }
 export type webhooks = Record<string, never>;
 export interface components {
   schemas: {
+    /**
+     * ActivityType
+     * @enum {string}
+     */
+    ActivityType: "independent" | "with_adult" | "read_aloud" | "audiobook";
     /** BookCreate */
     BookCreate: {
       /** Authors */
@@ -454,6 +496,102 @@ export interface components {
       avatar_key?: string | null;
       /** Name */
       name?: string | null;
+    };
+    /** ReadingSessionCreate */
+    ReadingSessionCreate: {
+      activity_type: components["schemas"]["ActivityType"];
+      /**
+       * Book Id
+       * Format: uuid
+       */
+      book_id: string;
+      /** End Page */
+      end_page?: number | null;
+      /**
+       * Finished Book
+       * @default false
+       */
+      finished_book: boolean;
+      /** Minutes */
+      minutes: number;
+      /** Notes */
+      notes?: string | null;
+      /**
+       * Reader Id
+       * Format: uuid
+       */
+      reader_id: string;
+      /**
+       * Session Date
+       * Format: date
+       */
+      session_date: string;
+      /** Start Page */
+      start_page?: number | null;
+    };
+    /** ReadingSessionResponse */
+    ReadingSessionResponse: {
+      activity_type: components["schemas"]["ActivityType"];
+      /** Book Cover Url */
+      book_cover_url: string | null;
+      /**
+       * Book Id
+       * Format: uuid
+       */
+      book_id: string;
+      /** Book Title */
+      book_title: string;
+      /**
+       * Created At
+       * Format: date-time
+       */
+      created_at: string;
+      /** End Page */
+      end_page: number | null;
+      /** Finished Book */
+      finished_book: boolean;
+      /**
+       * Id
+       * Format: uuid
+       */
+      id: string;
+      /** Minutes */
+      minutes: number;
+      /** Notes */
+      notes: string | null;
+      /**
+       * Reader Id
+       * Format: uuid
+       */
+      reader_id: string;
+      /**
+       * Session Date
+       * Format: date
+       */
+      session_date: string;
+      /** Start Page */
+      start_page: number | null;
+      /**
+       * Updated At
+       * Format: date-time
+       */
+      updated_at: string;
+    };
+    /** ReadingSessionUpdate */
+    ReadingSessionUpdate: {
+      activity_type?: components["schemas"]["ActivityType"] | null;
+      /** End Page */
+      end_page?: number | null;
+      /** Finished Book */
+      finished_book?: boolean | null;
+      /** Minutes */
+      minutes?: number | null;
+      /** Notes */
+      notes?: string | null;
+      /** Session Date */
+      session_date?: string | null;
+      /** Start Page */
+      start_page?: number | null;
     };
     /**
      * ReadingStatus
@@ -987,6 +1125,169 @@ export interface operations {
         };
         content: {
           "application/json": components["schemas"]["ReaderBookResponse"];
+        };
+      };
+      /** @description Validation Error */
+      422: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["HTTPValidationError"];
+        };
+      };
+    };
+  };
+  list_reading_sessions_api_v1_reading_sessions_get: {
+    parameters: {
+      query?: {
+        reader_id?: string | null;
+        book_id?: string | null;
+        activity_type?: components["schemas"]["ActivityType"] | null;
+        date_from?: string | null;
+        date_to?: string | null;
+      };
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      /** @description Successful Response */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ReadingSessionResponse"][];
+        };
+      };
+      /** @description Validation Error */
+      422: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["HTTPValidationError"];
+        };
+      };
+    };
+  };
+  create_reading_session_api_v1_reading_sessions_post: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    requestBody: {
+      content: {
+        "application/json": components["schemas"]["ReadingSessionCreate"];
+      };
+    };
+    responses: {
+      /** @description Successful Response */
+      201: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ReadingSessionResponse"];
+        };
+      };
+      /** @description Validation Error */
+      422: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["HTTPValidationError"];
+        };
+      };
+    };
+  };
+  get_reading_session_api_v1_reading_sessions__session_id__get: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        session_id: string;
+      };
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      /** @description Successful Response */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ReadingSessionResponse"];
+        };
+      };
+      /** @description Validation Error */
+      422: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["HTTPValidationError"];
+        };
+      };
+    };
+  };
+  delete_reading_session_api_v1_reading_sessions__session_id__delete: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        session_id: string;
+      };
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      /** @description Successful Response */
+      204: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content?: never;
+      };
+      /** @description Validation Error */
+      422: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["HTTPValidationError"];
+        };
+      };
+    };
+  };
+  update_reading_session_api_v1_reading_sessions__session_id__patch: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        session_id: string;
+      };
+      cookie?: never;
+    };
+    requestBody: {
+      content: {
+        "application/json": components["schemas"]["ReadingSessionUpdate"];
+      };
+    };
+    responses: {
+      /** @description Successful Response */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ReadingSessionResponse"];
         };
       };
       /** @description Validation Error */
