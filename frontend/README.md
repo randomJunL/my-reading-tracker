@@ -53,6 +53,8 @@ smoke test.
 - `src/features/auth` contains Supabase sessions and route protection.
 - `src/features/readers` contains generated-contract API hooks and persisted
   reader selection.
+- `src/features/books` contains provider search, editable import/manual entry,
+  and reader-library API hooks.
 - `src/layouts` contains the responsive application shell.
 - `src/routes` contains route-level screens and error handling.
 - `src/test` contains shared Vitest setup.

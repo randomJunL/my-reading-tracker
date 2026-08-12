@@ -61,6 +61,12 @@ provider errors are never included in browser responses. Search results and
 empty searches are cached in memory for the configured TTL; the cache is local
 to each backend process and does not require a database migration.
 
+The Library screen uses the selected reader in the application header. Search
+results are reviewed and editable before they are persisted in PostgreSQL; the
+manual-entry path uses the same form without calling an external provider. A
+single household book can be assigned to multiple readers with different
+reading statuses.
+
 ## Supabase Auth configuration
 
 Create or select a Supabase development project and enable email authentication.

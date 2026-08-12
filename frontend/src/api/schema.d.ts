@@ -38,6 +38,43 @@ export interface paths {
     patch?: never;
     trace?: never;
   };
+  "/api/v1/books": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    /** List Books */
+    get: operations["list_books_api_v1_books_get"];
+    put?: never;
+    /** Create Book */
+    post: operations["create_book_api_v1_books_post"];
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  "/api/v1/books/{book_id}": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    /** Get Book */
+    get: operations["get_book_api_v1_books__book_id__get"];
+    put?: never;
+    post?: never;
+    /** Delete Book */
+    delete: operations["delete_book_api_v1_books__book_id__delete"];
+    options?: never;
+    head?: never;
+    /** Update Book */
+    patch: operations["update_book_api_v1_books__book_id__patch"];
+    trace?: never;
+  };
   "/api/v1/health": {
     parameters: {
       query?: never;
@@ -109,10 +146,125 @@ export interface paths {
     patch: operations["update_reader_api_v1_readers__reader_id__patch"];
     trace?: never;
   };
+  "/api/v1/readers/{reader_id}/books": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get?: never;
+    put?: never;
+    /** Add Book To Reader */
+    post: operations["add_book_to_reader_api_v1_readers__reader_id__books_post"];
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  "/api/v1/readers/{reader_id}/books/{book_id}": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get?: never;
+    put?: never;
+    post?: never;
+    /** Remove Reader Book */
+    delete: operations["remove_reader_book_api_v1_readers__reader_id__books__book_id__delete"];
+    options?: never;
+    head?: never;
+    /** Update Reader Book */
+    patch: operations["update_reader_book_api_v1_readers__reader_id__books__book_id__patch"];
+    trace?: never;
+  };
 }
 export type webhooks = Record<string, never>;
 export interface components {
   schemas: {
+    /** BookCreate */
+    BookCreate: {
+      /** Authors */
+      authors?: string[];
+      /** Cover Url */
+      cover_url?: string | null;
+      /** Description */
+      description?: string | null;
+      /** External Source Id */
+      external_source_id?: string | null;
+      /** Isbn 10 */
+      isbn_10?: string | null;
+      /** Isbn 13 */
+      isbn_13?: string | null;
+      /** Language */
+      language?: string | null;
+      /** @default manual */
+      metadata_source: components["schemas"]["MetadataSource"];
+      /** Page Count */
+      page_count?: number | null;
+      /** Published Date */
+      published_date?: string | null;
+      /** Publisher */
+      publisher?: string | null;
+      /** Subtitle */
+      subtitle?: string | null;
+      /** Title */
+      title: string;
+    };
+    /** BookResponse */
+    BookResponse: {
+      /** Authors */
+      authors?: string[];
+      /** Cover Url */
+      cover_url?: string | null;
+      /**
+       * Created At
+       * Format: date-time
+       */
+      created_at: string;
+      /** Description */
+      description?: string | null;
+      /** External Source Id */
+      external_source_id?: string | null;
+      /**
+       * Household Id
+       * Format: uuid
+       */
+      household_id: string;
+      /**
+       * Id
+       * Format: uuid
+       */
+      id: string;
+      /** Isbn 10 */
+      isbn_10?: string | null;
+      /** Isbn 13 */
+      isbn_13?: string | null;
+      /** Language */
+      language?: string | null;
+      /** @default manual */
+      metadata_source: components["schemas"]["MetadataSource"];
+      /** Page Count */
+      page_count?: number | null;
+      /** Published Date */
+      published_date?: string | null;
+      /** Publisher */
+      publisher?: string | null;
+      /** Reader Books */
+      reader_books?: components["schemas"]["ReaderBookResponse"][];
+      /** Subtitle */
+      subtitle?: string | null;
+      /** Title */
+      title: string;
+      /**
+       * Updated At
+       * Format: date-time
+       */
+      updated_at: string;
+    };
     /** BookSearchResult */
     BookSearchResult: {
       /** Authors */
@@ -140,6 +292,31 @@ export interface components {
       subtitle?: string | null;
       /** Title */
       title: string;
+    };
+    /** BookUpdate */
+    BookUpdate: {
+      /** Authors */
+      authors?: string[] | null;
+      /** Cover Url */
+      cover_url?: string | null;
+      /** Description */
+      description?: string | null;
+      /** Isbn 10 */
+      isbn_10?: string | null;
+      /** Isbn 13 */
+      isbn_13?: string | null;
+      /** Language */
+      language?: string | null;
+      /** Page Count */
+      page_count?: number | null;
+      /** Published Date */
+      published_date?: string | null;
+      /** Publisher */
+      publisher?: string | null;
+      /** Subtitle */
+      subtitle?: string | null;
+      /** Title */
+      title?: string | null;
     };
     /** CurrentUserResponse */
     CurrentUserResponse: {
@@ -182,6 +359,61 @@ export interface components {
      * @enum {string}
      */
     MetadataSource: "manual" | "google_books" | "open_library";
+    /** ReaderBookCreate */
+    ReaderBookCreate: {
+      /**
+       * Book Id
+       * Format: uuid
+       */
+      book_id: string;
+      /** Finished At */
+      finished_at?: string | null;
+      /** Started At */
+      started_at?: string | null;
+      /** @default planned */
+      status: components["schemas"]["ReadingStatus"];
+    };
+    /** ReaderBookResponse */
+    ReaderBookResponse: {
+      /**
+       * Book Id
+       * Format: uuid
+       */
+      book_id: string;
+      /**
+       * Created At
+       * Format: date-time
+       */
+      created_at: string;
+      /** Finished At */
+      finished_at: string | null;
+      /**
+       * Id
+       * Format: uuid
+       */
+      id: string;
+      /**
+       * Reader Id
+       * Format: uuid
+       */
+      reader_id: string;
+      /** Started At */
+      started_at: string | null;
+      status: components["schemas"]["ReadingStatus"];
+      /**
+       * Updated At
+       * Format: date-time
+       */
+      updated_at: string;
+    };
+    /** ReaderBookUpdate */
+    ReaderBookUpdate: {
+      /** Finished At */
+      finished_at?: string | null;
+      /** Started At */
+      started_at?: string | null;
+      status?: components["schemas"]["ReadingStatus"] | null;
+    };
     /** ReaderCreate */
     ReaderCreate: {
       /** Avatar Key */
@@ -223,6 +455,11 @@ export interface components {
       /** Name */
       name?: string | null;
     };
+    /**
+     * ReadingStatus
+     * @enum {string}
+     */
+    ReadingStatus: "planned" | "reading" | "finished";
     /** ValidationError */
     ValidationError: {
       /** Context */
@@ -297,6 +534,168 @@ export interface operations {
         };
         content: {
           "application/json": components["schemas"]["BookSearchResult"][];
+        };
+      };
+      /** @description Validation Error */
+      422: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["HTTPValidationError"];
+        };
+      };
+    };
+  };
+  list_books_api_v1_books_get: {
+    parameters: {
+      query?: {
+        reader_id?: string | null;
+        status?: components["schemas"]["ReadingStatus"] | null;
+      };
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      /** @description Successful Response */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["BookResponse"][];
+        };
+      };
+      /** @description Validation Error */
+      422: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["HTTPValidationError"];
+        };
+      };
+    };
+  };
+  create_book_api_v1_books_post: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    requestBody: {
+      content: {
+        "application/json": components["schemas"]["BookCreate"];
+      };
+    };
+    responses: {
+      /** @description Successful Response */
+      201: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["BookResponse"];
+        };
+      };
+      /** @description Validation Error */
+      422: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["HTTPValidationError"];
+        };
+      };
+    };
+  };
+  get_book_api_v1_books__book_id__get: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        book_id: string;
+      };
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      /** @description Successful Response */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["BookResponse"];
+        };
+      };
+      /** @description Validation Error */
+      422: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["HTTPValidationError"];
+        };
+      };
+    };
+  };
+  delete_book_api_v1_books__book_id__delete: {
+    parameters: {
+      query?: {
+        confirm_history?: boolean;
+      };
+      header?: never;
+      path: {
+        book_id: string;
+      };
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      /** @description Successful Response */
+      204: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content?: never;
+      };
+      /** @description Validation Error */
+      422: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["HTTPValidationError"];
+        };
+      };
+    };
+  };
+  update_book_api_v1_books__book_id__patch: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        book_id: string;
+      };
+      cookie?: never;
+    };
+    requestBody: {
+      content: {
+        "application/json": components["schemas"]["BookUpdate"];
+      };
+    };
+    responses: {
+      /** @description Successful Response */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["BookResponse"];
         };
       };
       /** @description Validation Error */
@@ -487,6 +886,107 @@ export interface operations {
         };
         content: {
           "application/json": components["schemas"]["ReaderResponse"];
+        };
+      };
+      /** @description Validation Error */
+      422: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["HTTPValidationError"];
+        };
+      };
+    };
+  };
+  add_book_to_reader_api_v1_readers__reader_id__books_post: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        reader_id: string;
+      };
+      cookie?: never;
+    };
+    requestBody: {
+      content: {
+        "application/json": components["schemas"]["ReaderBookCreate"];
+      };
+    };
+    responses: {
+      /** @description Successful Response */
+      201: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ReaderBookResponse"];
+        };
+      };
+      /** @description Validation Error */
+      422: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["HTTPValidationError"];
+        };
+      };
+    };
+  };
+  remove_reader_book_api_v1_readers__reader_id__books__book_id__delete: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        reader_id: string;
+        book_id: string;
+      };
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      /** @description Successful Response */
+      204: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content?: never;
+      };
+      /** @description Validation Error */
+      422: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["HTTPValidationError"];
+        };
+      };
+    };
+  };
+  update_reader_book_api_v1_readers__reader_id__books__book_id__patch: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        reader_id: string;
+        book_id: string;
+      };
+      cookie?: never;
+    };
+    requestBody: {
+      content: {
+        "application/json": components["schemas"]["ReaderBookUpdate"];
+      };
+    };
+    responses: {
+      /** @description Successful Response */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ReaderBookResponse"];
         };
       };
       /** @description Validation Error */

@@ -3,6 +3,8 @@ import { createBrowserRouter } from "react-router-dom";
 import { AppLayout } from "@/layouts/app-layout";
 import { ProtectedRoute } from "@/features/auth/protected-route";
 import { DashboardPage } from "@/routes/dashboard-page";
+import { BookDetailPage } from "@/routes/book-detail-page";
+import { LibraryPage } from "@/routes/library-page";
 import { PlaceholderPage } from "@/routes/placeholder-page";
 import { ReadersPage } from "@/routes/readers-page";
 import { RouteErrorBoundary } from "@/routes/route-error-boundary";
@@ -20,7 +22,8 @@ export const router = createBrowserRouter([
         children: [
           { index: true, element: <DashboardPage /> },
           { path: "readers", element: <ReadersPage /> },
-          { path: "library", element: <PlaceholderPage /> },
+          { path: "library", element: <LibraryPage /> },
+          { path: "library/:bookId", element: <BookDetailPage /> },
           { path: "history", element: <PlaceholderPage /> },
           { path: "reports", element: <PlaceholderPage /> },
         ],

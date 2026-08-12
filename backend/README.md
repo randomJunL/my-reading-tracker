@@ -78,3 +78,14 @@ providers have bounded timeouts and retries; successful and empty responses are
 cached briefly. If neither provider responds, the API returns a generic `503`
 that directs the parent to retry or use manual entry without exposing provider
 details.
+
+## Books and reader libraries
+
+The authenticated `/api/v1/books` endpoints maintain household-owned book
+metadata. `/api/v1/readers/{reader_id}/books` assigns the same saved book to one
+or more readers, each with an independent `planned`, `reading`, or `finished`
+status. List requests can filter by `reader_id` and `status`.
+
+Deleting a book removes it from every reader. If reading sessions reference the
+book, the first delete returns `409`; the client must show the destructive
+history warning before repeating with `?confirm_history=true`.
