@@ -2,6 +2,8 @@ import {
   Award,
   BookCheck,
   Check,
+  ChevronDown,
+  CircleDollarSign,
   Flame,
   Gift,
   Plus,
@@ -116,6 +118,8 @@ export function RewardsPage() {
         </Card>
       ) : null}
 
+      <RewardGuide />
+
       <div
         className="mb-5 flex gap-2 overflow-x-auto"
         role="tablist"
@@ -163,6 +167,81 @@ export function RewardsPage() {
         </p>
       )}
     </section>
+  );
+}
+
+function RewardGuide() {
+  const steps = [
+    {
+      icon: BookCheck,
+      title: "Log reading",
+      description: "Save a reading session from the Log reading page.",
+    },
+    {
+      icon: CircleDollarSign,
+      title: "Earn credits",
+      description:
+        "Each session earns 1 credit. A reader can earn up to 2 credits on the same date.",
+    },
+    {
+      icon: Award,
+      title: "Collect badges",
+      description:
+        "Finish books and build consistent reading streaks. Badges celebrate progress but do not add credits.",
+    },
+    {
+      icon: Gift,
+      title: "Choose a gift",
+      description:
+        "Use saved credits in the Gift shop. Rejected or cancelled requests return the credits.",
+    },
+  ] as const;
+
+  return (
+    <Card className="mb-5 overflow-hidden border-[#d5ded8] bg-[#f8fbf8]">
+      <details open className="group">
+        <summary className="flex cursor-pointer list-none items-center justify-between gap-4 p-5 marker:content-none sm:px-6">
+          <div>
+            <p className="text-xs font-bold tracking-[0.13em] text-[#c65c43] uppercase">
+              Quick guide
+            </p>
+            <h2 className="mt-1 font-serif text-2xl font-bold text-[#21483e]">
+              How the reward system works
+            </h2>
+          </div>
+          <span className="flex shrink-0 items-center gap-1 text-xs font-bold text-[#527068]">
+            Show or hide
+            <ChevronDown className="size-5 transition-transform group-open:rotate-180" />
+          </span>
+        </summary>
+        <div className="border-t border-[#dce4df] px-5 py-5 sm:px-6">
+          <ol className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
+            {steps.map(({ icon: Icon, title, description }, index) => (
+              <li key={title} className="rounded-2xl bg-white p-4">
+                <div className="flex items-center gap-3">
+                  <span className="flex size-9 items-center justify-center rounded-full bg-[#e5eee9] font-serif font-bold text-[#315f53]">
+                    {index + 1}
+                  </span>
+                  <Icon className="size-5 text-[#c65c43]" />
+                </div>
+                <h3 className="mt-3 font-serif text-lg font-bold text-[#294f45]">
+                  {title}
+                </h3>
+                <p className="mt-1 text-sm leading-6 text-[#687b74]">
+                  {description}
+                </p>
+              </li>
+            ))}
+          </ol>
+          <p className="mt-4 rounded-xl bg-[#fff6dc] px-4 py-3 text-sm text-[#765326]">
+            <strong>Good to know:</strong> A third session on the same day still
+            counts toward reading history, streaks, and badges—it simply does
+            not earn another credit. Unused credits stay available until they
+            are redeemed.
+          </p>
+        </div>
+      </details>
+    </Card>
   );
 }
 

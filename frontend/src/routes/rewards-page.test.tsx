@@ -73,7 +73,18 @@ describe("RewardsPage", () => {
     const user = userEvent.setup();
     render(<RewardsPage />, { wrapper: MemoryRouter });
 
-    expect(screen.getByText("2")).toBeVisible();
+    expect(
+      screen.getByText("Available credits").parentElement,
+    ).toHaveTextContent("Available credits2");
+    expect(
+      screen.getByRole("heading", { name: "How the reward system works" }),
+    ).toBeVisible();
+    expect(
+      screen.getByText("Each session earns 1 credit.", { exact: false }),
+    ).toBeVisible();
+    expect(
+      screen.getByText("Badges celebrate progress", { exact: false }),
+    ).toBeVisible();
     expect(screen.getByText("Current daily run")).toBeVisible();
     await user.click(screen.getByRole("tab", { name: "badges" }));
     expect(screen.getByText("First Book")).toBeVisible();
