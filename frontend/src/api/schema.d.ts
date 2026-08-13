@@ -218,6 +218,40 @@ export interface paths {
     patch: operations["update_reading_session_api_v1_reading_sessions__session_id__patch"];
     trace?: never;
   };
+  "/api/v1/reports/calendar": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    /** Get Calendar Report */
+    get: operations["get_calendar_report_api_v1_reports_calendar_get"];
+    put?: never;
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  "/api/v1/reports/summary": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    /** Get Report Summary */
+    get: operations["get_report_summary_api_v1_reports_summary_get"];
+    put?: never;
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
 }
 export type webhooks = Record<string, never>;
 export interface components {
@@ -359,6 +393,61 @@ export interface components {
       subtitle?: string | null;
       /** Title */
       title?: string | null;
+    };
+    /** CalendarDay */
+    CalendarDay: {
+      /** Books Finished */
+      books_finished: number;
+      /**
+       * Date
+       * Format: date
+       */
+      date: string;
+      /** Minutes */
+      minutes: number;
+      /** Pages Read */
+      pages_read: number;
+      /** Sessions Count */
+      sessions_count: number;
+    };
+    /** CalendarReportResponse */
+    CalendarReportResponse: {
+      /**
+       * Date From
+       * Format: date
+       */
+      date_from: string;
+      /**
+       * Date To
+       * Format: date
+       */
+      date_to: string;
+      /** Days */
+      days: components["schemas"]["CalendarDay"][];
+      /**
+       * Reader Id
+       * Format: uuid
+       */
+      reader_id: string;
+    };
+    /** CurrentBookProgress */
+    CurrentBookProgress: {
+      /**
+       * Book Id
+       * Format: uuid
+       */
+      book_id: string;
+      /** Cover Url */
+      cover_url: string | null;
+      /** Last Page */
+      last_page: number | null;
+      /** Page Count */
+      page_count: number | null;
+      /** Progress Percent */
+      progress_percent: number | null;
+      status: components["schemas"]["ReadingStatus"];
+      /** Title */
+      title: string;
     };
     /** CurrentUserResponse */
     CurrentUserResponse: {
@@ -598,6 +687,72 @@ export interface components {
      * @enum {string}
      */
     ReadingStatus: "planned" | "reading" | "finished";
+    /** ReportSession */
+    ReportSession: {
+      activity_type: components["schemas"]["ActivityType"];
+      /** Book Cover Url */
+      book_cover_url: string | null;
+      /**
+       * Book Id
+       * Format: uuid
+       */
+      book_id: string;
+      /** Book Title */
+      book_title: string;
+      /**
+       * Created At
+       * Format: date-time
+       */
+      created_at: string;
+      /** Finished Book */
+      finished_book: boolean;
+      /**
+       * Id
+       * Format: uuid
+       */
+      id: string;
+      /** Minutes */
+      minutes: number;
+      /** Pages Read */
+      pages_read: number;
+      /**
+       * Session Date
+       * Format: date
+       */
+      session_date: string;
+    };
+    /** ReportSummaryResponse */
+    ReportSummaryResponse: {
+      /** Books Finished */
+      books_finished: number;
+      /** Current Books */
+      current_books: components["schemas"]["CurrentBookProgress"][];
+      /**
+       * Date From
+       * Format: date
+       */
+      date_from: string;
+      /**
+       * Date To
+       * Format: date
+       */
+      date_to: string;
+      /** Pages Read */
+      pages_read: number;
+      /**
+       * Reader Id
+       * Format: uuid
+       */
+      reader_id: string;
+      /** Reading Days */
+      reading_days: number;
+      /** Recent Activity */
+      recent_activity: components["schemas"]["ReportSession"][];
+      /** Sessions Count */
+      sessions_count: number;
+      /** Total Minutes */
+      total_minutes: number;
+    };
     /** ValidationError */
     ValidationError: {
       /** Context */
@@ -1288,6 +1443,72 @@ export interface operations {
         };
         content: {
           "application/json": components["schemas"]["ReadingSessionResponse"];
+        };
+      };
+      /** @description Validation Error */
+      422: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["HTTPValidationError"];
+        };
+      };
+    };
+  };
+  get_calendar_report_api_v1_reports_calendar_get: {
+    parameters: {
+      query: {
+        reader_id: string;
+        date_from: string;
+        date_to: string;
+      };
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      /** @description Successful Response */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["CalendarReportResponse"];
+        };
+      };
+      /** @description Validation Error */
+      422: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["HTTPValidationError"];
+        };
+      };
+    };
+  };
+  get_report_summary_api_v1_reports_summary_get: {
+    parameters: {
+      query: {
+        reader_id: string;
+        date_from: string;
+        date_to: string;
+      };
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      /** @description Successful Response */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ReportSummaryResponse"];
         };
       };
       /** @description Validation Error */

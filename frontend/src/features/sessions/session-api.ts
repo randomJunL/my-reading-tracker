@@ -10,16 +10,34 @@ export type ReadingSessionUpdate =
   components["schemas"]["ReadingSessionUpdate"];
 export type ActivityType = components["schemas"]["ActivityType"];
 
-export function listReadingSessions(readerId: string) {
-  return apiFetch<ReadingSession[]>(
-    `/reading-sessions?reader_id=${encodeURIComponent(readerId)}`,
-  );
+export type ReadingSessionFilters = {
+  bookId?: string;
+  activityType?: ActivityType | "all";
+  dateFrom?: string;
+  dateTo?: string;
+};
+
+export function listReadingSessions(
+  readerId: string,
+  filters: ReadingSessionFilters = {},
+) {
+  const params = new URLSearchParams({ reader_id: readerId });
+  if (filters.bookId) params.set("book_id", filters.bookId);
+  if (filters.activityType && filters.activityType !== "all") {
+    params.set("activity_type", filters.activityType);
+  }
+  if (filters.dateFrom) params.set("date_from", filters.dateFrom);
+  if (filters.dateTo) params.set("date_to", filters.dateTo);
+  return apiFetch<ReadingSession[]>(`/reading-sessions?${params}`);
 }
 
-export function useReadingSessions(readerId: string | null) {
+export function useReadingSessions(
+  readerId: string | null,
+  filters: ReadingSessionFilters = {},
+) {
   return useQuery({
-    queryKey: ["reading-sessions", readerId],
-    queryFn: () => listReadingSessions(readerId!),
+    queryKey: ["reading-sessions", readerId, filters],
+    queryFn: () => listReadingSessions(readerId!, filters),
     enabled: Boolean(readerId),
   });
 }
@@ -67,4 +85,5 @@ function invalidateSessionData(client: ReturnType<typeof useQueryClient>) {
   void client.invalidateQueries({ queryKey: ["reading-sessions"] });
   void client.invalidateQueries({ queryKey: ["books"] });
   void client.invalidateQueries({ queryKey: ["book"] });
+  void client.invalidateQueries({ queryKey: ["reports"] });
 }

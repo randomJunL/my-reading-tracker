@@ -32,6 +32,11 @@ export function AppLayout() {
   const displayName =
     (user?.email ?? currentUser?.email)?.split("@")[0] ?? "Reader";
   const initial = displayName.charAt(0).toUpperCase();
+  const currentDate = new Intl.DateTimeFormat(undefined, {
+    weekday: "long",
+    month: "long",
+    day: "numeric",
+  }).format(new Date());
 
   return (
     <div className="min-h-screen bg-[#f5f3eb] text-[#1f3b34]">
@@ -139,7 +144,7 @@ export function AppLayout() {
               </NavLink>
               <div className="hidden sm:block">
                 <p className="text-xs font-semibold tracking-[0.12em] text-[#6f817b] uppercase">
-                  Monday, August 3
+                  {currentDate}
                 </p>
                 <p className="hidden text-sm font-semibold text-[#264940] sm:block">
                   Welcome, {displayName}

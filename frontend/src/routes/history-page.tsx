@@ -1,4 +1,4 @@
-import { Clock3, Pencil, Plus, Trash2, X } from "lucide-react";
+import { Clock3, Filter, Pencil, Plus, Trash2, X } from "lucide-react";
 import { useState } from "react";
 import { Link } from "react-router-dom";
 
@@ -7,6 +7,7 @@ import { Card } from "@/components/ui/card";
 import { useBooks } from "@/features/books/book-api";
 import { SessionForm } from "@/features/sessions/session-form";
 import {
+  type ActivityType,
   type ReadingSession,
   useDeleteReadingSession,
   useReadingSessions,
@@ -23,7 +24,17 @@ const activityLabels = {
 
 export function HistoryPage() {
   const { selectedReaderId } = useReaderSelection();
-  const sessions = useReadingSessions(selectedReaderId);
+  const [bookId, setBookId] = useState("");
+  const [activityType, setActivityType] = useState<ActivityType | "all">("all");
+  const [dateFrom, setDateFrom] = useState("");
+  const [dateTo, setDateTo] = useState("");
+  const filters = {
+    bookId: bookId || undefined,
+    activityType,
+    dateFrom: dateFrom || undefined,
+    dateTo: dateTo || undefined,
+  };
+  const sessions = useReadingSessions(selectedReaderId, filters);
   const books = useBooks(selectedReaderId, "all");
   const update = useUpdateReadingSession();
   const deletion = useDeleteReadingSession();
@@ -62,6 +73,88 @@ export function HistoryPage() {
         </Link>
       </div>
 
+      <Card className="mb-5 p-5">
+        <div className="mb-4 flex items-center justify-between gap-3">
+          <div className="flex items-center gap-2 text-sm font-bold text-[#294f45]">
+            <Filter className="size-4" />
+            Filter history
+          </div>
+          <button
+            type="button"
+            className="text-xs font-bold text-[#a34d3a]"
+            onClick={() => {
+              setBookId("");
+              setActivityType("all");
+              setDateFrom("");
+              setDateTo("");
+            }}
+          >
+            Clear filters
+          </button>
+        </div>
+        <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+          <label className="text-xs font-bold text-[#526d65]">
+            Book
+            <select
+              aria-label="Book"
+              value={bookId}
+              onChange={(event) => setBookId(event.target.value)}
+              className="mt-1.5 h-10 w-full rounded-xl border border-[#d7d8cf] bg-white px-3 text-sm font-normal text-[#24463d]"
+            >
+              <option value="">All books</option>
+              {books.data?.map((book) => (
+                <option key={book.id} value={book.id}>
+                  {book.title}
+                </option>
+              ))}
+            </select>
+          </label>
+          <label className="text-xs font-bold text-[#526d65]">
+            Activity
+            <select
+              aria-label="Activity"
+              value={activityType}
+              onChange={(event) =>
+                setActivityType(event.target.value as ActivityType | "all")
+              }
+              className="mt-1.5 h-10 w-full rounded-xl border border-[#d7d8cf] bg-white px-3 text-sm font-normal text-[#24463d]"
+            >
+              <option value="all">All activities</option>
+              {Object.entries(activityLabels).map(([value, label]) => (
+                <option key={value} value={value}>
+                  {label}
+                </option>
+              ))}
+            </select>
+          </label>
+          <label className="text-xs font-bold text-[#526d65]">
+            From
+            <input
+              aria-label="From date"
+              type="date"
+              value={dateFrom}
+              max={dateTo || undefined}
+              onChange={(event) => setDateFrom(event.target.value)}
+              className="mt-1.5 h-10 w-full rounded-xl border border-[#d7d8cf] bg-white px-3 text-sm font-normal text-[#24463d]"
+            />
+          </label>
+          <label className="text-xs font-bold text-[#526d65]">
+            To
+            <input
+              aria-label="To date"
+              type="date"
+              value={dateTo}
+              min={dateFrom || undefined}
+              onChange={(event) => setDateTo(event.target.value)}
+              className="mt-1.5 h-10 w-full rounded-xl border border-[#d7d8cf] bg-white px-3 text-sm font-normal text-[#24463d]"
+            />
+          </label>
+        </div>
+        <p className="mt-3 text-[11px] text-[#7b8b86]">
+          The reader is controlled by the reader selector in the page header.
+        </p>
+      </Card>
+
       {sessions.isLoading ? (
         <p className="text-sm text-[#687b74]">Loading reading history…</p>
       ) : null}
@@ -74,10 +167,10 @@ export function HistoryPage() {
         <Card className="py-14 text-center">
           <Clock3 className="mx-auto size-10 text-[#6c8b82]" />
           <h2 className="mt-4 font-serif text-2xl font-bold">
-            No reading logged yet
+            No matching reading sessions
           </h2>
           <p className="mt-2 text-sm text-[#687b74]">
-            Your first entry only needs a book and the number of minutes.
+            Clear a filter or log another reading session.
           </p>
           <Link
             to="/log-reading"

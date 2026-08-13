@@ -4,74 +4,119 @@ import {
   BookOpenText,
   CalendarDays,
   Clock3,
-  MoreHorizontal,
-  Sparkles,
-  TrendingUp,
 } from "lucide-react";
+import { Link } from "react-router-dom";
 
-import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
-
-const summaryCards = [
-  {
-    label: "Minutes read",
-    value: "142",
-    note: "+18 from last week",
-    icon: Clock3,
-    iconClass: "bg-[#e4f0eb] text-[#28705f]",
-  },
-  {
-    label: "Pages turned",
-    value: "186",
-    note: "Across 4 books",
-    icon: BookOpenText,
-    iconClass: "bg-[#fff0d5] text-[#a6651c]",
-  },
-  {
-    label: "Reading days",
-    value: "5",
-    note: "This week",
-    icon: CalendarDays,
-    iconClass: "bg-[#fbe5de] text-[#bb583f]",
-  },
-];
+import { useReaderSelection } from "@/features/readers/use-reader-selection";
+import {
+  currentMonthRange,
+  currentWeekRange,
+  type ReportSummary,
+  useReportSummary,
+} from "@/features/reports/report-api";
 
 export function DashboardPage() {
+  const { selectedReaderId } = useReaderSelection();
+  const week = useReportSummary(selectedReaderId, currentWeekRange());
+  const month = useReportSummary(selectedReaderId, currentMonthRange());
+
+  if (!selectedReaderId) {
+    return (
+      <Card className="p-10 text-center">
+        <h1 className="font-serif text-3xl font-bold">Choose a reader first</h1>
+        <p className="mt-2 text-sm text-[#687b74]">
+          Select a reader to see their progress and recent activity.
+        </p>
+        <Link
+          to="/readers"
+          className="mt-5 inline-block text-sm font-bold text-[#c4543d]"
+        >
+          Manage readers
+        </Link>
+      </Card>
+    );
+  }
+
+  if (week.isLoading || month.isLoading) {
+    return <DashboardStatus message="Loading reading progress…" />;
+  }
+  if (week.error || month.error || !week.data || !month.data) {
+    return (
+      <DashboardStatus
+        message="Reading progress could not be loaded. Please try again."
+        isError
+      />
+    );
+  }
+
+  return <DashboardContent week={week.data} month={month.data} />;
+}
+
+function DashboardContent({
+  week,
+  month,
+}: {
+  week: ReportSummary;
+  month: ReportSummary;
+}) {
+  const hasWeeklyReading = week.sessions_count > 0;
+  const cards = [
+    {
+      label: "Minutes this week",
+      value: week.total_minutes,
+      note: `${week.sessions_count} reading ${week.sessions_count === 1 ? "session" : "sessions"}`,
+      icon: Clock3,
+      color: "bg-[#e4f0eb] text-[#28705f]",
+    },
+    {
+      label: "Pages this week",
+      value: week.pages_read,
+      note: `${week.reading_days} reading ${week.reading_days === 1 ? "day" : "days"}`,
+      icon: BookOpenText,
+      color: "bg-[#fff0d5] text-[#a6651c]",
+    },
+    {
+      label: "Minutes this month",
+      value: month.total_minutes,
+      note: `${month.books_finished} ${month.books_finished === 1 ? "book" : "books"} finished`,
+      icon: CalendarDays,
+      color: "bg-[#fbe5de] text-[#bb583f]",
+    },
+  ];
+
   return (
     <div className="animate-[fade-in_400ms_ease-out]">
       <section className="mb-8 flex flex-col justify-between gap-5 sm:flex-row sm:items-end">
         <div>
-          <div className="mb-3 flex items-center gap-2">
-            <span className="flex size-7 items-center justify-center rounded-full bg-[#f4bd62] text-xs font-bold text-[#173f36]">
-              M
-            </span>
-            <button className="flex cursor-pointer items-center gap-1.5 text-sm font-semibold text-[#42645b] hover:text-[#173f36]">
-              Maya’s reading
-              <span aria-hidden="true" className="text-xs">
-                ▾
-              </span>
-            </button>
-          </div>
-          <h1 className="max-w-2xl font-serif text-[38px] leading-[1.08] font-bold tracking-[-0.035em] text-[#173f36] sm:text-[46px]">
-            A good week of reading
+          <p className="text-xs font-bold tracking-[0.14em] text-[#c65c43] uppercase">
+            Reading dashboard
+          </p>
+          <h1 className="mt-2 max-w-2xl font-serif text-[38px] leading-[1.08] font-bold tracking-[-0.035em] text-[#173f36] sm:text-[46px]">
+            {hasWeeklyReading
+              ? "A good week of reading"
+              : "Ready for a new reading week"}
           </h1>
           <p className="mt-3 max-w-xl text-[15px] leading-6 text-[#667972]">
-            Maya has read on five days this week. A few more pages tonight will
-            make this her strongest week in August.
+            {hasWeeklyReading
+              ? `${week.reading_days} reading ${week.reading_days === 1 ? "day" : "days"} and ${week.total_minutes} minutes logged so far this week.`
+              : "No sessions are logged this week yet. Current books and earlier activity are still shown below."}
           </p>
         </div>
-
-        <Button variant="secondary" className="self-start sm:self-auto">
+        <Link
+          to="/history"
+          className="inline-flex h-11 items-center gap-2 self-start rounded-xl border border-[#d7d5c9] bg-white px-4 text-sm font-semibold text-[#23443b] hover:bg-[#f7f5ef] sm:self-auto"
+        >
           View full history
           <ArrowRight className="size-4" />
-        </Button>
+        </Link>
       </section>
 
       <section
-        aria-label="Weekly reading summary"
+        aria-label="Reading summary"
         className="grid gap-4 md:grid-cols-3"
       >
-        {summaryCards.map(({ label, value, note, icon: Icon, iconClass }) => (
+        {cards.map(({ label, value, note, icon: Icon, color }) => (
           <Card key={label} className="p-5 sm:p-6">
             <div className="flex items-start justify-between">
               <div>
@@ -80,176 +125,214 @@ export function DashboardPage() {
                   {value}
                 </p>
               </div>
-              <span className={`rounded-xl p-2.5 ${iconClass}`}>
+              <span className={`rounded-xl p-2.5 ${color}`}>
                 <Icon className="size-5" />
               </span>
             </div>
-            <p className="mt-4 flex items-center gap-1.5 text-xs font-medium text-[#71827c]">
-              {label === "Minutes read" && (
-                <TrendingUp className="size-3.5 text-[#28705f]" />
-              )}
-              {note}
-            </p>
+            <p className="mt-4 text-xs font-medium text-[#71827c]">{note}</p>
           </Card>
         ))}
       </section>
 
       <div className="mt-5 grid gap-5 xl:grid-cols-[1.45fr_1fr]">
-        <Card className="overflow-hidden">
-          <div className="flex items-center justify-between border-b border-[#eceae2] px-5 py-4 sm:px-6">
-            <div>
-              <p className="text-base font-bold text-[#23443b]">
-                Continue reading
-              </p>
-              <p className="mt-0.5 text-xs text-[#7a8a84]">
-                2 books in progress
-              </p>
-            </div>
-            <Button variant="ghost" size="sm">
-              View library
-              <ArrowRight className="size-3.5" />
-            </Button>
-          </div>
-
-          <div className="grid gap-5 p-5 sm:grid-cols-2 sm:p-6">
-            <article className="flex gap-4 rounded-2xl bg-[#f2f5ee] p-4">
-              <div className="relative flex h-32 w-[88px] shrink-0 flex-col justify-between overflow-hidden rounded-[8px] bg-[#2f7868] p-3 text-white shadow-[4px_6px_15px_rgba(28,66,57,0.18)]">
-                <Sparkles className="size-4 text-[#f8ca76]" />
-                <div>
-                  <p className="font-serif text-[13px] leading-tight font-bold">
-                    The Wild Robot
-                  </p>
-                  <p className="mt-1 text-[8px] text-white/65">Peter Brown</p>
-                </div>
-                <span className="absolute inset-y-0 left-1.5 w-px bg-black/12" />
-              </div>
-              <div className="flex min-w-0 flex-1 flex-col py-1">
-                <p className="text-xs font-bold tracking-[0.1em] text-[#578077] uppercase">
-                  Current book
-                </p>
-                <h2 className="mt-2 text-base leading-tight font-bold text-[#1e4037]">
-                  The Wild Robot
-                </h2>
-                <p className="mt-1 text-xs text-[#71847d]">Peter Brown</p>
-                <div className="mt-auto">
-                  <div className="mb-1.5 flex justify-between text-[10px] font-semibold text-[#60756e]">
-                    <span>Page 164</span>
-                    <span>58%</span>
-                  </div>
-                  <div className="h-1.5 overflow-hidden rounded-full bg-[#d7e2dc]">
-                    <div className="h-full w-[58%] rounded-full bg-[#df6549]" />
-                  </div>
-                </div>
-              </div>
-            </article>
-
-            <article className="flex gap-4 rounded-2xl bg-[#f8f3e8] p-4">
-              <div className="relative flex h-32 w-[88px] shrink-0 flex-col justify-between overflow-hidden rounded-[8px] bg-[#d88c52] p-3 text-white shadow-[4px_6px_15px_rgba(99,65,35,0.18)]">
-                <span className="text-xl" aria-hidden="true">
-                  ✦
-                </span>
-                <div>
-                  <p className="font-serif text-[13px] leading-tight font-bold">
-                    Zoey and Sassafras
-                  </p>
-                  <p className="mt-1 text-[8px] text-white/70">Asia Citro</p>
-                </div>
-                <span className="absolute inset-y-0 left-1.5 w-px bg-black/10" />
-              </div>
-              <div className="flex min-w-0 flex-1 flex-col py-1">
-                <p className="text-xs font-bold tracking-[0.1em] text-[#9b6a3e] uppercase">
-                  Current book
-                </p>
-                <h2 className="mt-2 text-base leading-tight font-bold text-[#1e4037]">
-                  Dragons and Marshmallows
-                </h2>
-                <p className="mt-1 text-xs text-[#71847d]">Asia Citro</p>
-                <div className="mt-auto">
-                  <div className="mb-1.5 flex justify-between text-[10px] font-semibold text-[#60756e]">
-                    <span>Page 52</span>
-                    <span>54%</span>
-                  </div>
-                  <div className="h-1.5 overflow-hidden rounded-full bg-[#eadfca]">
-                    <div className="h-full w-[54%] rounded-full bg-[#d88c52]" />
-                  </div>
-                </div>
-              </div>
-            </article>
-          </div>
-        </Card>
-
-        <Card className="overflow-hidden">
-          <div className="flex items-center justify-between border-b border-[#eceae2] px-5 py-4 sm:px-6">
-            <div>
-              <p className="text-base font-bold text-[#23443b]">
-                Recent activity
-              </p>
-              <p className="mt-0.5 text-xs text-[#7a8a84]">
-                The latest reading moments
-              </p>
-            </div>
-            <button
-              className="cursor-pointer rounded-lg p-2 text-[#71847d] hover:bg-[#f3f2ec]"
-              aria-label="More activity options"
-            >
-              <MoreHorizontal className="size-5" />
-            </button>
-          </div>
-
-          <div className="divide-y divide-[#eeece5] px-5 sm:px-6">
-            <ActivityItem
-              icon={<BookCheck className="size-4" />}
-              iconClass="bg-[#e4f0eb] text-[#28705f]"
-              title="Finished a reading session"
-              detail="The Wild Robot · 24 minutes"
-              time="Today, 4:10 PM"
-            />
-            <ActivityItem
-              icon={<BookOpenText className="size-4" />}
-              iconClass="bg-[#fff0d5] text-[#a6651c]"
-              title="Read 18 pages"
-              detail="Dragons and Marshmallows"
-              time="Yesterday, 7:35 PM"
-            />
-            <ActivityItem
-              icon={<Clock3 className="size-4" />}
-              iconClass="bg-[#fbe5de] text-[#bb583f]"
-              title="Read together"
-              detail="The Wild Robot · 31 minutes"
-              time="Saturday, 10:20 AM"
-            />
-          </div>
-        </Card>
+        <CurrentBooks books={week.current_books} />
+        <RecentActivity sessions={week.recent_activity} />
       </div>
     </div>
   );
 }
 
-type ActivityItemProps = {
-  icon: React.ReactNode;
-  iconClass: string;
-  title: string;
-  detail: string;
-  time: string;
-};
+function CurrentBooks({ books }: { books: ReportSummary["current_books"] }) {
+  return (
+    <Card className="overflow-hidden">
+      <CardHeader
+        title="Continue reading"
+        note={`${books.length} ${books.length === 1 ? "book" : "books"} in progress`}
+        link="/library"
+        linkLabel="View library"
+      />
+      {books.length === 0 ? (
+        <EmptyPanel
+          icon={<BookOpenText className="size-7" />}
+          title="No books in progress"
+          detail="Mark a library book as reading or log a session to begin tracking progress."
+        />
+      ) : (
+        <div className="grid gap-4 p-5 sm:grid-cols-2 sm:p-6">
+          {books.map((book) => (
+            <article
+              key={book.book_id}
+              className="flex min-w-0 gap-4 rounded-2xl bg-[#f2f5ee] p-4"
+            >
+              {book.cover_url ? (
+                <img
+                  src={book.cover_url}
+                  alt=""
+                  className="h-28 w-[76px] shrink-0 rounded-lg object-cover shadow-md"
+                />
+              ) : (
+                <div className="flex h-28 w-[76px] shrink-0 items-center justify-center rounded-lg bg-[#2f7868] text-white shadow-md">
+                  <BookOpenText className="size-6" />
+                </div>
+              )}
+              <div className="flex min-w-0 flex-1 flex-col py-1">
+                <p className="text-xs font-bold tracking-[0.1em] text-[#578077] uppercase">
+                  Current book
+                </p>
+                <h2 className="mt-2 line-clamp-2 font-serif text-base leading-tight font-bold text-[#1e4037]">
+                  {book.title}
+                </h2>
+                <div className="mt-auto">
+                  <div className="mb-1.5 flex justify-between text-[10px] font-semibold text-[#60756e]">
+                    <span>
+                      {book.last_page === null
+                        ? "No page logged"
+                        : `Page ${book.last_page}`}
+                    </span>
+                    <span>
+                      {book.progress_percent === null
+                        ? "—"
+                        : `${book.progress_percent}%`}
+                    </span>
+                  </div>
+                  <div className="h-1.5 overflow-hidden rounded-full bg-[#d7e2dc]">
+                    <div
+                      className="h-full rounded-full bg-[#df6549]"
+                      style={{ width: `${book.progress_percent ?? 0}%` }}
+                    />
+                  </div>
+                </div>
+              </div>
+            </article>
+          ))}
+        </div>
+      )}
+    </Card>
+  );
+}
 
-function ActivityItem({
+function RecentActivity({
+  sessions,
+}: {
+  sessions: ReportSummary["recent_activity"];
+}) {
+  return (
+    <Card className="overflow-hidden">
+      <CardHeader
+        title="Recent activity"
+        note="The latest reading moments"
+        link="/history"
+        linkLabel="View all"
+      />
+      {sessions.length === 0 ? (
+        <EmptyPanel
+          icon={<Clock3 className="size-7" />}
+          title="No activity yet"
+          detail="Logged reading sessions will appear here."
+        />
+      ) : (
+        <div className="divide-y divide-[#eeece5] px-5 sm:px-6">
+          {sessions.map((session) => (
+            <article key={session.id} className="flex gap-3 py-4">
+              <span className="mt-0.5 rounded-xl bg-[#e4f0eb] p-2.5 text-[#28705f]">
+                {session.finished_book ? (
+                  <BookCheck className="size-4" />
+                ) : (
+                  <Clock3 className="size-4" />
+                )}
+              </span>
+              <div className="min-w-0 flex-1">
+                <p className="truncate text-sm font-semibold text-[#274a41]">
+                  {session.finished_book
+                    ? "Finished a book"
+                    : "Reading session"}
+                </p>
+                <p className="mt-0.5 truncate text-xs text-[#70817b]">
+                  {session.book_title} · {session.minutes} minutes
+                  {session.pages_read > 0
+                    ? ` · ${session.pages_read} pages`
+                    : ""}
+                </p>
+                <p className="mt-1.5 text-[10px] font-medium tracking-wide text-[#99a49f] uppercase">
+                  {formatDate(session.session_date)}
+                </p>
+              </div>
+            </article>
+          ))}
+        </div>
+      )}
+    </Card>
+  );
+}
+
+function CardHeader({
+  title,
+  note,
+  link,
+  linkLabel,
+}: {
+  title: string;
+  note: string;
+  link: string;
+  linkLabel: string;
+}) {
+  return (
+    <div className="flex items-center justify-between border-b border-[#eceae2] px-5 py-4 sm:px-6">
+      <div>
+        <p className="text-base font-bold text-[#23443b]">{title}</p>
+        <p className="mt-0.5 text-xs text-[#7a8a84]">{note}</p>
+      </div>
+      <Link to={link} className="text-xs font-bold text-[#42645b]">
+        {linkLabel}
+      </Link>
+    </div>
+  );
+}
+
+function EmptyPanel({
   icon,
-  iconClass,
   title,
   detail,
-  time,
-}: ActivityItemProps) {
+}: {
+  icon: React.ReactNode;
+  title: string;
+  detail: string;
+}) {
   return (
-    <article className="flex gap-3 py-4">
-      <span className={`mt-0.5 rounded-xl p-2.5 ${iconClass}`}>{icon}</span>
-      <div className="min-w-0 flex-1">
-        <p className="truncate text-sm font-semibold text-[#274a41]">{title}</p>
-        <p className="mt-0.5 truncate text-xs text-[#70817b]">{detail}</p>
-        <p className="mt-1.5 text-[10px] font-medium tracking-wide text-[#99a49f] uppercase">
-          {time}
-        </p>
-      </div>
-    </article>
+    <div className="px-6 py-12 text-center text-[#648078]">
+      <span className="mx-auto flex size-12 items-center justify-center rounded-full bg-[#edf2ee]">
+        {icon}
+      </span>
+      <p className="mt-3 font-serif text-lg font-bold text-[#23443b]">
+        {title}
+      </p>
+      <p className="mx-auto mt-1 max-w-sm text-xs leading-5">{detail}</p>
+    </div>
   );
+}
+
+function DashboardStatus({
+  message,
+  isError = false,
+}: {
+  message: string;
+  isError?: boolean;
+}) {
+  return (
+    <Card className="p-10 text-center">
+      <p
+        role={isError ? "alert" : undefined}
+        className={isError ? "text-[#943f30]" : "text-[#687b74]"}
+      >
+        {message}
+      </p>
+    </Card>
+  );
+}
+
+function formatDate(value: string) {
+  return new Intl.DateTimeFormat(undefined, {
+    dateStyle: "medium",
+    timeZone: "UTC",
+  }).format(new Date(`${value}T00:00:00Z`));
 }

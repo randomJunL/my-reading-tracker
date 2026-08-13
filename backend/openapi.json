@@ -609,6 +609,145 @@
         "title": "BookUpdate",
         "type": "object"
       },
+      "CalendarDay": {
+        "properties": {
+          "books_finished": {
+            "title": "Books Finished",
+            "type": "integer"
+          },
+          "date": {
+            "format": "date",
+            "title": "Date",
+            "type": "string"
+          },
+          "minutes": {
+            "title": "Minutes",
+            "type": "integer"
+          },
+          "pages_read": {
+            "title": "Pages Read",
+            "type": "integer"
+          },
+          "sessions_count": {
+            "title": "Sessions Count",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "date",
+          "minutes",
+          "pages_read",
+          "sessions_count",
+          "books_finished"
+        ],
+        "title": "CalendarDay",
+        "type": "object"
+      },
+      "CalendarReportResponse": {
+        "properties": {
+          "date_from": {
+            "format": "date",
+            "title": "Date From",
+            "type": "string"
+          },
+          "date_to": {
+            "format": "date",
+            "title": "Date To",
+            "type": "string"
+          },
+          "days": {
+            "items": {
+              "$ref": "#/components/schemas/CalendarDay"
+            },
+            "title": "Days",
+            "type": "array"
+          },
+          "reader_id": {
+            "format": "uuid",
+            "title": "Reader Id",
+            "type": "string"
+          }
+        },
+        "required": [
+          "reader_id",
+          "date_from",
+          "date_to",
+          "days"
+        ],
+        "title": "CalendarReportResponse",
+        "type": "object"
+      },
+      "CurrentBookProgress": {
+        "properties": {
+          "book_id": {
+            "format": "uuid",
+            "title": "Book Id",
+            "type": "string"
+          },
+          "cover_url": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Cover Url"
+          },
+          "last_page": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Last Page"
+          },
+          "page_count": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Page Count"
+          },
+          "progress_percent": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Progress Percent"
+          },
+          "status": {
+            "$ref": "#/components/schemas/ReadingStatus"
+          },
+          "title": {
+            "title": "Title",
+            "type": "string"
+          }
+        },
+        "required": [
+          "book_id",
+          "title",
+          "cover_url",
+          "page_count",
+          "last_page",
+          "progress_percent",
+          "status"
+        ],
+        "title": "CurrentBookProgress",
+        "type": "object"
+      },
       "CurrentUserResponse": {
         "properties": {
           "email": {
@@ -1233,6 +1372,141 @@
         ],
         "title": "ReadingStatus",
         "type": "string"
+      },
+      "ReportSession": {
+        "properties": {
+          "activity_type": {
+            "$ref": "#/components/schemas/ActivityType"
+          },
+          "book_cover_url": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Book Cover Url"
+          },
+          "book_id": {
+            "format": "uuid",
+            "title": "Book Id",
+            "type": "string"
+          },
+          "book_title": {
+            "title": "Book Title",
+            "type": "string"
+          },
+          "created_at": {
+            "format": "date-time",
+            "title": "Created At",
+            "type": "string"
+          },
+          "finished_book": {
+            "title": "Finished Book",
+            "type": "boolean"
+          },
+          "id": {
+            "format": "uuid",
+            "title": "Id",
+            "type": "string"
+          },
+          "minutes": {
+            "title": "Minutes",
+            "type": "integer"
+          },
+          "pages_read": {
+            "title": "Pages Read",
+            "type": "integer"
+          },
+          "session_date": {
+            "format": "date",
+            "title": "Session Date",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "book_id",
+          "book_title",
+          "book_cover_url",
+          "session_date",
+          "minutes",
+          "pages_read",
+          "activity_type",
+          "finished_book",
+          "created_at"
+        ],
+        "title": "ReportSession",
+        "type": "object"
+      },
+      "ReportSummaryResponse": {
+        "properties": {
+          "books_finished": {
+            "title": "Books Finished",
+            "type": "integer"
+          },
+          "current_books": {
+            "items": {
+              "$ref": "#/components/schemas/CurrentBookProgress"
+            },
+            "title": "Current Books",
+            "type": "array"
+          },
+          "date_from": {
+            "format": "date",
+            "title": "Date From",
+            "type": "string"
+          },
+          "date_to": {
+            "format": "date",
+            "title": "Date To",
+            "type": "string"
+          },
+          "pages_read": {
+            "title": "Pages Read",
+            "type": "integer"
+          },
+          "reader_id": {
+            "format": "uuid",
+            "title": "Reader Id",
+            "type": "string"
+          },
+          "reading_days": {
+            "title": "Reading Days",
+            "type": "integer"
+          },
+          "recent_activity": {
+            "items": {
+              "$ref": "#/components/schemas/ReportSession"
+            },
+            "title": "Recent Activity",
+            "type": "array"
+          },
+          "sessions_count": {
+            "title": "Sessions Count",
+            "type": "integer"
+          },
+          "total_minutes": {
+            "title": "Total Minutes",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "reader_id",
+          "date_from",
+          "date_to",
+          "total_minutes",
+          "pages_read",
+          "books_finished",
+          "reading_days",
+          "sessions_count",
+          "current_books",
+          "recent_activity"
+        ],
+        "title": "ReportSummaryResponse",
+        "type": "object"
       },
       "ValidationError": {
         "properties": {
@@ -2480,6 +2754,142 @@
         "summary": "Update Reading Session",
         "tags": [
           "reading sessions"
+        ]
+      }
+    },
+    "/api/v1/reports/calendar": {
+      "get": {
+        "operationId": "get_calendar_report_api_v1_reports_calendar_get",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "reader_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Reader Id",
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "date_from",
+            "required": true,
+            "schema": {
+              "format": "date",
+              "title": "Date From",
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "date_to",
+            "required": true,
+            "schema": {
+              "format": "date",
+              "title": "Date To",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CalendarReportResponse"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "Get Calendar Report",
+        "tags": [
+          "reports"
+        ]
+      }
+    },
+    "/api/v1/reports/summary": {
+      "get": {
+        "operationId": "get_report_summary_api_v1_reports_summary_get",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "reader_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Reader Id",
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "date_from",
+            "required": true,
+            "schema": {
+              "format": "date",
+              "title": "Date From",
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "date_to",
+            "required": true,
+            "schema": {
+              "format": "date",
+              "title": "Date To",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ReportSummaryResponse"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "Get Report Summary",
+        "tags": [
+          "reports"
         ]
       }
     }

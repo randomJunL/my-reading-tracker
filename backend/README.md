@@ -102,3 +102,15 @@ session moves a planned book to reading; marking a session as finished moves it
 to finished and records its completion date. Multiple sessions for the same
 reader and book remain distinct records. A reader-book assignment with history
 cannot be removed until its sessions are deleted.
+
+## Reports
+
+`GET /api/v1/reports/summary` returns household-scoped totals for a required
+`reader_id`, `date_from`, and `date_to`. It includes minutes, pages, distinct
+finished books, reading days, current-book progress, and the five most recent
+sessions. Page totals use `end_page - start_page`; sessions without both page
+values contribute zero pages while still contributing their minutes.
+
+`GET /api/v1/reports/calendar` accepts the same parameters and groups those
+totals by reading date. Date ranges are inclusive, and readers outside the
+authenticated household are returned as `404`.

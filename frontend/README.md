@@ -57,6 +57,8 @@ smoke test.
   and reader-library API hooks.
 - `src/features/sessions` contains the fast reading-entry form and session API
   hooks used by quick logging and history corrections.
+- `src/features/reports` contains date-range report queries and weekly/monthly
+  range helpers used by the live dashboard.
 - `src/layouts` contains the responsive application shell.
 - `src/routes` contains route-level screens and error handling.
 - `src/test` contains shared Vitest setup.

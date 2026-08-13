@@ -4,7 +4,11 @@ import { MemoryRouter } from "react-router-dom";
 
 import { HistoryPage } from "@/routes/history-page";
 
-const mocks = vi.hoisted(() => ({ update: vi.fn(), delete: vi.fn() }));
+const mocks = vi.hoisted(() => ({
+  update: vi.fn(),
+  delete: vi.fn(),
+  readSessions: vi.fn(),
+}));
 
 vi.mock("@/features/readers/use-reader-selection", () => ({
   useReaderSelection: () => ({ selectedReaderId: "reader-1" }),
@@ -15,28 +19,31 @@ vi.mock("@/features/books/book-api", () => ({
 }));
 
 vi.mock("@/features/sessions/session-api", () => ({
-  useReadingSessions: () => ({
-    data: [
-      {
-        id: "session-1",
-        reader_id: "reader-1",
-        book_id: "book-1",
-        book_title: "The Wild Robot",
-        book_cover_url: null,
-        session_date: "2026-08-12",
-        minutes: 15,
-        start_page: 1,
-        end_page: 12,
-        activity_type: "with_adult",
-        notes: "Great focus",
-        finished_book: false,
-        created_at: "2026-08-12T12:00:00Z",
-        updated_at: "2026-08-12T12:00:00Z",
-      },
-    ],
-    isLoading: false,
-    error: null,
-  }),
+  useReadingSessions: (...args: unknown[]) => {
+    mocks.readSessions(...args);
+    return {
+      data: [
+        {
+          id: "session-1",
+          reader_id: "reader-1",
+          book_id: "book-1",
+          book_title: "The Wild Robot",
+          book_cover_url: null,
+          session_date: "2026-08-12",
+          minutes: 15,
+          start_page: 1,
+          end_page: 12,
+          activity_type: "with_adult",
+          notes: "Great focus",
+          finished_book: false,
+          created_at: "2026-08-12T12:00:00Z",
+          updated_at: "2026-08-12T12:00:00Z",
+        },
+      ],
+      isLoading: false,
+      error: null,
+    };
+  },
   useUpdateReadingSession: () => ({
     mutateAsync: mocks.update.mockResolvedValue({}),
     isPending: false,
@@ -85,5 +92,22 @@ describe("HistoryPage", () => {
     ).toBeVisible();
     await user.click(screen.getByRole("button", { name: "Delete session" }));
     expect(mocks.delete).toHaveBeenCalledWith("session-1");
+  });
+
+  it("requests history using book, activity, and date filters", async () => {
+    const user = userEvent.setup();
+    render(<HistoryPage />, { wrapper: MemoryRouter });
+
+    await user.selectOptions(screen.getByLabelText("Book"), "book-1");
+    await user.selectOptions(screen.getByLabelText("Activity"), "with_adult");
+    await user.type(screen.getByLabelText("From date"), "2026-08-01");
+    await user.type(screen.getByLabelText("To date"), "2026-08-12");
+
+    expect(mocks.readSessions).toHaveBeenLastCalledWith("reader-1", {
+      bookId: "book-1",
+      activityType: "with_adult",
+      dateFrom: "2026-08-01",
+      dateTo: "2026-08-12",
+    });
   });
 });

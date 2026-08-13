@@ -151,6 +151,11 @@ make api-generate
 This writes `backend/openapi.json` and `frontend/src/api/schema.d.ts`. Do not
 edit either generated file by hand.
 
+The dashboard reads `GET /api/v1/reports/summary` for the selected reader's
+current week and month. The history page sends its selected book, activity,
+and inclusive date filters to `GET /api/v1/reading-sessions`; use the reader
+selector in the application header to change the reader for both pages.
+
 Before committing backend changes, run the complete check suite:
 
 ```bash
