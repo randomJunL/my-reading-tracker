@@ -156,6 +156,14 @@ current week and month. The history page sends its selected book, activity,
 and inclusive date filters to `GET /api/v1/reading-sessions`; use the reader
 selector in the application header to change the reader for both pages.
 
+The Reports page downloads complete JSON backups from
+`GET /api/v1/exports/reading-data` and readable session CSV files from the same
+endpoint with `?format=csv`. Downloads use the current Supabase bearer token (or
+the guarded local-development identity) and are always scoped to the resolved
+household. JSON includes a `schema_version` to support future format changes.
+The finished-books report uses `?format=finished-books-csv` and aggregates every
+saved session separately for each reader-book pairing.
+
 Before committing backend changes, run the complete check suite:
 
 ```bash

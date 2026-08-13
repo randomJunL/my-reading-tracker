@@ -75,6 +75,23 @@ export interface paths {
     patch: operations["update_book_api_v1_books__book_id__patch"];
     trace?: never;
   };
+  "/api/v1/exports/reading-data": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    /** Export Reading Data */
+    get: operations["export_reading_data_api_v1_exports_reading_data_get"];
+    put?: never;
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
   "/api/v1/health": {
     parameters: {
       query?: never;
@@ -467,6 +484,148 @@ export interface components {
        */
       user_id: string;
     };
+    /** ExportBook */
+    ExportBook: {
+      /** Authors */
+      authors: string[];
+      /** Cover Url */
+      cover_url: string | null;
+      /**
+       * Created At
+       * Format: date-time
+       */
+      created_at: string;
+      /** Description */
+      description: string | null;
+      /** External Source Id */
+      external_source_id: string | null;
+      /**
+       * Id
+       * Format: uuid
+       */
+      id: string;
+      /** Isbn 10 */
+      isbn_10: string | null;
+      /** Isbn 13 */
+      isbn_13: string | null;
+      /** Language */
+      language: string | null;
+      metadata_source: components["schemas"]["MetadataSource"];
+      /** Page Count */
+      page_count: number | null;
+      /** Published Date */
+      published_date: string | null;
+      /** Publisher */
+      publisher: string | null;
+      /** Subtitle */
+      subtitle: string | null;
+      /** Title */
+      title: string;
+      /**
+       * Updated At
+       * Format: date-time
+       */
+      updated_at: string;
+    };
+    /** ExportReader */
+    ExportReader: {
+      /** Avatar Key */
+      avatar_key: string | null;
+      /**
+       * Created At
+       * Format: date-time
+       */
+      created_at: string;
+      /**
+       * Id
+       * Format: uuid
+       */
+      id: string;
+      /** Name */
+      name: string;
+      /**
+       * Updated At
+       * Format: date-time
+       */
+      updated_at: string;
+    };
+    /** ExportReaderBook */
+    ExportReaderBook: {
+      /**
+       * Book Id
+       * Format: uuid
+       */
+      book_id: string;
+      /**
+       * Created At
+       * Format: date-time
+       */
+      created_at: string;
+      /** Finished At */
+      finished_at: string | null;
+      /**
+       * Id
+       * Format: uuid
+       */
+      id: string;
+      /**
+       * Reader Id
+       * Format: uuid
+       */
+      reader_id: string;
+      /** Started At */
+      started_at: string | null;
+      status: components["schemas"]["ReadingStatus"];
+      /**
+       * Updated At
+       * Format: date-time
+       */
+      updated_at: string;
+    };
+    /** ExportReadingSession */
+    ExportReadingSession: {
+      activity_type: components["schemas"]["ActivityType"];
+      /**
+       * Book Id
+       * Format: uuid
+       */
+      book_id: string;
+      /**
+       * Created At
+       * Format: date-time
+       */
+      created_at: string;
+      /** End Page */
+      end_page: number | null;
+      /** Finished Book */
+      finished_book: boolean;
+      /**
+       * Id
+       * Format: uuid
+       */
+      id: string;
+      /** Minutes */
+      minutes: number;
+      /** Notes */
+      notes: string | null;
+      /**
+       * Reader Id
+       * Format: uuid
+       */
+      reader_id: string;
+      /**
+       * Session Date
+       * Format: date
+       */
+      session_date: string;
+      /** Start Page */
+      start_page: number | null;
+      /**
+       * Updated At
+       * Format: date-time
+       */
+      updated_at: string;
+    };
     /** HTTPValidationError */
     HTTPValidationError: {
       /** Detail */
@@ -585,6 +744,34 @@ export interface components {
       avatar_key?: string | null;
       /** Name */
       name?: string | null;
+    };
+    /** ReadingDataExport */
+    ReadingDataExport: {
+      /** Books */
+      books: components["schemas"]["ExportBook"][];
+      /**
+       * Exported At
+       * Format: date-time
+       */
+      exported_at: string;
+      /**
+       * Household Id
+       * Format: uuid
+       */
+      household_id: string;
+      /** Household Name */
+      household_name: string;
+      /** Reader Books */
+      reader_books: components["schemas"]["ExportReaderBook"][];
+      /** Readers */
+      readers: components["schemas"]["ExportReader"][];
+      /** Reading Sessions */
+      reading_sessions: components["schemas"]["ExportReadingSession"][];
+      /**
+       * Schema Version
+       * @default 1
+       */
+      schema_version: number;
     };
     /** ReadingSessionCreate */
     ReadingSessionCreate: {
@@ -989,6 +1176,38 @@ export interface operations {
         };
         content: {
           "application/json": components["schemas"]["BookResponse"];
+        };
+      };
+      /** @description Validation Error */
+      422: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["HTTPValidationError"];
+        };
+      };
+    };
+  };
+  export_reading_data_api_v1_exports_reading_data_get: {
+    parameters: {
+      query?: {
+        format?: "json" | "csv" | "finished-books-csv";
+      };
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      /** @description Complete JSON backup, reading-session CSV, or finished-books CSV */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ReadingDataExport"];
+          "text/csv": unknown;
         };
       };
       /** @description Validation Error */

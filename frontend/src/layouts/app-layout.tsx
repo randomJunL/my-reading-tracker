@@ -23,6 +23,7 @@ const primaryNavigation = [
   { label: "Readers", to: "/readers", icon: Users },
   { label: "Library", to: "/library", icon: Library },
   { label: "History", to: "/history", icon: Clock3 },
+  { label: "Reports", to: "/reports", icon: ChartNoAxesColumnIncreasing },
 ];
 
 export function AppLayout() {
@@ -74,19 +75,6 @@ export function AppLayout() {
             </NavLink>
           ))}
         </nav>
-
-        <div className="my-6 h-px bg-white/10" />
-
-        <NavLink
-          to="/reports"
-          className="flex items-center gap-3 rounded-xl px-3.5 py-3 text-sm font-medium text-[#c7d6d1] hover:bg-white/7 hover:text-white"
-        >
-          <ChartNoAxesColumnIncreasing className="size-[19px]" />
-          Reports
-          <span className="ml-auto rounded-full bg-[#f4bd62]/15 px-2 py-0.5 text-[10px] font-bold tracking-wide text-[#f4bd62] uppercase">
-            Soon
-          </span>
-        </NavLink>
 
         <div className="mt-auto rounded-2xl bg-white/7 p-3.5">
           <div className="flex items-center gap-3">

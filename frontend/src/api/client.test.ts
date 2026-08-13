@@ -1,4 +1,4 @@
-import { apiFetch } from "@/api/client";
+import { apiDownload, apiFetch } from "@/api/client";
 
 const authMocks = vi.hoisted(() => ({
   getSession: vi.fn(),
@@ -61,5 +61,28 @@ describe("apiFetch", () => {
       status: 409,
     });
     await expect(apiFetch("/readers/reader-id")).resolves.toBeUndefined();
+  });
+
+  it("returns an authenticated download with its server filename", async () => {
+    const fetchMock = vi.fn().mockResolvedValue(
+      new Response("Date,Reader\n2026-08-12,Maya\n", {
+        status: 200,
+        headers: {
+          "Content-Type": "text/csv",
+          "Content-Disposition":
+            'attachment; filename="reading-sessions-2026-08-13.csv"',
+        },
+      }),
+    );
+    vi.stubGlobal("fetch", fetchMock);
+
+    const download = await apiDownload("/exports/reading-data?format=csv");
+
+    expect(download.filename).toBe("reading-sessions-2026-08-13.csv");
+    expect(await download.blob.text()).toContain("2026-08-12,Maya");
+    const [, request] = fetchMock.mock.calls[0] as [string, RequestInit];
+    expect(new Headers(request.headers).get("Authorization")).toBe(
+      "Bearer access-token",
+    );
   });
 });

@@ -17,6 +17,21 @@ export async function apiFetch<T>(
   path: string,
   init: RequestInit = {},
 ): Promise<T> {
+  const response = await authenticatedFetch(path, init);
+  if (response.status === 204) return undefined as T;
+
+  return (await response.json()) as T;
+}
+
+export async function apiDownload(path: string) {
+  const response = await authenticatedFetch(path);
+  const disposition = response.headers.get("Content-Disposition") ?? "";
+  const filename =
+    /filename="([^"]+)"/.exec(disposition)?.[1] ?? "reading-data-download";
+  return { blob: await response.blob(), filename };
+}
+
+async function authenticatedFetch(path: string, init: RequestInit = {}) {
   const session = DEV_AUTH_BYPASS
     ? null
     : ((await supabase?.auth.getSession())?.data.session ?? null);
@@ -47,8 +62,5 @@ export async function apiFetch<T>(
     }
     throw new ApiError(message, response.status);
   }
-
-  if (response.status === 204) return undefined as T;
-
-  return (await response.json()) as T;
+  return response;
 }

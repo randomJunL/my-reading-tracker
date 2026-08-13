@@ -114,3 +114,18 @@ values contribute zero pages while still contributing their minutes.
 `GET /api/v1/reports/calendar` accepts the same parameters and groups those
 totals by reading date. Date ranges are inclusive, and readers outside the
 authenticated household are returned as `404`.
+
+## Data exports
+
+`GET /api/v1/exports/reading-data` downloads a versioned JSON backup containing
+the authenticated household's readers, books, reader-book statuses, and reading
+sessions. Add `?format=csv` to download a spreadsheet-friendly reading-session
+log with reader and book names, page totals, activities, completion flags, and
+notes. Add `?format=finished-books-csv` for one row per finished reader-book,
+including completion date, total reading time, pages, session count, first and
+last reading dates, book length, and ISBN. The default format is JSON;
+unsupported formats return `422`.
+
+Both responses use dated attachment filenames and only read existing records.
+Exporting does not modify saved data, and records from other households are
+never included.

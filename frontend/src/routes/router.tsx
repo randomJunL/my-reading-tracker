@@ -7,7 +7,7 @@ import { BookDetailPage } from "@/routes/book-detail-page";
 import { LibraryPage } from "@/routes/library-page";
 import { HistoryPage } from "@/routes/history-page";
 import { LogReadingPage } from "@/routes/log-reading-page";
-import { PlaceholderPage } from "@/routes/placeholder-page";
+import { ReportsPage } from "@/routes/reports-page";
 import { ReadersPage } from "@/routes/readers-page";
 import { RouteErrorBoundary } from "@/routes/route-error-boundary";
 import { SignInPage } from "@/routes/sign-in-page";
@@ -28,7 +28,7 @@ export const router = createBrowserRouter([
           { path: "library/:bookId", element: <BookDetailPage /> },
           { path: "log-reading", element: <LogReadingPage /> },
           { path: "history", element: <HistoryPage /> },
-          { path: "reports", element: <PlaceholderPage /> },
+          { path: "reports", element: <ReportsPage /> },
         ],
       },
     ],
