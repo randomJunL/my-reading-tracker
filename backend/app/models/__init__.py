@@ -1,4 +1,5 @@
 from app.models.book import Book, MetadataSource
+from app.models.book_recommendation import BookRecommendation
 from app.models.household import Household, HouseholdMember, HouseholdRole
 from app.models.reader import Reader
 from app.models.reader_book import ReaderBook, ReadingStatus
@@ -20,6 +21,7 @@ __all__ = [
     "BadgeCategory",
     "BadgeDefinition",
     "Book",
+    "BookRecommendation",
     "Household",
     "HouseholdMember",
     "HouseholdRole",

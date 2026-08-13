@@ -26,6 +26,7 @@ def test_migration_builds_complete_schema(db_session: Session) -> None:
     assert table_names == {
         "alembic_version",
         "badge_definitions",
+        "book_recommendations",
         "books",
         "household_members",
         "households",

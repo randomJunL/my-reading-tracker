@@ -4,6 +4,41 @@
  */
 
 export interface paths {
+  "/api/v1/book-recommendations": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    /** List Book Recommendations */
+    get: operations["list_book_recommendations_api_v1_book_recommendations_get"];
+    put?: never;
+    /** Create Book Recommendation */
+    post: operations["create_book_recommendation_api_v1_book_recommendations_post"];
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  "/api/v1/book-recommendations/{recommendation_id}": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get?: never;
+    put?: never;
+    post?: never;
+    /** Delete Book Recommendation */
+    delete: operations["delete_book_recommendation_api_v1_book_recommendations__recommendation_id__delete"];
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
   "/api/v1/book-search": {
     parameters: {
       query?: never;
@@ -456,6 +491,43 @@ export interface components {
       subtitle?: string | null;
       /** Title */
       title: string;
+    };
+    /** BookRecommendationCreate */
+    BookRecommendationCreate: {
+      book: components["schemas"]["BookCreate"];
+      /** Note */
+      note?: string | null;
+    };
+    /** BookRecommendationResponse */
+    BookRecommendationResponse: {
+      book: components["schemas"]["BookResponse"];
+      /**
+       * Book Id
+       * Format: uuid
+       */
+      book_id: string;
+      /**
+       * Created At
+       * Format: date-time
+       */
+      created_at: string;
+      /**
+       * Household Id
+       * Format: uuid
+       */
+      household_id: string;
+      /**
+       * Id
+       * Format: uuid
+       */
+      id: string;
+      /** Note */
+      note: string | null;
+      /**
+       * Updated At
+       * Format: date-time
+       */
+      updated_at: string;
     };
     /** BookResponse */
     BookResponse: {
@@ -1475,6 +1547,88 @@ export interface components {
 }
 export type $defs = Record<string, never>;
 export interface operations {
+  list_book_recommendations_api_v1_book_recommendations_get: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      /** @description Successful Response */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["BookRecommendationResponse"][];
+        };
+      };
+    };
+  };
+  create_book_recommendation_api_v1_book_recommendations_post: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    requestBody: {
+      content: {
+        "application/json": components["schemas"]["BookRecommendationCreate"];
+      };
+    };
+    responses: {
+      /** @description Successful Response */
+      201: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["BookRecommendationResponse"];
+        };
+      };
+      /** @description Validation Error */
+      422: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["HTTPValidationError"];
+        };
+      };
+    };
+  };
+  delete_book_recommendation_api_v1_book_recommendations__recommendation_id__delete: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        recommendation_id: string;
+      };
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      /** @description Successful Response */
+      204: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content?: never;
+      };
+      /** @description Validation Error */
+      422: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["HTTPValidationError"];
+        };
+      };
+    };
+  };
   search_books_api_v1_book_search_get: {
     parameters: {
       query?: {

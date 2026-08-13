@@ -9,6 +9,7 @@ from sqlalchemy.orm import Mapped, mapped_column, relationship
 from app.database.base import Base, TimestampMixin, UUIDPrimaryKeyMixin
 
 if TYPE_CHECKING:
+    from app.models.book_recommendation import BookRecommendation
     from app.models.household import Household
     from app.models.reader_book import ReaderBook
     from app.models.reading_session import ReadingSession
@@ -62,5 +63,8 @@ class Book(UUIDPrimaryKeyMixin, TimestampMixin, Base):
         back_populates="book", cascade="all, delete-orphan"
     )
     reading_sessions: Mapped[list["ReadingSession"]] = relationship(
+        back_populates="book", cascade="all, delete-orphan"
+    )
+    recommendations: Mapped[list["BookRecommendation"]] = relationship(
         back_populates="book", cascade="all, delete-orphan"
     )

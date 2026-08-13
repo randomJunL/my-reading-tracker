@@ -106,6 +106,51 @@ def test_duplicate_reader_book_returns_conflict(library_client: TestClient) -> N
     assert library_client.post(url, json=payload).status_code == 409
 
 
+def test_recommendation_can_be_added_to_reader_library(
+    library_client: TestClient,
+) -> None:
+    reader = library_client.post("/api/v1/readers", json={"name": "Maya"}).json()
+    payload = {
+        "book": {
+            "title": "The Wild Robot",
+            "authors": ["Peter Brown"],
+            "page_count": 288,
+            "metadata_source": "google_books",
+            "external_source_id": "volume-1",
+        },
+        "note": "A thoughtful classroom adventure.",
+    }
+
+    created = library_client.post("/api/v1/book-recommendations", json=payload)
+    assert created.status_code == 201
+    recommendation = created.json()
+    assert recommendation["book"]["title"] == "The Wild Robot"
+    assert recommendation["note"] == "A thoughtful classroom adventure."
+
+    assert (
+        library_client.post("/api/v1/book-recommendations", json=payload).status_code
+        == 409
+    )
+
+    assignment = library_client.post(
+        f"/api/v1/readers/{reader['id']}/books",
+        json={"book_id": recommendation["book_id"], "status": "reading"},
+    )
+    assert assignment.status_code == 201
+
+    listed = library_client.get("/api/v1/book-recommendations")
+    assert listed.status_code == 200
+    assert listed.json()[0]["book"]["reader_books"][0]["status"] == "reading"
+
+    assert (
+        library_client.delete(
+            f"/api/v1/book-recommendations/{recommendation['id']}"
+        ).status_code
+        == 204
+    )
+    assert library_client.get("/api/v1/book-recommendations").json() == []
+
+
 def test_cross_household_book_is_hidden(
     library_client: TestClient, db_session: Session
 ) -> None:

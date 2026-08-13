@@ -16,7 +16,6 @@ configured gifts with parent oversight.
 - Book Adventurer: 10 books
 - Book Champion: 25 books
 - Reading Legend: 50 books
-- After 50 books, one bonus credit is awarded every additional 25 books.
 
 A reader-book counts once when its library status is `finished`.
 
@@ -37,8 +36,6 @@ A successful week contains at least three separate reading days.
 - Monthly Momentum: 4 consecutive successful weeks
 - Reading Routine: 8 consecutive successful weeks
 - Season of Reading: 12 consecutive successful weeks
-- After 12 weeks, one bonus credit is awarded every four additional consecutive
-  successful weeks.
 
 ### Continuous reading days
 
@@ -49,8 +46,6 @@ At least one session must exist on every consecutive calendar date.
 - Two-Week Reader: 14 days
 - Monthly Reader: 30 days
 - Reading Marathon: 60 days
-- After 60 days, one bonus credit is awarded every additional 30 continuous
-  days.
 
 ## Permanence and corrections
 
@@ -62,11 +57,14 @@ them through the credit ledger.
 
 ## Credits and gifts
 
-Every permanent badge and recurring bonus grants one credit. Parents configure
-gift names, descriptions, costs, availability, and optional quantity. A
-redemption deducts credits immediately and begins as `pending`. Rejected or
-cancelled requests refund credits; approved requests may be marked `fulfilled`.
-All credit changes are append-only ledger transactions with idempotency keys.
+Each logged reading session grants one credit, up to two credits per reader on
+the same calendar date. Additional sessions that day still count toward reading
+history and achievements but do not grant more credits. Badges remain permanent
+achievements and do not grant credits. Parents configure gift names,
+descriptions, costs, availability, and optional quantity. A redemption deducts
+credits immediately and begins as `pending`. Rejected or cancelled requests
+refund credits; approved requests may be marked `fulfilled`. All credit changes
+are append-only ledger transactions with idempotency keys.
 
 ## Product surfaces
 

@@ -32,7 +32,7 @@ def reward_client(db_session: Session) -> Generator[TestClient, None, None]:
         app.dependency_overrides.clear()
 
 
-def test_sessions_award_permanent_badges_and_credits_once(
+def test_sessions_award_permanent_badges_and_session_credits_once(
     reward_client: TestClient, db_session: Session
 ) -> None:
     reader, book = _create_library(reward_client)
@@ -62,20 +62,66 @@ def test_sessions_award_permanent_badges_and_credits_once(
     earned = {badge["code"] for badge in data["badges"] if badge["earned"]}
     assert {"first-book", "three-day-reader", "one-week-reader"} <= earned
     first_balance = data["credit_balance"]
+    assert first_balance == 7
 
     second = reward_client.get(
         "/api/v1/rewards/progress", params={"reader_id": reader["id"]}
     ).json()
     assert second["credit_balance"] == first_balance
-    badge_transactions = db_session.scalars(
+    session_transactions = db_session.scalars(
+        select(RewardTransaction).where(
+            RewardTransaction.reader_id == uuid.UUID(reader["id"]),
+            RewardTransaction.transaction_type == "reading_session",
+        )
+    ).all()
+    assert len(session_transactions) == 7
+    assert len(
+        {transaction.idempotency_key for transaction in session_transactions}
+    ) == len(session_transactions)
+    assert not db_session.scalars(
         select(RewardTransaction).where(
             RewardTransaction.reader_id == uuid.UUID(reader["id"]),
             RewardTransaction.transaction_type == "badge_award",
         )
     ).all()
-    assert len(
-        {transaction.idempotency_key for transaction in badge_transactions}
-    ) == len(badge_transactions)
+
+
+def test_session_credits_are_capped_at_two_per_calendar_day(
+    reward_client: TestClient, db_session: Session
+) -> None:
+    reader, book = _create_library(reward_client)
+    session_ids = []
+    for minutes in (10, 15, 20):
+        response = reward_client.post(
+            "/api/v1/reading-sessions",
+            json={
+                "reader_id": reader["id"],
+                "book_id": book["id"],
+                "session_date": date.today().isoformat(),
+                "minutes": minutes,
+                "activity_type": "independent",
+            },
+        )
+        assert response.status_code == 201
+        session_ids.append(response.json()["id"])
+
+    progress_url = "/api/v1/rewards/progress"
+    params = {"reader_id": reader["id"]}
+    assert reward_client.get(progress_url, params=params).json()["credit_balance"] == 2
+    transactions = db_session.scalars(
+        select(RewardTransaction).where(
+            RewardTransaction.reader_id == uuid.UUID(reader["id"]),
+            RewardTransaction.transaction_type == "reading_session",
+        )
+    ).all()
+    assert len(transactions) == 2
+    assert {transaction.amount for transaction in transactions} == {1}
+
+    assert (
+        reward_client.delete(f"/api/v1/reading-sessions/{session_ids[0]}").status_code
+        == 204
+    )
+    assert reward_client.get(progress_url, params=params).json()["credit_balance"] == 2
 
 
 def test_gift_redemption_spends_and_refunds_credits(

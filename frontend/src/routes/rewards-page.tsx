@@ -92,6 +92,9 @@ export function RewardsPage() {
           <p className="mt-2 text-sm text-[#687b74]">
             Celebrate lasting habits and redeem earned credits.
           </p>
+          <p className="mt-1 text-xs font-semibold text-[#527068]">
+            1 credit per logged session · maximum 2 credits per day
+          </p>
         </div>
         <div className="rounded-2xl bg-[#173f36] px-5 py-3 text-white">
           <span className="text-xs text-[#bfd1cb]">Available credits</span>
@@ -108,7 +111,7 @@ export function RewardsPage() {
             New badge earned!
           </h2>
           <p className="mt-1 text-sm text-[#805a2e]">
-            {newBadges.join(", ")} · One reward credit added for each badge.
+            {newBadges.join(", ")} · Keep building your reading habit!
           </p>
         </Card>
       ) : null}
@@ -191,8 +194,8 @@ function ProgressSection({ progress }: { progress: RewardProgress }) {
           ))}
           {upcoming.length === 0 ? (
             <p className="text-sm text-[#687b74]">
-              Every permanent badge is complete. Repeatable bonuses continue
-              automatically.
+              Every permanent badge is complete. Logged reading sessions still
+              earn up to two credits each day.
             </p>
           ) : null}
         </div>

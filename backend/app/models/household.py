@@ -18,6 +18,7 @@ from app.database.base import Base, TimestampMixin, UUIDPrimaryKeyMixin
 
 if TYPE_CHECKING:
     from app.models.book import Book
+    from app.models.book_recommendation import BookRecommendation
     from app.models.reader import Reader
 
 
@@ -38,6 +39,9 @@ class Household(UUIDPrimaryKeyMixin, TimestampMixin, Base):
         back_populates="household", cascade="all, delete-orphan"
     )
     books: Mapped[list["Book"]] = relationship(
+        back_populates="household", cascade="all, delete-orphan"
+    )
+    recommendations: Mapped[list["BookRecommendation"]] = relationship(
         back_populates="household", cascade="all, delete-orphan"
     )
 

@@ -33,7 +33,7 @@ vi.mock("@/features/rewards/reward-api", () => ({
           earned: true,
           earned_at: "2026-08-13T12:00:00Z",
           progress_percent: 100,
-          credit_value: 1,
+          credit_value: 0,
         },
       ],
     },

@@ -1,4 +1,12 @@
-import { BookOpen, Library, Plus, Search, X } from "lucide-react";
+import {
+  BookOpen,
+  Library,
+  Plus,
+  Search,
+  Sparkles,
+  Trash2,
+  X,
+} from "lucide-react";
 import { useState } from "react";
 import { Link } from "react-router-dom";
 
@@ -6,10 +14,17 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { BookEditor } from "@/features/books/book-editor";
 import {
+  type BookRecommendation,
   type BookSearchResult,
   type ReadingStatus,
+  bookCreateFromSearchResult,
+  useAddRecommendedBookToLibrary,
+  useBookRecommendations,
   useBooks,
   useCreateAndAssignBook,
+  useCreateBookRecommendation,
+  useRemoveBookRecommendation,
+  useRemoveFromLibrary,
   useSearchBooks,
   useUpdateBookStatus,
 } from "@/features/books/book-api";
@@ -22,6 +37,12 @@ const filters: { value: ReadingStatus | "all"; label: string }[] = [
   { value: "finished", label: "Finished" },
 ];
 
+const statusLabels: Record<ReadingStatus, string> = {
+  planned: "Want to read",
+  reading: "Reading",
+  finished: "Finished",
+};
+
 export function LibraryPage() {
   const { selectedReaderId } = useReaderSelection();
   const [filter, setFilter] = useState<ReadingStatus | "all">("all");
@@ -29,9 +50,18 @@ export function LibraryPage() {
   const [editing, setEditing] = useState<BookSearchResult | "manual" | null>(
     null,
   );
+  const [bookToRemove, setBookToRemove] = useState<{
+    id: string;
+    title: string;
+  } | null>(null);
   const books = useBooks(selectedReaderId, filter);
+  const recommendations = useBookRecommendations();
   const search = useSearchBooks();
   const create = useCreateAndAssignBook();
+  const createRecommendation = useCreateBookRecommendation();
+  const removeRecommendation = useRemoveBookRecommendation();
+  const removeFromLibrary = useRemoveFromLibrary();
+  const addRecommendation = useAddRecommendedBookToLibrary();
   const statusMutation = useUpdateBookStatus();
 
   if (!selectedReaderId) {
@@ -59,6 +89,19 @@ export function LibraryPage() {
     setEditing(null);
     search.reset();
     setQuery("");
+  }
+
+  async function removeSelectedBook() {
+    if (!bookToRemove) return;
+    try {
+      await removeFromLibrary.mutateAsync({
+        readerId: selectedReaderId!,
+        bookId: bookToRemove.id,
+      });
+      setBookToRemove(null);
+    } catch {
+      // The mutation error remains visible in the confirmation dialog.
+    }
   }
 
   return (
@@ -149,27 +192,62 @@ export function LibraryPage() {
           <h2 className="mb-3 font-serif text-2xl font-bold">Search results</h2>
           {search.data.length ? (
             <div className="grid gap-3 md:grid-cols-2">
-              {search.data.map((result) => (
-                <button
-                  type="button"
-                  key={`${result.source}-${result.external_source_id}`}
-                  onClick={() => setEditing(result)}
-                  className="flex cursor-pointer gap-4 rounded-2xl border border-[#deddd3] bg-white p-4 text-left hover:border-[#dfa260]"
-                >
-                  <BookCover title={result.title} url={result.cover_url} />
-                  <span>
-                    <strong className="block font-serif text-lg text-[#21483e]">
-                      {result.title}
-                    </strong>
-                    <span className="mt-1 block text-sm text-[#687b74]">
-                      {(result.authors ?? []).join(", ") || "Unknown author"}
-                    </span>
-                    <span className="mt-2 block text-xs font-bold text-[#c65c43]">
-                      Review and add
-                    </span>
-                  </span>
-                </button>
-              ))}
+              {search.data.map((result, index) => {
+                const alreadyRecommended = recommendations.data?.some(
+                  ({ book }) =>
+                    book.metadata_source === result.source &&
+                    book.external_source_id === result.external_source_id,
+                );
+                return (
+                  <article
+                    key={`${result.source}-${result.external_source_id ?? `${result.title}-${index}`}`}
+                    className="flex gap-4 rounded-2xl border border-[#deddd3] bg-white p-4 text-left"
+                  >
+                    <BookCover title={result.title} url={result.cover_url} />
+                    <div className="min-w-0 flex-1">
+                      <strong className="block font-serif text-lg text-[#21483e]">
+                        {result.title}
+                      </strong>
+                      <span className="mt-1 block text-sm text-[#687b74]">
+                        {(result.authors ?? []).join(", ") || "Unknown author"}
+                      </span>
+                      <div className="mt-3 flex flex-wrap gap-2">
+                        <Button
+                          type="button"
+                          size="sm"
+                          aria-label={`Review and add ${result.title}`}
+                          onClick={() => setEditing(result)}
+                        >
+                          Add to reader
+                        </Button>
+                        <Button
+                          type="button"
+                          size="sm"
+                          variant="secondary"
+                          disabled={
+                            alreadyRecommended || createRecommendation.isPending
+                          }
+                          onClick={() =>
+                            createRecommendation.mutate({
+                              book: bookCreateFromSearchResult(result),
+                              note: null,
+                            })
+                          }
+                        >
+                          {alreadyRecommended ? "Recommended" : "Recommend"}
+                        </Button>
+                      </div>
+                      {createRecommendation.error &&
+                      createRecommendation.variables?.book
+                        .external_source_id === result.external_source_id ? (
+                        <span className="mt-2 block text-xs text-[#943f30]">
+                          {createRecommendation.error.message}
+                        </span>
+                      ) : null}
+                    </div>
+                  </article>
+                );
+              })}
             </div>
           ) : (
             <p className="text-sm text-[#687b74]">
@@ -178,6 +256,70 @@ export function LibraryPage() {
           )}
         </div>
       ) : null}
+
+      <section className="mb-9" aria-labelledby="recommendations-heading">
+        <div className="mb-4 flex flex-wrap items-end justify-between gap-3">
+          <div>
+            <div className="flex items-center gap-2 text-[#c65c43]">
+              <Sparkles className="size-4" />
+              <p className="text-xs font-bold tracking-[0.14em] uppercase">
+                Teacher &amp; admin picks
+              </p>
+            </div>
+            <h2
+              id="recommendations-heading"
+              className="mt-1 font-serif text-2xl font-bold"
+            >
+              Recommended books
+            </h2>
+            <p className="mt-1 text-sm text-[#687b74]">
+              Search above and choose Recommend to manage this shared list.
+            </p>
+          </div>
+        </div>
+
+        {recommendations.isLoading ? (
+          <p className="text-sm text-[#687b74]">Loading recommendations…</p>
+        ) : null}
+        {recommendations.error ? (
+          <p role="alert" className="text-sm text-[#943f30]">
+            Recommendations could not be loaded. Please try again.
+          </p>
+        ) : null}
+        {recommendations.data?.length === 0 ? (
+          <Card className="border-dashed p-6 text-center">
+            <p className="font-serif text-lg font-bold text-[#31564c]">
+              No recommendations yet
+            </p>
+            <p className="mt-1 text-sm text-[#687b74]">
+              Search for a book, then choose Recommend on its result card.
+            </p>
+          </Card>
+        ) : null}
+        <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
+          {recommendations.data?.map((recommendation) => (
+            <RecommendationCard
+              key={recommendation.id}
+              recommendation={recommendation}
+              readerId={selectedReaderId}
+              isAdding={addRecommendation.isPending}
+              addError={
+                addRecommendation.variables?.bookId === recommendation.book_id
+                  ? addRecommendation.error
+                  : null
+              }
+              onAdd={(status) =>
+                addRecommendation.mutateAsync({
+                  readerId: selectedReaderId,
+                  bookId: recommendation.book_id,
+                  status,
+                })
+              }
+              onRemove={() => removeRecommendation.mutate(recommendation.id)}
+            />
+          ))}
+        </div>
+      </section>
 
       <div className="mb-5 flex flex-wrap gap-2">
         {filters.map((item) => (
@@ -216,11 +358,11 @@ export function LibraryPage() {
             (item) => item.reader_id === selectedReaderId,
           );
           return (
-            <Card key={book.id} className="flex gap-4 p-4">
+            <Card key={book.id} className="relative flex gap-4 p-4">
               <Link to={`/library/${book.id}`}>
                 <BookCover title={book.title} url={book.cover_url} />
               </Link>
-              <div className="min-w-0 flex-1">
+              <div className="min-w-0 flex-1 pr-6">
                 <Link
                   to={`/library/${book.id}`}
                   className="font-serif text-xl font-bold text-[#21483e] hover:text-[#c4543d]"
@@ -247,11 +389,152 @@ export function LibraryPage() {
                   <option value="finished">Finished</option>
                 </select>
               </div>
+              <button
+                type="button"
+                aria-label={`Remove ${book.title} from library`}
+                title="Remove from library"
+                onClick={() =>
+                  setBookToRemove({ id: book.id, title: book.title })
+                }
+                className="absolute top-3 right-3 cursor-pointer rounded-lg p-1.5 text-[#87958f] hover:bg-[#f7e9e5] hover:text-[#a34435]"
+              >
+                <Trash2 className="size-4" />
+              </button>
             </Card>
           );
         })}
       </div>
+
+      {bookToRemove ? (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-[#102f29]/55 p-4">
+          <Card
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="remove-book-heading"
+            className="max-w-md p-7"
+          >
+            <Trash2 className="size-8 text-[#a34435]" />
+            <h2
+              id="remove-book-heading"
+              className="mt-4 font-serif text-2xl font-bold"
+            >
+              Remove {bookToRemove.title}?
+            </h2>
+            <p className="mt-3 text-sm leading-6 text-[#687b74]">
+              This removes the book from the selected reader’s library. It
+              remains available to other readers and in the recommendation pool.
+            </p>
+            {removeFromLibrary.error ? (
+              <p role="alert" className="mt-3 text-sm text-[#943f30]">
+                {removeFromLibrary.error.message}
+              </p>
+            ) : null}
+            <div className="mt-6 flex gap-2">
+              <Button
+                disabled={removeFromLibrary.isPending}
+                onClick={() => void removeSelectedBook()}
+              >
+                {removeFromLibrary.isPending ? "Removing…" : "Remove book"}
+              </Button>
+              <Button
+                variant="secondary"
+                onClick={() => {
+                  removeFromLibrary.reset();
+                  setBookToRemove(null);
+                }}
+              >
+                Cancel
+              </Button>
+            </div>
+          </Card>
+        </div>
+      ) : null}
     </section>
+  );
+}
+
+function RecommendationCard({
+  recommendation,
+  readerId,
+  isAdding,
+  addError,
+  onAdd,
+  onRemove,
+}: {
+  recommendation: BookRecommendation;
+  readerId: string;
+  isAdding: boolean;
+  addError: Error | null;
+  onAdd: (status: ReadingStatus) => Promise<unknown>;
+  onRemove: () => void;
+}) {
+  const [status, setStatus] = useState<ReadingStatus>("planned");
+  const assignment = recommendation.book.reader_books?.find(
+    (item) => item.reader_id === readerId,
+  );
+
+  return (
+    <Card className="relative flex gap-4 border-[#d8d2bd] bg-[#fffdf7] p-4">
+      <BookCover
+        title={recommendation.book.title}
+        url={recommendation.book.cover_url}
+      />
+      <div className="min-w-0 flex-1 pr-6">
+        <h3 className="font-serif text-xl font-bold text-[#21483e]">
+          {recommendation.book.title}
+        </h3>
+        <p className="mt-1 truncate text-sm text-[#687b74]">
+          {(recommendation.book.authors ?? []).join(", ") || "Unknown author"}
+        </p>
+        {recommendation.note ? (
+          <p className="mt-2 text-xs leading-relaxed text-[#596f68]">
+            {recommendation.note}
+          </p>
+        ) : null}
+
+        {assignment ? (
+          <p className="mt-4 inline-flex rounded-full bg-[#e3eee9] px-3 py-1.5 text-xs font-bold text-[#315f53]">
+            In library · {statusLabels[assignment.status]}
+          </p>
+        ) : (
+          <div className="mt-4 flex flex-wrap gap-2">
+            <select
+              aria-label={`Add ${recommendation.book.title} as`}
+              value={status}
+              onChange={(event) =>
+                setStatus(event.target.value as ReadingStatus)
+              }
+              className="rounded-lg border border-[#d7d5c9] bg-white px-2 py-1.5 text-xs font-semibold"
+            >
+              <option value="planned">Want to read</option>
+              <option value="reading">Reading</option>
+              <option value="finished">Finished</option>
+            </select>
+            <Button
+              size="sm"
+              disabled={isAdding}
+              onClick={() => void onAdd(status)}
+            >
+              {isAdding ? "Adding…" : "Add to library"}
+            </Button>
+          </div>
+        )}
+        {addError ? (
+          <p role="alert" className="mt-2 text-xs text-[#943f30]">
+            {addError.message}
+          </p>
+        ) : null}
+      </div>
+      <button
+        type="button"
+        aria-label={`Remove ${recommendation.book.title} from recommendations`}
+        title="Remove recommendation"
+        onClick={onRemove}
+        className="absolute top-3 right-3 cursor-pointer rounded-lg p-1.5 text-[#87958f] hover:bg-[#f7e9e5] hover:text-[#a34435]"
+      >
+        <Trash2 className="size-4" />
+      </button>
+    </Card>
   );
 }
 

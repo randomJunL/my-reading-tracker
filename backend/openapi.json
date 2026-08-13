@@ -231,6 +231,84 @@
         "title": "BookCreate",
         "type": "object"
       },
+      "BookRecommendationCreate": {
+        "properties": {
+          "book": {
+            "$ref": "#/components/schemas/BookCreate"
+          },
+          "note": {
+            "anyOf": [
+              {
+                "maxLength": 1000,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Note"
+          }
+        },
+        "required": [
+          "book"
+        ],
+        "title": "BookRecommendationCreate",
+        "type": "object"
+      },
+      "BookRecommendationResponse": {
+        "properties": {
+          "book": {
+            "$ref": "#/components/schemas/BookResponse"
+          },
+          "book_id": {
+            "format": "uuid",
+            "title": "Book Id",
+            "type": "string"
+          },
+          "created_at": {
+            "format": "date-time",
+            "title": "Created At",
+            "type": "string"
+          },
+          "household_id": {
+            "format": "uuid",
+            "title": "Household Id",
+            "type": "string"
+          },
+          "id": {
+            "format": "uuid",
+            "title": "Id",
+            "type": "string"
+          },
+          "note": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Note"
+          },
+          "updated_at": {
+            "format": "date-time",
+            "title": "Updated At",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "household_id",
+          "book_id",
+          "note",
+          "created_at",
+          "updated_at",
+          "book"
+        ],
+        "title": "BookRecommendationResponse",
+        "type": "object"
+      },
       "BookResponse": {
         "properties": {
           "authors": {
@@ -2976,6 +3054,121 @@
   },
   "openapi": "3.1.0",
   "paths": {
+    "/api/v1/book-recommendations": {
+      "get": {
+        "operationId": "list_book_recommendations_api_v1_book_recommendations_get",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/BookRecommendationResponse"
+                  },
+                  "title": "Response List Book Recommendations Api V1 Book Recommendations Get",
+                  "type": "array"
+                }
+              }
+            },
+            "description": "Successful Response"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "List Book Recommendations",
+        "tags": [
+          "recommendations"
+        ]
+      },
+      "post": {
+        "operationId": "create_book_recommendation_api_v1_book_recommendations_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/BookRecommendationCreate"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BookRecommendationResponse"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "Create Book Recommendation",
+        "tags": [
+          "recommendations"
+        ]
+      }
+    },
+    "/api/v1/book-recommendations/{recommendation_id}": {
+      "delete": {
+        "operationId": "delete_book_recommendation_api_v1_book_recommendations__recommendation_id__delete",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "recommendation_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Recommendation Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "Delete Book Recommendation",
+        "tags": [
+          "recommendations"
+        ]
+      }
+    },
     "/api/v1/book-search": {
       "get": {
         "operationId": "search_books_api_v1_book_search_get",

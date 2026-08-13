@@ -26,6 +26,7 @@ class BadgeCategory(StrEnum):
 
 
 class RewardTransactionType(StrEnum):
+    READING_SESSION = "reading_session"
     BADGE_AWARD = "badge_award"
     BONUS = "bonus"
     REDEMPTION = "redemption"
@@ -46,7 +47,7 @@ class BadgeDefinition(UUIDPrimaryKeyMixin, TimestampMixin, Base):
     __table_args__ = (
         UniqueConstraint("code", name="uq_badge_definitions_code"),
         CheckConstraint("threshold > 0", name="ck_badge_definitions_threshold"),
-        CheckConstraint("credit_value > 0", name="ck_badge_definitions_credit"),
+        CheckConstraint("credit_value >= 0", name="ck_badge_definitions_credit"),
     )
 
     code: Mapped[str] = mapped_column(Text, nullable=False)
@@ -55,7 +56,7 @@ class BadgeDefinition(UUIDPrimaryKeyMixin, TimestampMixin, Base):
     category: Mapped[str] = mapped_column(Text, nullable=False)
     threshold: Mapped[int] = mapped_column(Integer, nullable=False)
     icon_key: Mapped[str] = mapped_column(Text, nullable=False)
-    credit_value: Mapped[int] = mapped_column(Integer, nullable=False, default=1)
+    credit_value: Mapped[int] = mapped_column(Integer, nullable=False, default=0)
     display_order: Mapped[int] = mapped_column(Integer, nullable=False)
     active: Mapped[bool] = mapped_column(Boolean, nullable=False, default=True)
 

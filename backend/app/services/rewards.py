@@ -162,8 +162,8 @@ class RewardService:
         snapshot.finished_books = finished_books
         snapshot.evaluated_at = datetime.now(UTC)
         self.session.flush()
+        self._award_session_credits(reader_id)
         self._award_badges(reader_id, snapshot, max(weekly_days.values(), default=0))
-        self._award_repeatable_bonuses(reader_id, snapshot)
         self.session.commit()
         return snapshot
 
@@ -346,41 +346,25 @@ class RewardService:
                 progress_value=value,
             )
             self.session.add(award)
-            self.session.flush()
-            self._add_transaction(
-                reader_id,
-                definition.credit_value,
-                RewardTransactionType.BADGE_AWARD,
-                award.id,
-                f"Earned {definition.name} badge",
-                f"badge:{reader_id}:{definition.code}",
-                now,
-            )
 
-    def _award_repeatable_bonuses(
-        self, reader_id: uuid.UUID, snapshot: ReaderRewardProgress
-    ) -> None:
-        bonus_rules = [
-            ("books", snapshot.finished_books, 75, 25, "finished books"),
-            (
-                "weekly-streak",
-                snapshot.longest_weekly_streak,
-                16,
-                4,
-                "successful-week streak",
-            ),
-            (
-                "continuous-days",
-                snapshot.longest_continuous_days,
-                90,
-                30,
-                "continuous reading days",
-            ),
-        ]
+    def _award_session_credits(self, reader_id: uuid.UUID) -> None:
+        sessions = self.session.execute(
+            select(ReadingSession.id, ReadingSession.session_date)
+            .where(ReadingSession.reader_id == reader_id)
+            .order_by(
+                ReadingSession.session_date,
+                ReadingSession.created_at,
+                ReadingSession.id,
+            )
+        ).all()
+        sessions_by_date: dict[date, list[uuid.UUID]] = defaultdict(list)
+        for session_id, session_date in sessions:
+            sessions_by_date[session_date].append(session_id)
+
         now = datetime.now(UTC)
-        for code, value, first, interval, label in bonus_rules:
-            for threshold in range(first, value + 1, interval):
-                key = f"bonus:{reader_id}:{code}:{threshold}"
+        for session_date, session_ids in sessions_by_date.items():
+            for slot, session_id in enumerate(session_ids[:2], start=1):
+                key = f"reading-session:{reader_id}:{session_date.isoformat()}:{slot}"
                 if self.session.scalar(
                     select(RewardTransaction.id).where(
                         RewardTransaction.idempotency_key == key
@@ -390,9 +374,9 @@ class RewardService:
                 self._add_transaction(
                     reader_id,
                     1,
-                    RewardTransactionType.BONUS,
-                    None,
-                    f"Reached {threshold} {label}",
+                    RewardTransactionType.READING_SESSION,
+                    session_id,
+                    f"Logged reading session ({slot} of 2 for the day)",
                     key,
                     now,
                 )
