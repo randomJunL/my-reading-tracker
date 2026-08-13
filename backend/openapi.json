@@ -11,6 +11,78 @@
         "title": "ActivityType",
         "type": "string"
       },
+      "BadgeProgress": {
+        "properties": {
+          "badge_id": {
+            "format": "uuid",
+            "title": "Badge Id",
+            "type": "string"
+          },
+          "category": {
+            "title": "Category",
+            "type": "string"
+          },
+          "code": {
+            "title": "Code",
+            "type": "string"
+          },
+          "credit_value": {
+            "title": "Credit Value",
+            "type": "integer"
+          },
+          "current_value": {
+            "title": "Current Value",
+            "type": "integer"
+          },
+          "description": {
+            "title": "Description",
+            "type": "string"
+          },
+          "earned": {
+            "title": "Earned",
+            "type": "boolean"
+          },
+          "earned_at": {
+            "anyOf": [
+              {
+                "format": "date-time",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Earned At"
+          },
+          "name": {
+            "title": "Name",
+            "type": "string"
+          },
+          "progress_percent": {
+            "title": "Progress Percent",
+            "type": "number"
+          },
+          "threshold": {
+            "title": "Threshold",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "badge_id",
+          "code",
+          "name",
+          "description",
+          "category",
+          "threshold",
+          "current_value",
+          "earned",
+          "earned_at",
+          "progress_percent",
+          "credit_value"
+        ],
+        "title": "BadgeProgress",
+        "type": "object"
+      },
       "BookCreate": {
         "properties": {
           "authors": {
@@ -782,6 +854,65 @@
         "title": "CurrentUserResponse",
         "type": "object"
       },
+      "ExportBadgeDefinition": {
+        "properties": {
+          "active": {
+            "title": "Active",
+            "type": "boolean"
+          },
+          "category": {
+            "title": "Category",
+            "type": "string"
+          },
+          "code": {
+            "title": "Code",
+            "type": "string"
+          },
+          "credit_value": {
+            "title": "Credit Value",
+            "type": "integer"
+          },
+          "description": {
+            "title": "Description",
+            "type": "string"
+          },
+          "display_order": {
+            "title": "Display Order",
+            "type": "integer"
+          },
+          "icon_key": {
+            "title": "Icon Key",
+            "type": "string"
+          },
+          "id": {
+            "format": "uuid",
+            "title": "Id",
+            "type": "string"
+          },
+          "name": {
+            "title": "Name",
+            "type": "string"
+          },
+          "threshold": {
+            "title": "Threshold",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "id",
+          "code",
+          "name",
+          "description",
+          "category",
+          "threshold",
+          "icon_key",
+          "credit_value",
+          "display_order",
+          "active"
+        ],
+        "title": "ExportBadgeDefinition",
+        "type": "object"
+      },
       "ExportBook": {
         "properties": {
           "authors": {
@@ -988,6 +1119,68 @@
         "title": "ExportReader",
         "type": "object"
       },
+      "ExportReaderBadge": {
+        "properties": {
+          "badge_definition_id": {
+            "format": "uuid",
+            "title": "Badge Definition Id",
+            "type": "string"
+          },
+          "earned_at": {
+            "format": "date-time",
+            "title": "Earned At",
+            "type": "string"
+          },
+          "id": {
+            "format": "uuid",
+            "title": "Id",
+            "type": "string"
+          },
+          "progress_value": {
+            "title": "Progress Value",
+            "type": "integer"
+          },
+          "reader_id": {
+            "format": "uuid",
+            "title": "Reader Id",
+            "type": "string"
+          },
+          "revocation_reason": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Revocation Reason"
+          },
+          "revoked_at": {
+            "anyOf": [
+              {
+                "format": "date-time",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Revoked At"
+          }
+        },
+        "required": [
+          "id",
+          "reader_id",
+          "badge_definition_id",
+          "earned_at",
+          "progress_value",
+          "revoked_at",
+          "revocation_reason"
+        ],
+        "title": "ExportReaderBadge",
+        "type": "object"
+      },
       "ExportReaderBook": {
         "properties": {
           "book_id": {
@@ -1148,6 +1341,258 @@
           "updated_at"
         ],
         "title": "ExportReadingSession",
+        "type": "object"
+      },
+      "ExportRewardItem": {
+        "properties": {
+          "active": {
+            "title": "Active",
+            "type": "boolean"
+          },
+          "created_at": {
+            "format": "date-time",
+            "title": "Created At",
+            "type": "string"
+          },
+          "credit_cost": {
+            "title": "Credit Cost",
+            "type": "integer"
+          },
+          "description": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Description"
+          },
+          "household_id": {
+            "format": "uuid",
+            "title": "Household Id",
+            "type": "string"
+          },
+          "id": {
+            "format": "uuid",
+            "title": "Id",
+            "type": "string"
+          },
+          "image_url": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Image Url"
+          },
+          "name": {
+            "title": "Name",
+            "type": "string"
+          },
+          "quantity": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Quantity"
+          },
+          "updated_at": {
+            "format": "date-time",
+            "title": "Updated At",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "household_id",
+          "name",
+          "description",
+          "credit_cost",
+          "image_url",
+          "quantity",
+          "active",
+          "created_at",
+          "updated_at"
+        ],
+        "title": "ExportRewardItem",
+        "type": "object"
+      },
+      "ExportRewardRedemption": {
+        "properties": {
+          "approved_at": {
+            "anyOf": [
+              {
+                "format": "date-time",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Approved At"
+          },
+          "cancelled_at": {
+            "anyOf": [
+              {
+                "format": "date-time",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Cancelled At"
+          },
+          "created_at": {
+            "format": "date-time",
+            "title": "Created At",
+            "type": "string"
+          },
+          "credit_cost": {
+            "title": "Credit Cost",
+            "type": "integer"
+          },
+          "fulfilled_at": {
+            "anyOf": [
+              {
+                "format": "date-time",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Fulfilled At"
+          },
+          "id": {
+            "format": "uuid",
+            "title": "Id",
+            "type": "string"
+          },
+          "parent_notes": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Parent Notes"
+          },
+          "reader_id": {
+            "format": "uuid",
+            "title": "Reader Id",
+            "type": "string"
+          },
+          "requested_at": {
+            "format": "date-time",
+            "title": "Requested At",
+            "type": "string"
+          },
+          "reward_item_id": {
+            "format": "uuid",
+            "title": "Reward Item Id",
+            "type": "string"
+          },
+          "reward_name": {
+            "title": "Reward Name",
+            "type": "string"
+          },
+          "status": {
+            "title": "Status",
+            "type": "string"
+          },
+          "updated_at": {
+            "format": "date-time",
+            "title": "Updated At",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "reader_id",
+          "reward_item_id",
+          "reward_name",
+          "credit_cost",
+          "status",
+          "requested_at",
+          "approved_at",
+          "fulfilled_at",
+          "cancelled_at",
+          "parent_notes",
+          "created_at",
+          "updated_at"
+        ],
+        "title": "ExportRewardRedemption",
+        "type": "object"
+      },
+      "ExportRewardTransaction": {
+        "properties": {
+          "amount": {
+            "title": "Amount",
+            "type": "integer"
+          },
+          "created_at": {
+            "format": "date-time",
+            "title": "Created At",
+            "type": "string"
+          },
+          "description": {
+            "title": "Description",
+            "type": "string"
+          },
+          "id": {
+            "format": "uuid",
+            "title": "Id",
+            "type": "string"
+          },
+          "idempotency_key": {
+            "title": "Idempotency Key",
+            "type": "string"
+          },
+          "reader_id": {
+            "format": "uuid",
+            "title": "Reader Id",
+            "type": "string"
+          },
+          "source_id": {
+            "anyOf": [
+              {
+                "format": "uuid",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Source Id"
+          },
+          "transaction_type": {
+            "title": "Transaction Type",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "reader_id",
+          "amount",
+          "transaction_type",
+          "source_id",
+          "description",
+          "idempotency_key",
+          "created_at"
+        ],
+        "title": "ExportRewardTransaction",
         "type": "object"
       },
       "HTTPValidationError": {
@@ -1457,6 +1902,13 @@
       },
       "ReadingDataExport": {
         "properties": {
+          "badge_definitions": {
+            "items": {
+              "$ref": "#/components/schemas/ExportBadgeDefinition"
+            },
+            "title": "Badge Definitions",
+            "type": "array"
+          },
           "books": {
             "items": {
               "$ref": "#/components/schemas/ExportBook"
@@ -1477,6 +1929,13 @@
           "household_name": {
             "title": "Household Name",
             "type": "string"
+          },
+          "reader_badges": {
+            "items": {
+              "$ref": "#/components/schemas/ExportReaderBadge"
+            },
+            "title": "Reader Badges",
+            "type": "array"
           },
           "reader_books": {
             "items": {
@@ -1499,8 +1958,29 @@
             "title": "Reading Sessions",
             "type": "array"
           },
+          "reward_items": {
+            "items": {
+              "$ref": "#/components/schemas/ExportRewardItem"
+            },
+            "title": "Reward Items",
+            "type": "array"
+          },
+          "reward_redemptions": {
+            "items": {
+              "$ref": "#/components/schemas/ExportRewardRedemption"
+            },
+            "title": "Reward Redemptions",
+            "type": "array"
+          },
+          "reward_transactions": {
+            "items": {
+              "$ref": "#/components/schemas/ExportRewardTransaction"
+            },
+            "title": "Reward Transactions",
+            "type": "array"
+          },
           "schema_version": {
-            "default": 1,
+            "default": 2,
             "title": "Schema Version",
             "type": "integer"
           }
@@ -1512,7 +1992,12 @@
           "readers",
           "books",
           "reader_books",
-          "reading_sessions"
+          "reading_sessions",
+          "badge_definitions",
+          "reader_badges",
+          "reward_items",
+          "reward_transactions",
+          "reward_redemptions"
         ],
         "title": "ReadingDataExport",
         "type": "object"
@@ -1803,6 +2288,167 @@
         "title": "ReadingStatus",
         "type": "string"
       },
+      "RedemptionAction": {
+        "properties": {
+          "parent_notes": {
+            "anyOf": [
+              {
+                "maxLength": 1000,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Parent Notes"
+          },
+          "status": {
+            "enum": [
+              "approved",
+              "rejected",
+              "fulfilled",
+              "cancelled"
+            ],
+            "title": "Status",
+            "type": "string"
+          }
+        },
+        "required": [
+          "status"
+        ],
+        "title": "RedemptionAction",
+        "type": "object"
+      },
+      "RedemptionCreate": {
+        "properties": {
+          "reader_id": {
+            "format": "uuid",
+            "title": "Reader Id",
+            "type": "string"
+          },
+          "reward_item_id": {
+            "format": "uuid",
+            "title": "Reward Item Id",
+            "type": "string"
+          }
+        },
+        "required": [
+          "reader_id",
+          "reward_item_id"
+        ],
+        "title": "RedemptionCreate",
+        "type": "object"
+      },
+      "RedemptionResponse": {
+        "properties": {
+          "approved_at": {
+            "anyOf": [
+              {
+                "format": "date-time",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Approved At"
+          },
+          "cancelled_at": {
+            "anyOf": [
+              {
+                "format": "date-time",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Cancelled At"
+          },
+          "created_at": {
+            "format": "date-time",
+            "title": "Created At",
+            "type": "string"
+          },
+          "credit_cost": {
+            "title": "Credit Cost",
+            "type": "integer"
+          },
+          "fulfilled_at": {
+            "anyOf": [
+              {
+                "format": "date-time",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Fulfilled At"
+          },
+          "id": {
+            "format": "uuid",
+            "title": "Id",
+            "type": "string"
+          },
+          "parent_notes": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Parent Notes"
+          },
+          "reader_id": {
+            "format": "uuid",
+            "title": "Reader Id",
+            "type": "string"
+          },
+          "requested_at": {
+            "format": "date-time",
+            "title": "Requested At",
+            "type": "string"
+          },
+          "reward_item_id": {
+            "format": "uuid",
+            "title": "Reward Item Id",
+            "type": "string"
+          },
+          "reward_name": {
+            "title": "Reward Name",
+            "type": "string"
+          },
+          "status": {
+            "title": "Status",
+            "type": "string"
+          },
+          "updated_at": {
+            "format": "date-time",
+            "title": "Updated At",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "reader_id",
+          "reward_item_id",
+          "reward_name",
+          "credit_cost",
+          "status",
+          "requested_at",
+          "approved_at",
+          "fulfilled_at",
+          "cancelled_at",
+          "parent_notes",
+          "created_at",
+          "updated_at"
+        ],
+        "title": "RedemptionResponse",
+        "type": "object"
+      },
       "ReportSession": {
         "properties": {
           "activity_type": {
@@ -1936,6 +2582,344 @@
           "recent_activity"
         ],
         "title": "ReportSummaryResponse",
+        "type": "object"
+      },
+      "RewardItemCreate": {
+        "properties": {
+          "active": {
+            "default": true,
+            "title": "Active",
+            "type": "boolean"
+          },
+          "credit_cost": {
+            "exclusiveMinimum": 0.0,
+            "maximum": 1000.0,
+            "title": "Credit Cost",
+            "type": "integer"
+          },
+          "description": {
+            "anyOf": [
+              {
+                "maxLength": 1000,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Description"
+          },
+          "image_url": {
+            "anyOf": [
+              {
+                "maxLength": 2000,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Image Url"
+          },
+          "name": {
+            "maxLength": 120,
+            "minLength": 1,
+            "title": "Name",
+            "type": "string"
+          },
+          "quantity": {
+            "anyOf": [
+              {
+                "maximum": 10000.0,
+                "minimum": 0.0,
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Quantity"
+          }
+        },
+        "required": [
+          "name",
+          "credit_cost"
+        ],
+        "title": "RewardItemCreate",
+        "type": "object"
+      },
+      "RewardItemResponse": {
+        "properties": {
+          "active": {
+            "title": "Active",
+            "type": "boolean"
+          },
+          "created_at": {
+            "format": "date-time",
+            "title": "Created At",
+            "type": "string"
+          },
+          "credit_cost": {
+            "title": "Credit Cost",
+            "type": "integer"
+          },
+          "description": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Description"
+          },
+          "household_id": {
+            "format": "uuid",
+            "title": "Household Id",
+            "type": "string"
+          },
+          "id": {
+            "format": "uuid",
+            "title": "Id",
+            "type": "string"
+          },
+          "image_url": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Image Url"
+          },
+          "name": {
+            "title": "Name",
+            "type": "string"
+          },
+          "quantity": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Quantity"
+          },
+          "updated_at": {
+            "format": "date-time",
+            "title": "Updated At",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "household_id",
+          "name",
+          "description",
+          "credit_cost",
+          "image_url",
+          "quantity",
+          "active",
+          "created_at",
+          "updated_at"
+        ],
+        "title": "RewardItemResponse",
+        "type": "object"
+      },
+      "RewardItemUpdate": {
+        "properties": {
+          "active": {
+            "anyOf": [
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Active"
+          },
+          "credit_cost": {
+            "anyOf": [
+              {
+                "exclusiveMinimum": 0.0,
+                "maximum": 1000.0,
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Credit Cost"
+          },
+          "description": {
+            "anyOf": [
+              {
+                "maxLength": 1000,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Description"
+          },
+          "image_url": {
+            "anyOf": [
+              {
+                "maxLength": 2000,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Image Url"
+          },
+          "name": {
+            "anyOf": [
+              {
+                "maxLength": 120,
+                "minLength": 1,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Name"
+          },
+          "quantity": {
+            "anyOf": [
+              {
+                "maximum": 10000.0,
+                "minimum": 0.0,
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Quantity"
+          }
+        },
+        "title": "RewardItemUpdate",
+        "type": "object"
+      },
+      "RewardProgressResponse": {
+        "properties": {
+          "badges": {
+            "items": {
+              "$ref": "#/components/schemas/BadgeProgress"
+            },
+            "title": "Badges",
+            "type": "array"
+          },
+          "credit_balance": {
+            "title": "Credit Balance",
+            "type": "integer"
+          },
+          "current_continuous_days": {
+            "title": "Current Continuous Days",
+            "type": "integer"
+          },
+          "current_week_reading_days": {
+            "title": "Current Week Reading Days",
+            "type": "integer"
+          },
+          "current_weekly_streak": {
+            "title": "Current Weekly Streak",
+            "type": "integer"
+          },
+          "finished_books": {
+            "title": "Finished Books",
+            "type": "integer"
+          },
+          "longest_continuous_days": {
+            "title": "Longest Continuous Days",
+            "type": "integer"
+          },
+          "longest_weekly_streak": {
+            "title": "Longest Weekly Streak",
+            "type": "integer"
+          },
+          "reader_id": {
+            "format": "uuid",
+            "title": "Reader Id",
+            "type": "string"
+          }
+        },
+        "required": [
+          "reader_id",
+          "credit_balance",
+          "finished_books",
+          "current_week_reading_days",
+          "current_weekly_streak",
+          "longest_weekly_streak",
+          "current_continuous_days",
+          "longest_continuous_days",
+          "badges"
+        ],
+        "title": "RewardProgressResponse",
+        "type": "object"
+      },
+      "RewardTransactionResponse": {
+        "properties": {
+          "amount": {
+            "title": "Amount",
+            "type": "integer"
+          },
+          "created_at": {
+            "format": "date-time",
+            "title": "Created At",
+            "type": "string"
+          },
+          "description": {
+            "title": "Description",
+            "type": "string"
+          },
+          "id": {
+            "format": "uuid",
+            "title": "Id",
+            "type": "string"
+          },
+          "reader_id": {
+            "format": "uuid",
+            "title": "Reader Id",
+            "type": "string"
+          },
+          "source_id": {
+            "anyOf": [
+              {
+                "format": "uuid",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Source Id"
+          },
+          "transaction_type": {
+            "title": "Transaction Type",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "reader_id",
+          "amount",
+          "transaction_type",
+          "source_id",
+          "description",
+          "created_at"
+        ],
+        "title": "RewardTransactionResponse",
         "type": "object"
       },
       "ValidationError": {
@@ -3374,6 +4358,453 @@
         "summary": "Get Report Summary",
         "tags": [
           "reports"
+        ]
+      }
+    },
+    "/api/v1/reward-items": {
+      "get": {
+        "operationId": "list_reward_items_api_v1_reward_items_get",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "include_inactive",
+            "required": false,
+            "schema": {
+              "default": true,
+              "title": "Include Inactive",
+              "type": "boolean"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/RewardItemResponse"
+                  },
+                  "title": "Response List Reward Items Api V1 Reward Items Get",
+                  "type": "array"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "List Reward Items",
+        "tags": [
+          "rewards"
+        ]
+      },
+      "post": {
+        "operationId": "create_reward_item_api_v1_reward_items_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RewardItemCreate"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RewardItemResponse"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "Create Reward Item",
+        "tags": [
+          "rewards"
+        ]
+      }
+    },
+    "/api/v1/reward-items/{item_id}": {
+      "delete": {
+        "operationId": "retire_reward_item_api_v1_reward_items__item_id__delete",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "item_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Item Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "Retire Reward Item",
+        "tags": [
+          "rewards"
+        ]
+      },
+      "patch": {
+        "operationId": "update_reward_item_api_v1_reward_items__item_id__patch",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "item_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Item Id",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RewardItemUpdate"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RewardItemResponse"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "Update Reward Item",
+        "tags": [
+          "rewards"
+        ]
+      }
+    },
+    "/api/v1/reward-redemptions": {
+      "get": {
+        "operationId": "list_reward_redemptions_api_v1_reward_redemptions_get",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "reader_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Reader Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/RedemptionResponse"
+                  },
+                  "title": "Response List Reward Redemptions Api V1 Reward Redemptions Get",
+                  "type": "array"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "List Reward Redemptions",
+        "tags": [
+          "rewards"
+        ]
+      },
+      "post": {
+        "operationId": "redeem_reward_api_v1_reward_redemptions_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RedemptionCreate"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RedemptionResponse"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "Redeem Reward",
+        "tags": [
+          "rewards"
+        ]
+      }
+    },
+    "/api/v1/reward-redemptions/{redemption_id}": {
+      "patch": {
+        "operationId": "transition_redemption_api_v1_reward_redemptions__redemption_id__patch",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "redemption_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Redemption Id",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RedemptionAction"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RedemptionResponse"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "Transition Redemption",
+        "tags": [
+          "rewards"
+        ]
+      }
+    },
+    "/api/v1/rewards/progress": {
+      "get": {
+        "operationId": "get_reward_progress_api_v1_rewards_progress_get",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "reader_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Reader Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RewardProgressResponse"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "Get Reward Progress",
+        "tags": [
+          "rewards"
+        ]
+      }
+    },
+    "/api/v1/rewards/transactions": {
+      "get": {
+        "operationId": "list_reward_transactions_api_v1_rewards_transactions_get",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "reader_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Reader Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/RewardTransactionResponse"
+                  },
+                  "title": "Response List Reward Transactions Api V1 Rewards Transactions Get",
+                  "type": "array"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "List Reward Transactions",
+        "tags": [
+          "rewards"
         ]
       }
     }

@@ -164,6 +164,21 @@ household. JSON includes a `schema_version` to support future format changes.
 The finished-books report uses `?format=finished-books-csv` and aggregates every
 saved session separately for each reader-book pairing.
 
+## Reward system development
+
+Apply migrations before opening the Rewards page:
+
+```bash
+make backend-migrate
+```
+
+The migration seeds the permanent badge catalog. Saving, editing, or deleting a
+session and changing a reader-book status automatically recalculates progress.
+The Rewards page uses the selected reader from the application header. Badge
+awards, recurring bonuses, spending, and refunds are stored in the transaction
+ledger; never update a displayed balance directly. See `REWARD_SYSTEM_PLAN.md`
+for milestone thresholds and reset behavior.
+
 Before committing backend changes, run the complete check suite:
 
 ```bash

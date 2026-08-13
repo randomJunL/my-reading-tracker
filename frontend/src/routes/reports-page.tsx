@@ -1,10 +1,4 @@
-import {
-  Archive,
-  BookCheck,
-  FileJson,
-  FileSpreadsheet,
-  ShieldCheck,
-} from "lucide-react";
+import { Archive, BookCheck, FileSpreadsheet, ShieldCheck } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
@@ -14,15 +8,6 @@ import {
 } from "@/features/exports/export-api";
 
 const exportOptions = [
-  {
-    format: "json" as const,
-    title: "Complete JSON backup",
-    description:
-      "Download your household, readers, books, library statuses, and every reading session in one structured file.",
-    button: "Download JSON backup",
-    icon: FileJson,
-    color: "bg-[#e4f0eb] text-[#28705f]",
-  },
   {
     format: "csv" as const,
     title: "Reading history spreadsheet",
@@ -55,14 +40,14 @@ export function ReportsPage() {
     <section className="animate-[fade-in_350ms_ease-out]">
       <div className="mb-7">
         <p className="text-xs font-bold tracking-[0.14em] text-[#c65c43] uppercase">
-          Reports and backup
+          Reports and exports
         </p>
         <h1 className="mt-2 font-serif text-4xl font-bold tracking-tight">
           Export reading data
         </h1>
         <p className="mt-3 max-w-2xl text-sm leading-6 text-[#687b74]">
-          Keep a private backup or move the reading log into a spreadsheet.
-          Exports always include only your authenticated household.
+          Download reading history or completed-book details in a spreadsheet.
+          Reports always include only your authenticated household.
         </p>
       </div>
 
@@ -76,7 +61,7 @@ export function ReportsPage() {
         </p>
       ) : null}
 
-      <div className="grid gap-5 lg:grid-cols-3">
+      <div className="grid gap-5 lg:grid-cols-2">
         {exportOptions.map((option) => {
           const Icon = option.icon;
           const isCurrent =

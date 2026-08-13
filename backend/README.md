@@ -129,3 +129,17 @@ unsupported formats return `422`.
 Both responses use dated attachment filenames and only read existing records.
 Exporting does not modify saved data, and records from other households are
 never included.
+
+## Reading rewards
+
+The reward system is documented in `REWARD_SYSTEM_PLAN.md`. Built-in badges
+cover finished books, weekly consistency, consecutive successful weeks, and
+continuous reading days. Progress is recalculated after session and library-
+status changes; permanent badges award idempotent credit-ledger transactions.
+
+`GET /api/v1/rewards/progress` returns badge progress, active and longest runs,
+and the available balance. Household gift CRUD uses `/api/v1/reward-items`,
+while `/api/v1/reward-redemptions` handles pending, approved, rejected,
+fulfilled, and cancelled requests. Rejected or cancelled requests receive an
+idempotent credit refund. Complete JSON backups use schema version 2 and include
+badges, gifts, transactions, and redemptions.

@@ -9,6 +9,10 @@ import {
   useReadingSessions,
 } from "@/features/sessions/session-api";
 import { useReaderSelection } from "@/features/readers/use-reader-selection";
+import {
+  getRewardProgress,
+  useRewardProgress,
+} from "@/features/rewards/reward-api";
 
 export function LogReadingPage() {
   const navigate = useNavigate();
@@ -16,6 +20,7 @@ export function LogReadingPage() {
   const books = useBooks(selectedReaderId, "all");
   const recentSessions = useReadingSessions(selectedReaderId);
   const create = useCreateReadingSession();
+  const rewards = useRewardProgress(selectedReaderId);
   const orderedBooks = orderBooksByRecentSessions(
     books.data ?? [],
     recentSessions.data ?? [],
@@ -76,8 +81,28 @@ export function LogReadingPage() {
               isPending={create.isPending}
               error={create.error}
               onCreate={async (data) => {
+                const previouslyEarned = new Set(
+                  rewards.data?.badges
+                    .filter((badge) => badge.earned)
+                    .map((badge) => badge.code) ?? [],
+                );
                 await create.mutateAsync(data);
-                void navigate("/history");
+                let newBadges: string[] = [];
+                try {
+                  const updated = await getRewardProgress(selectedReaderId);
+                  newBadges = updated.badges
+                    .filter(
+                      (badge) =>
+                        badge.earned && !previouslyEarned.has(badge.code),
+                    )
+                    .map((badge) => badge.name);
+                } catch {
+                  // The reading session is already safely stored. A temporary
+                  // reward-summary failure should not invite a duplicate entry.
+                }
+                void navigate(newBadges.length ? "/rewards" : "/history", {
+                  state: { newBadges },
+                });
               }}
             />
           </div>

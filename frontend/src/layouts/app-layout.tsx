@@ -2,6 +2,7 @@ import {
   ChartNoAxesColumnIncreasing,
   Clock3,
   Home,
+  Gift,
   Library,
   LogOut,
   Menu,
@@ -23,6 +24,7 @@ const primaryNavigation = [
   { label: "Readers", to: "/readers", icon: Users },
   { label: "Library", to: "/library", icon: Library },
   { label: "History", to: "/history", icon: Clock3 },
+  { label: "Rewards", to: "/rewards", icon: Gift },
   { label: "Reports", to: "/reports", icon: ChartNoAxesColumnIncreasing },
 ];
 

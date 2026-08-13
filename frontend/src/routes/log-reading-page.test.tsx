@@ -38,6 +38,11 @@ vi.mock("@/features/sessions/session-api", () => ({
   }),
 }));
 
+vi.mock("@/features/rewards/reward-api", () => ({
+  useRewardProgress: () => ({ data: { badges: [] } }),
+  getRewardProgress: () => Promise.resolve({ badges: [] }),
+}));
+
 describe("LogReadingPage", () => {
   beforeEach(() => vi.clearAllMocks());
 

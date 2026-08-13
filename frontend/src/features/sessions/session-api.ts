@@ -86,4 +86,5 @@ function invalidateSessionData(client: ReturnType<typeof useQueryClient>) {
   void client.invalidateQueries({ queryKey: ["books"] });
   void client.invalidateQueries({ queryKey: ["book"] });
   void client.invalidateQueries({ queryKey: ["reports"] });
+  void client.invalidateQueries({ queryKey: ["rewards"] });
 }

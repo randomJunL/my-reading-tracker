@@ -28,6 +28,23 @@ export function useReportSummary(readerId: string | null, range: ReportRange) {
   });
 }
 
+export function getCalendarReport(readerId: string, range: ReportRange) {
+  const params = new URLSearchParams({
+    reader_id: readerId,
+    date_from: range.dateFrom,
+    date_to: range.dateTo,
+  });
+  return apiFetch<CalendarReport>(`/reports/calendar?${params}`);
+}
+
+export function useCalendarReport(readerId: string | null, range: ReportRange) {
+  return useQuery({
+    queryKey: ["reports", "calendar", readerId, range.dateFrom, range.dateTo],
+    queryFn: () => getCalendarReport(readerId!, range),
+    enabled: Boolean(readerId),
+  });
+}
+
 export function currentWeekRange(now = new Date()): ReportRange {
   const start = new Date(now);
   const day = start.getDay();
@@ -38,6 +55,12 @@ export function currentWeekRange(now = new Date()): ReportRange {
 export function currentMonthRange(now = new Date()): ReportRange {
   const start = new Date(now.getFullYear(), now.getMonth(), 1);
   return { dateFrom: toLocalDate(start), dateTo: toLocalDate(now) };
+}
+
+export function currentCalendarMonthRange(now = new Date()): ReportRange {
+  const start = new Date(now.getFullYear(), now.getMonth(), 1);
+  const end = new Date(now.getFullYear(), now.getMonth() + 1, 0);
+  return { dateFrom: toLocalDate(start), dateTo: toLocalDate(end) };
 }
 
 function toLocalDate(value: Date) {

@@ -54,13 +54,18 @@ def test_json_export_contains_complete_household_reading_data(
     assert "attachment" in response.headers["content-disposition"]
     assert response.headers["content-disposition"].endswith('.json"')
     data = response.json()
-    assert data["schema_version"] == 1
+    assert data["schema_version"] == 2
     assert data["household_name"] == "My Household"
     assert [item["id"] for item in data["readers"]] == [reader["id"]]
     assert [item["id"] for item in data["books"]] == [book["id"]]
     assert data["reader_books"][0]["status"] == "finished"
     assert [item["id"] for item in data["reading_sessions"]] == [reading_session["id"]]
     assert data["reading_sessions"][0]["notes"] == '=HYPERLINK("x"), wow'
+    assert data["badge_definitions"]
+    assert data["reader_badges"]
+    assert data["reward_transactions"]
+    assert data["reward_items"] == []
+    assert data["reward_redemptions"] == []
     assert "Hidden book" not in response.text
 
 

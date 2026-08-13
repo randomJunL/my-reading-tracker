@@ -18,17 +18,16 @@ vi.mock("@/features/exports/export-api", () => ({
 describe("ReportsPage", () => {
   beforeEach(() => vi.clearAllMocks());
 
-  it("offers backup, session, and finished-book downloads", async () => {
+  it("offers session and finished-book spreadsheet downloads", async () => {
     const user = userEvent.setup();
     render(<ReportsPage />);
 
     expect(
       screen.getByRole("heading", { name: "Export reading data" }),
     ).toBeVisible();
-    await user.click(
-      screen.getByRole("button", { name: "Download JSON backup" }),
-    );
-    expect(mocks.mutate).toHaveBeenLastCalledWith("json");
+    expect(
+      screen.queryByRole("button", { name: "Download JSON backup" }),
+    ).not.toBeInTheDocument();
     await user.click(
       screen.getByRole("button", { name: "Download session CSV" }),
     );

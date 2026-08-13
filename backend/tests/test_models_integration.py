@@ -25,12 +25,18 @@ def test_migration_builds_complete_schema(db_session: Session) -> None:
 
     assert table_names == {
         "alembic_version",
+        "badge_definitions",
         "books",
         "household_members",
         "households",
         "reader_books",
+        "reader_badges",
+        "reader_reward_progress",
         "readers",
         "reading_sessions",
+        "reward_items",
+        "reward_redemptions",
+        "reward_transactions",
     }
 
 

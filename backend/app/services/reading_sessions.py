@@ -8,6 +8,7 @@ from app.repositories.books import BookRepository
 from app.repositories.readers import ReaderRepository
 from app.repositories.reading_sessions import ReadingSessionRepository
 from app.schemas.reading_sessions import ReadingSessionCreate, ReadingSessionUpdate
+from app.services.rewards import RewardService
 
 
 class ReadingSessionNotFoundError(Exception):
@@ -66,6 +67,7 @@ class ReadingSessionService:
         self.sessions.add(record)
         self._sync_status(assignment, record)
         self.session.commit()
+        RewardService(self.session).evaluate(data.reader_id, household_id)
         return self.get(record.id, household_id)
 
     def update(
@@ -87,12 +89,15 @@ class ReadingSessionService:
         )
         self._sync_status(assignment, record)
         self.session.commit()
+        RewardService(self.session).evaluate(record.reader_id, household_id)
         return self.get(record.id, household_id)
 
     def delete(self, session_id: uuid.UUID, household_id: uuid.UUID) -> None:
         record = self.get(session_id, household_id)
+        reader_id = record.reader_id
         self.sessions.delete(record)
         self.session.commit()
+        RewardService(self.session).evaluate(reader_id, household_id)
 
     def _get_assignment(
         self, reader_id: uuid.UUID, book_id: uuid.UUID, household_id: uuid.UUID

@@ -9,6 +9,7 @@ from app.api.v1.routes import (
     readers,
     reading_sessions,
     reports,
+    rewards,
 )
 
 api_router = APIRouter()
@@ -20,3 +21,4 @@ api_router.include_router(books.router, tags=["library"])
 api_router.include_router(reading_sessions.router, tags=["reading sessions"])
 api_router.include_router(reports.router, tags=["reports"])
 api_router.include_router(exports.router, tags=["exports"])
+api_router.include_router(rewards.router, tags=["rewards"])

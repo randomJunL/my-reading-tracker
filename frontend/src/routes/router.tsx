@@ -8,6 +8,7 @@ import { LibraryPage } from "@/routes/library-page";
 import { HistoryPage } from "@/routes/history-page";
 import { LogReadingPage } from "@/routes/log-reading-page";
 import { ReportsPage } from "@/routes/reports-page";
+import { RewardsPage } from "@/routes/rewards-page";
 import { ReadersPage } from "@/routes/readers-page";
 import { RouteErrorBoundary } from "@/routes/route-error-boundary";
 import { SignInPage } from "@/routes/sign-in-page";
@@ -29,6 +30,7 @@ export const router = createBrowserRouter([
           { path: "log-reading", element: <LogReadingPage /> },
           { path: "history", element: <HistoryPage /> },
           { path: "reports", element: <ReportsPage /> },
+          { path: "rewards", element: <RewardsPage /> },
         ],
       },
     ],

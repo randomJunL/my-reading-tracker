@@ -2,24 +2,40 @@ import {
   ArrowRight,
   BookCheck,
   BookOpenText,
+  CalendarCheck2,
   CalendarDays,
+  ChevronLeft,
+  ChevronRight,
   Clock3,
 } from "lucide-react";
+import { useState } from "react";
 import { Link } from "react-router-dom";
 
 import { Card } from "@/components/ui/card";
 import { useReaderSelection } from "@/features/readers/use-reader-selection";
 import {
+  type CalendarReport,
+  currentCalendarMonthRange,
   currentMonthRange,
   currentWeekRange,
   type ReportSummary,
+  useCalendarReport,
   useReportSummary,
 } from "@/features/reports/report-api";
+import { useRewardProgress } from "@/features/rewards/reward-api";
 
 export function DashboardPage() {
   const { selectedReaderId } = useReaderSelection();
+  const [calendarMonth, setCalendarMonth] = useState(
+    () => new Date(new Date().getFullYear(), new Date().getMonth(), 1),
+  );
   const week = useReportSummary(selectedReaderId, currentWeekRange());
   const month = useReportSummary(selectedReaderId, currentMonthRange());
+  const calendar = useCalendarReport(
+    selectedReaderId,
+    currentCalendarMonthRange(calendarMonth),
+  );
+  const rewards = useRewardProgress(selectedReaderId);
 
   if (!selectedReaderId) {
     return (
@@ -38,10 +54,17 @@ export function DashboardPage() {
     );
   }
 
-  if (week.isLoading || month.isLoading) {
+  if (week.isLoading || month.isLoading || calendar.isLoading) {
     return <DashboardStatus message="Loading reading progress…" />;
   }
-  if (week.error || month.error || !week.data || !month.data) {
+  if (
+    week.error ||
+    month.error ||
+    calendar.error ||
+    !week.data ||
+    !month.data ||
+    !calendar.data
+  ) {
     return (
       <DashboardStatus
         message="Reading progress could not be loaded. Please try again."
@@ -50,38 +73,48 @@ export function DashboardPage() {
     );
   }
 
-  return <DashboardContent week={week.data} month={month.data} />;
+  return (
+    <DashboardContent
+      week={week.data}
+      month={month.data}
+      calendar={calendar.data}
+      selectedCalendarMonth={calendarMonth}
+      onCalendarMonthChange={setCalendarMonth}
+      rewards={rewards.data}
+    />
+  );
 }
 
 function DashboardContent({
   week,
   month,
+  calendar,
+  selectedCalendarMonth,
+  onCalendarMonthChange,
+  rewards,
 }: {
   week: ReportSummary;
   month: ReportSummary;
+  calendar: CalendarReport;
+  selectedCalendarMonth: Date;
+  onCalendarMonthChange: (month: Date) => void;
+  rewards?: ReturnType<typeof useRewardProgress>["data"];
 }) {
   const hasWeeklyReading = week.sessions_count > 0;
   const cards = [
     {
-      label: "Minutes this week",
-      value: week.total_minutes,
-      note: `${week.sessions_count} reading ${week.sessions_count === 1 ? "session" : "sessions"}`,
-      icon: Clock3,
+      label: "Reading days this month",
+      value: month.reading_days,
+      note: `${month.total_minutes} minutes across ${month.sessions_count} ${month.sessions_count === 1 ? "session" : "sessions"}`,
+      icon: CalendarCheck2,
       color: "bg-[#e4f0eb] text-[#28705f]",
     },
     {
-      label: "Pages this week",
-      value: week.pages_read,
-      note: `${week.reading_days} reading ${week.reading_days === 1 ? "day" : "days"}`,
-      icon: BookOpenText,
+      label: "Books finished so far",
+      value: rewards?.finished_books ?? month.books_finished,
+      note: "Every completed book in this reading journey",
+      icon: BookCheck,
       color: "bg-[#fff0d5] text-[#a6651c]",
-    },
-    {
-      label: "Minutes this month",
-      value: month.total_minutes,
-      note: `${month.books_finished} ${month.books_finished === 1 ? "book" : "books"} finished`,
-      icon: CalendarDays,
-      color: "bg-[#fbe5de] text-[#bb583f]",
     },
   ];
 
@@ -114,7 +147,7 @@ function DashboardContent({
 
       <section
         aria-label="Reading summary"
-        className="grid gap-4 md:grid-cols-3"
+        className="grid gap-4 md:grid-cols-2"
       >
         {cards.map(({ label, value, note, icon: Icon, color }) => (
           <Card key={label} className="p-5 sm:p-6">
@@ -134,11 +167,221 @@ function DashboardContent({
         ))}
       </section>
 
+      {rewards ? (
+        <Card className="mt-5 flex flex-col gap-4 bg-[#173f36] p-5 text-white sm:flex-row sm:items-center sm:justify-between">
+          <div>
+            <p className="text-xs font-bold tracking-wide text-[#f4bd62] uppercase">
+              Reading rewards
+            </p>
+            <p className="mt-1 font-serif text-2xl font-bold">
+              {rewards.credit_balance} available{" "}
+              {rewards.credit_balance === 1 ? "credit" : "credits"}
+            </p>
+            <p className="mt-1 text-xs text-[#bed0ca]">
+              {rewards.current_continuous_days}-day current run ·{" "}
+              {rewards.current_week_reading_days} reading days this week
+            </p>
+          </div>
+          <Link
+            to="/rewards"
+            className="inline-flex h-10 items-center justify-center rounded-xl bg-[#f4bd62] px-4 text-sm font-bold text-[#173f36]"
+          >
+            View badges and gifts
+          </Link>
+        </Card>
+      ) : null}
+
+      <MonthlyReadingCalendar
+        report={calendar}
+        selectedMonth={selectedCalendarMonth}
+        onMonthChange={onCalendarMonthChange}
+      />
+
       <div className="mt-5 grid gap-5 xl:grid-cols-[1.45fr_1fr]">
         <CurrentBooks books={week.current_books} />
         <RecentActivity sessions={week.recent_activity} />
       </div>
     </div>
+  );
+}
+
+const weekDays = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
+const monthNames = Array.from({ length: 12 }, (_, month) =>
+  new Intl.DateTimeFormat(undefined, { month: "long" }).format(
+    new Date(2020, month, 1),
+  ),
+);
+
+function MonthlyReadingCalendar({
+  report,
+  selectedMonth,
+  onMonthChange,
+}: {
+  report: CalendarReport;
+  selectedMonth: Date;
+  onMonthChange: (month: Date) => void;
+}) {
+  const monthStart = parseDate(report.date_from);
+  const year = monthStart.getUTCFullYear();
+  const month = monthStart.getUTCMonth();
+  const daysInMonth = new Date(Date.UTC(year, month + 1, 0)).getUTCDate();
+  const leadingDays = (monthStart.getUTCDay() + 6) % 7;
+  const activityByDate = new Map(report.days.map((day) => [day.date, day]));
+  const monthName = new Intl.DateTimeFormat(undefined, {
+    month: "long",
+    year: "numeric",
+    timeZone: "UTC",
+  }).format(monthStart);
+  const now = new Date();
+  const currentYear = now.getFullYear();
+  const currentMonth = now.getMonth();
+  const selectedYear = selectedMonth.getFullYear();
+  const selectedMonthIndex = selectedMonth.getMonth();
+  const canGoForward =
+    selectedYear < currentYear ||
+    (selectedYear === currentYear && selectedMonthIndex < currentMonth);
+  const earliestYear = Math.min(selectedYear, currentYear - 30);
+  const yearOptions = Array.from(
+    { length: currentYear - earliestYear + 1 },
+    (_, index) => currentYear - index,
+  );
+
+  function moveMonth(offset: number) {
+    onMonthChange(new Date(selectedYear, selectedMonthIndex + offset, 1));
+  }
+
+  function chooseMonth(monthIndex: number) {
+    onMonthChange(new Date(selectedYear, monthIndex, 1));
+  }
+
+  function chooseYear(nextYear: number) {
+    const allowedMonth =
+      nextYear === currentYear
+        ? Math.min(selectedMonthIndex, currentMonth)
+        : selectedMonthIndex;
+    onMonthChange(new Date(nextYear, allowedMonth, 1));
+  }
+
+  return (
+    <Card className="mt-5 overflow-hidden">
+      <div className="flex flex-col gap-4 border-b border-[#eceae2] px-5 py-4 sm:flex-row sm:items-center sm:justify-between sm:px-6">
+        <div>
+          <p className="text-base font-bold text-[#23443b]">Reading calendar</p>
+          <p className="mt-0.5 text-xs text-[#7a8a84]">
+            Daily reading minutes for {monthName}
+          </p>
+        </div>
+        <div className="flex flex-wrap items-center gap-2">
+          <button
+            type="button"
+            aria-label="Previous month"
+            onClick={() => moveMonth(-1)}
+            className="flex size-9 items-center justify-center rounded-lg border border-[#d7d5c9] bg-white text-[#36594f] hover:bg-[#f7f5ef] focus-visible:ring-3 focus-visible:ring-[#f4bd62]/50 focus-visible:outline-none"
+          >
+            <ChevronLeft className="size-4" />
+          </button>
+          <label className="sr-only" htmlFor="calendar-month">
+            Calendar month
+          </label>
+          <select
+            id="calendar-month"
+            aria-label="Calendar month"
+            value={selectedMonthIndex}
+            onChange={(event) => chooseMonth(Number(event.target.value))}
+            className="h-9 rounded-lg border border-[#d7d5c9] bg-white px-2 text-sm font-semibold text-[#294f45] focus:ring-3 focus:ring-[#f4bd62]/50 focus:outline-none"
+          >
+            {monthNames.map((name, index) => (
+              <option
+                key={name}
+                value={index}
+                disabled={selectedYear === currentYear && index > currentMonth}
+              >
+                {name}
+              </option>
+            ))}
+          </select>
+          <label className="sr-only" htmlFor="calendar-year">
+            Calendar year
+          </label>
+          <select
+            id="calendar-year"
+            aria-label="Calendar year"
+            value={selectedYear}
+            onChange={(event) => chooseYear(Number(event.target.value))}
+            className="h-9 rounded-lg border border-[#d7d5c9] bg-white px-2 text-sm font-semibold text-[#294f45] focus:ring-3 focus:ring-[#f4bd62]/50 focus:outline-none"
+          >
+            {yearOptions.map((option) => (
+              <option key={option} value={option}>
+                {option}
+              </option>
+            ))}
+          </select>
+          <button
+            type="button"
+            aria-label="Next month"
+            disabled={!canGoForward}
+            onClick={() => moveMonth(1)}
+            className="flex size-9 items-center justify-center rounded-lg border border-[#d7d5c9] bg-white text-[#36594f] hover:bg-[#f7f5ef] focus-visible:ring-3 focus-visible:ring-[#f4bd62]/50 focus-visible:outline-none disabled:cursor-not-allowed disabled:opacity-40"
+          >
+            <ChevronRight className="size-4" />
+          </button>
+          <span className="hidden size-9 items-center justify-center rounded-lg bg-[#fbe5de] text-[#bb583f] lg:flex">
+            <CalendarDays className="size-4" />
+          </span>
+        </div>
+      </div>
+
+      <div className="p-3 sm:p-6">
+        <div className="grid grid-cols-7 gap-1 sm:gap-2" role="grid">
+          {weekDays.map((day) => (
+            <div
+              key={day}
+              role="columnheader"
+              className="pb-2 text-center text-[10px] font-bold tracking-wide text-[#81908b] uppercase sm:text-xs"
+            >
+              {day}
+            </div>
+          ))}
+          {Array.from({ length: leadingDays }, (_, index) => (
+            <div key={`empty-${index}`} aria-hidden="true" />
+          ))}
+          {Array.from({ length: daysInMonth }, (_, index) => {
+            const dayNumber = index + 1;
+            const date = `${year}-${String(month + 1).padStart(2, "0")}-${String(dayNumber).padStart(2, "0")}`;
+            const activity = activityByDate.get(date);
+
+            return (
+              <div
+                key={date}
+                role="gridcell"
+                aria-label={
+                  activity
+                    ? `${formatDate(date)}: ${activity.minutes} reading minutes across ${activity.sessions_count} ${activity.sessions_count === 1 ? "session" : "sessions"}`
+                    : `${formatDate(date)}: no reading logged`
+                }
+                className={`flex min-h-16 flex-col rounded-xl border p-2 sm:min-h-20 sm:p-3 ${
+                  activity
+                    ? "border-[#b9d8cd] bg-[#e4f0eb] shadow-[inset_0_0_0_1px_rgba(40,112,95,0.05)]"
+                    : "border-[#eceae2] bg-[#fbfaf7]"
+                }`}
+              >
+                <span
+                  className={`text-xs font-bold sm:text-sm ${activity ? "text-[#245f52]" : "text-[#7f8d88]"}`}
+                >
+                  {dayNumber}
+                </span>
+                {activity ? (
+                  <span className="mt-auto text-[10px] leading-tight font-bold text-[#28705f] sm:text-xs">
+                    {activity.minutes}
+                    <span className="ml-0.5 font-medium">min</span>
+                  </span>
+                ) : null}
+              </div>
+            );
+          })}
+        </div>
+      </div>
+    </Card>
   );
 }
 
@@ -335,4 +578,8 @@ function formatDate(value: string) {
     dateStyle: "medium",
     timeZone: "UTC",
   }).format(new Date(`${value}T00:00:00Z`));
+}
+
+function parseDate(value: string) {
+  return new Date(`${value}T00:00:00Z`);
 }

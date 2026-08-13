@@ -2,23 +2,34 @@ import csv
 import uuid
 from datetime import UTC, datetime
 from io import StringIO
+from typing import Any
 
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
 from app.models import (
+    BadgeDefinition,
     Book,
     Household,
     Reader,
+    ReaderBadge,
     ReaderBook,
     ReadingSession,
     ReadingStatus,
+    RewardItem,
+    RewardRedemption,
+    RewardTransaction,
 )
 from app.schemas.exports import (
+    ExportBadgeDefinition,
     ExportBook,
     ExportReader,
+    ExportReaderBadge,
     ExportReaderBook,
     ExportReadingSession,
+    ExportRewardItem,
+    ExportRewardRedemption,
+    ExportRewardTransaction,
     ReadingDataExport,
 )
 
@@ -45,6 +56,21 @@ class ExportService:
         reader_ids = [reader.id for reader in readers]
         reader_books = self._reader_books(reader_ids)
         sessions = self._sessions(reader_ids)
+        badge_definitions = list(
+            self.session.scalars(
+                select(BadgeDefinition).order_by(BadgeDefinition.display_order)
+            )
+        )
+        reader_badges = self._for_readers(ReaderBadge, reader_ids)
+        reward_transactions = self._for_readers(RewardTransaction, reader_ids)
+        reward_redemptions = self._for_readers(RewardRedemption, reader_ids)
+        reward_items = list(
+            self.session.scalars(
+                select(RewardItem)
+                .where(RewardItem.household_id == household.id)
+                .order_by(RewardItem.created_at, RewardItem.id)
+            )
+        )
         return ReadingDataExport(
             exported_at=datetime.now(UTC),
             household_id=household.id,
@@ -63,6 +89,26 @@ class ExportService:
             reading_sessions=[
                 ExportReadingSession.model_validate(item, from_attributes=True)
                 for item in sessions
+            ],
+            badge_definitions=[
+                ExportBadgeDefinition.model_validate(item, from_attributes=True)
+                for item in badge_definitions
+            ],
+            reader_badges=[
+                ExportReaderBadge.model_validate(item, from_attributes=True)
+                for item in reader_badges
+            ],
+            reward_items=[
+                ExportRewardItem.model_validate(item, from_attributes=True)
+                for item in reward_items
+            ],
+            reward_transactions=[
+                ExportRewardTransaction.model_validate(item, from_attributes=True)
+                for item in reward_transactions
+            ],
+            reward_redemptions=[
+                ExportRewardRedemption.model_validate(item, from_attributes=True)
+                for item in reward_redemptions
             ],
         )
 
@@ -197,6 +243,17 @@ class ExportService:
                     ReadingSession.created_at,
                     ReadingSession.id,
                 )
+            )
+        )
+
+    def _for_readers(self, model: Any, reader_ids: list[uuid.UUID]) -> list[Any]:
+        if not reader_ids:
+            return []
+        return list(
+            self.session.scalars(
+                select(model)
+                .where(model.reader_id.in_(reader_ids))
+                .order_by(model.reader_id, model.id)
             )
         )
 

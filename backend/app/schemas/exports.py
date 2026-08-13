@@ -59,8 +59,71 @@ class ExportReadingSession(BaseModel):
     updated_at: datetime
 
 
+class ExportBadgeDefinition(BaseModel):
+    id: uuid.UUID
+    code: str
+    name: str
+    description: str
+    category: str
+    threshold: int
+    icon_key: str
+    credit_value: int
+    display_order: int
+    active: bool
+
+
+class ExportReaderBadge(BaseModel):
+    id: uuid.UUID
+    reader_id: uuid.UUID
+    badge_definition_id: uuid.UUID
+    earned_at: datetime
+    progress_value: int
+    revoked_at: datetime | None
+    revocation_reason: str | None
+
+
+class ExportRewardItem(BaseModel):
+    id: uuid.UUID
+    household_id: uuid.UUID
+    name: str
+    description: str | None
+    credit_cost: int
+    image_url: str | None
+    quantity: int | None
+    active: bool
+    created_at: datetime
+    updated_at: datetime
+
+
+class ExportRewardTransaction(BaseModel):
+    id: uuid.UUID
+    reader_id: uuid.UUID
+    amount: int
+    transaction_type: str
+    source_id: uuid.UUID | None
+    description: str
+    idempotency_key: str
+    created_at: datetime
+
+
+class ExportRewardRedemption(BaseModel):
+    id: uuid.UUID
+    reader_id: uuid.UUID
+    reward_item_id: uuid.UUID
+    reward_name: str
+    credit_cost: int
+    status: str
+    requested_at: datetime
+    approved_at: datetime | None
+    fulfilled_at: datetime | None
+    cancelled_at: datetime | None
+    parent_notes: str | None
+    created_at: datetime
+    updated_at: datetime
+
+
 class ReadingDataExport(BaseModel):
-    schema_version: int = 1
+    schema_version: int = 2
     exported_at: datetime
     household_id: uuid.UUID
     household_name: str
@@ -68,3 +131,8 @@ class ReadingDataExport(BaseModel):
     books: list[ExportBook]
     reader_books: list[ExportReaderBook]
     reading_sessions: list[ExportReadingSession]
+    badge_definitions: list[ExportBadgeDefinition]
+    reader_badges: list[ExportReaderBadge]
+    reward_items: list[ExportRewardItem]
+    reward_transactions: list[ExportRewardTransaction]
+    reward_redemptions: list[ExportRewardRedemption]

@@ -59,6 +59,8 @@ smoke test.
   hooks used by quick logging and history corrections.
 - `src/features/reports` contains date-range report queries and weekly/monthly
   range helpers used by the live dashboard.
+- `src/features/rewards` contains badge progress, gift catalog, credit history,
+  and redemption queries and mutations.
 - `src/features/exports` contains authenticated JSON and CSV download behavior
   used by the Reports page.
 - `src/layouts` contains the responsive application shell.

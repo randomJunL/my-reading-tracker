@@ -269,6 +269,111 @@ export interface paths {
     patch?: never;
     trace?: never;
   };
+  "/api/v1/reward-items": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    /** List Reward Items */
+    get: operations["list_reward_items_api_v1_reward_items_get"];
+    put?: never;
+    /** Create Reward Item */
+    post: operations["create_reward_item_api_v1_reward_items_post"];
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  "/api/v1/reward-items/{item_id}": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get?: never;
+    put?: never;
+    post?: never;
+    /** Retire Reward Item */
+    delete: operations["retire_reward_item_api_v1_reward_items__item_id__delete"];
+    options?: never;
+    head?: never;
+    /** Update Reward Item */
+    patch: operations["update_reward_item_api_v1_reward_items__item_id__patch"];
+    trace?: never;
+  };
+  "/api/v1/reward-redemptions": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    /** List Reward Redemptions */
+    get: operations["list_reward_redemptions_api_v1_reward_redemptions_get"];
+    put?: never;
+    /** Redeem Reward */
+    post: operations["redeem_reward_api_v1_reward_redemptions_post"];
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  "/api/v1/reward-redemptions/{redemption_id}": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get?: never;
+    put?: never;
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    /** Transition Redemption */
+    patch: operations["transition_redemption_api_v1_reward_redemptions__redemption_id__patch"];
+    trace?: never;
+  };
+  "/api/v1/rewards/progress": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    /** Get Reward Progress */
+    get: operations["get_reward_progress_api_v1_rewards_progress_get"];
+    put?: never;
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  "/api/v1/rewards/transactions": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    /** List Reward Transactions */
+    get: operations["list_reward_transactions_api_v1_rewards_transactions_get"];
+    put?: never;
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
 }
 export type webhooks = Record<string, never>;
 export interface components {
@@ -278,6 +383,34 @@ export interface components {
      * @enum {string}
      */
     ActivityType: "independent" | "with_adult" | "read_aloud" | "audiobook";
+    /** BadgeProgress */
+    BadgeProgress: {
+      /**
+       * Badge Id
+       * Format: uuid
+       */
+      badge_id: string;
+      /** Category */
+      category: string;
+      /** Code */
+      code: string;
+      /** Credit Value */
+      credit_value: number;
+      /** Current Value */
+      current_value: number;
+      /** Description */
+      description: string;
+      /** Earned */
+      earned: boolean;
+      /** Earned At */
+      earned_at: string | null;
+      /** Name */
+      name: string;
+      /** Progress Percent */
+      progress_percent: number;
+      /** Threshold */
+      threshold: number;
+    };
     /** BookCreate */
     BookCreate: {
       /** Authors */
@@ -484,6 +617,32 @@ export interface components {
        */
       user_id: string;
     };
+    /** ExportBadgeDefinition */
+    ExportBadgeDefinition: {
+      /** Active */
+      active: boolean;
+      /** Category */
+      category: string;
+      /** Code */
+      code: string;
+      /** Credit Value */
+      credit_value: number;
+      /** Description */
+      description: string;
+      /** Display Order */
+      display_order: number;
+      /** Icon Key */
+      icon_key: string;
+      /**
+       * Id
+       * Format: uuid
+       */
+      id: string;
+      /** Name */
+      name: string;
+      /** Threshold */
+      threshold: number;
+    };
     /** ExportBook */
     ExportBook: {
       /** Authors */
@@ -548,6 +707,35 @@ export interface components {
        * Format: date-time
        */
       updated_at: string;
+    };
+    /** ExportReaderBadge */
+    ExportReaderBadge: {
+      /**
+       * Badge Definition Id
+       * Format: uuid
+       */
+      badge_definition_id: string;
+      /**
+       * Earned At
+       * Format: date-time
+       */
+      earned_at: string;
+      /**
+       * Id
+       * Format: uuid
+       */
+      id: string;
+      /** Progress Value */
+      progress_value: number;
+      /**
+       * Reader Id
+       * Format: uuid
+       */
+      reader_id: string;
+      /** Revocation Reason */
+      revocation_reason: string | null;
+      /** Revoked At */
+      revoked_at: string | null;
     };
     /** ExportReaderBook */
     ExportReaderBook: {
@@ -625,6 +813,116 @@ export interface components {
        * Format: date-time
        */
       updated_at: string;
+    };
+    /** ExportRewardItem */
+    ExportRewardItem: {
+      /** Active */
+      active: boolean;
+      /**
+       * Created At
+       * Format: date-time
+       */
+      created_at: string;
+      /** Credit Cost */
+      credit_cost: number;
+      /** Description */
+      description: string | null;
+      /**
+       * Household Id
+       * Format: uuid
+       */
+      household_id: string;
+      /**
+       * Id
+       * Format: uuid
+       */
+      id: string;
+      /** Image Url */
+      image_url: string | null;
+      /** Name */
+      name: string;
+      /** Quantity */
+      quantity: number | null;
+      /**
+       * Updated At
+       * Format: date-time
+       */
+      updated_at: string;
+    };
+    /** ExportRewardRedemption */
+    ExportRewardRedemption: {
+      /** Approved At */
+      approved_at: string | null;
+      /** Cancelled At */
+      cancelled_at: string | null;
+      /**
+       * Created At
+       * Format: date-time
+       */
+      created_at: string;
+      /** Credit Cost */
+      credit_cost: number;
+      /** Fulfilled At */
+      fulfilled_at: string | null;
+      /**
+       * Id
+       * Format: uuid
+       */
+      id: string;
+      /** Parent Notes */
+      parent_notes: string | null;
+      /**
+       * Reader Id
+       * Format: uuid
+       */
+      reader_id: string;
+      /**
+       * Requested At
+       * Format: date-time
+       */
+      requested_at: string;
+      /**
+       * Reward Item Id
+       * Format: uuid
+       */
+      reward_item_id: string;
+      /** Reward Name */
+      reward_name: string;
+      /** Status */
+      status: string;
+      /**
+       * Updated At
+       * Format: date-time
+       */
+      updated_at: string;
+    };
+    /** ExportRewardTransaction */
+    ExportRewardTransaction: {
+      /** Amount */
+      amount: number;
+      /**
+       * Created At
+       * Format: date-time
+       */
+      created_at: string;
+      /** Description */
+      description: string;
+      /**
+       * Id
+       * Format: uuid
+       */
+      id: string;
+      /** Idempotency Key */
+      idempotency_key: string;
+      /**
+       * Reader Id
+       * Format: uuid
+       */
+      reader_id: string;
+      /** Source Id */
+      source_id: string | null;
+      /** Transaction Type */
+      transaction_type: string;
     };
     /** HTTPValidationError */
     HTTPValidationError: {
@@ -747,6 +1045,8 @@ export interface components {
     };
     /** ReadingDataExport */
     ReadingDataExport: {
+      /** Badge Definitions */
+      badge_definitions: components["schemas"]["ExportBadgeDefinition"][];
       /** Books */
       books: components["schemas"]["ExportBook"][];
       /**
@@ -761,15 +1061,23 @@ export interface components {
       household_id: string;
       /** Household Name */
       household_name: string;
+      /** Reader Badges */
+      reader_badges: components["schemas"]["ExportReaderBadge"][];
       /** Reader Books */
       reader_books: components["schemas"]["ExportReaderBook"][];
       /** Readers */
       readers: components["schemas"]["ExportReader"][];
       /** Reading Sessions */
       reading_sessions: components["schemas"]["ExportReadingSession"][];
+      /** Reward Items */
+      reward_items: components["schemas"]["ExportRewardItem"][];
+      /** Reward Redemptions */
+      reward_redemptions: components["schemas"]["ExportRewardRedemption"][];
+      /** Reward Transactions */
+      reward_transactions: components["schemas"]["ExportRewardTransaction"][];
       /**
        * Schema Version
-       * @default 1
+       * @default 2
        */
       schema_version: number;
     };
@@ -874,6 +1182,76 @@ export interface components {
      * @enum {string}
      */
     ReadingStatus: "planned" | "reading" | "finished";
+    /** RedemptionAction */
+    RedemptionAction: {
+      /** Parent Notes */
+      parent_notes?: string | null;
+      /**
+       * Status
+       * @enum {string}
+       */
+      status: "approved" | "rejected" | "fulfilled" | "cancelled";
+    };
+    /** RedemptionCreate */
+    RedemptionCreate: {
+      /**
+       * Reader Id
+       * Format: uuid
+       */
+      reader_id: string;
+      /**
+       * Reward Item Id
+       * Format: uuid
+       */
+      reward_item_id: string;
+    };
+    /** RedemptionResponse */
+    RedemptionResponse: {
+      /** Approved At */
+      approved_at: string | null;
+      /** Cancelled At */
+      cancelled_at: string | null;
+      /**
+       * Created At
+       * Format: date-time
+       */
+      created_at: string;
+      /** Credit Cost */
+      credit_cost: number;
+      /** Fulfilled At */
+      fulfilled_at: string | null;
+      /**
+       * Id
+       * Format: uuid
+       */
+      id: string;
+      /** Parent Notes */
+      parent_notes: string | null;
+      /**
+       * Reader Id
+       * Format: uuid
+       */
+      reader_id: string;
+      /**
+       * Requested At
+       * Format: date-time
+       */
+      requested_at: string;
+      /**
+       * Reward Item Id
+       * Format: uuid
+       */
+      reward_item_id: string;
+      /** Reward Name */
+      reward_name: string;
+      /** Status */
+      status: string;
+      /**
+       * Updated At
+       * Format: date-time
+       */
+      updated_at: string;
+    };
     /** ReportSession */
     ReportSession: {
       activity_type: components["schemas"]["ActivityType"];
@@ -939,6 +1317,124 @@ export interface components {
       sessions_count: number;
       /** Total Minutes */
       total_minutes: number;
+    };
+    /** RewardItemCreate */
+    RewardItemCreate: {
+      /**
+       * Active
+       * @default true
+       */
+      active: boolean;
+      /** Credit Cost */
+      credit_cost: number;
+      /** Description */
+      description?: string | null;
+      /** Image Url */
+      image_url?: string | null;
+      /** Name */
+      name: string;
+      /** Quantity */
+      quantity?: number | null;
+    };
+    /** RewardItemResponse */
+    RewardItemResponse: {
+      /** Active */
+      active: boolean;
+      /**
+       * Created At
+       * Format: date-time
+       */
+      created_at: string;
+      /** Credit Cost */
+      credit_cost: number;
+      /** Description */
+      description: string | null;
+      /**
+       * Household Id
+       * Format: uuid
+       */
+      household_id: string;
+      /**
+       * Id
+       * Format: uuid
+       */
+      id: string;
+      /** Image Url */
+      image_url: string | null;
+      /** Name */
+      name: string;
+      /** Quantity */
+      quantity: number | null;
+      /**
+       * Updated At
+       * Format: date-time
+       */
+      updated_at: string;
+    };
+    /** RewardItemUpdate */
+    RewardItemUpdate: {
+      /** Active */
+      active?: boolean | null;
+      /** Credit Cost */
+      credit_cost?: number | null;
+      /** Description */
+      description?: string | null;
+      /** Image Url */
+      image_url?: string | null;
+      /** Name */
+      name?: string | null;
+      /** Quantity */
+      quantity?: number | null;
+    };
+    /** RewardProgressResponse */
+    RewardProgressResponse: {
+      /** Badges */
+      badges: components["schemas"]["BadgeProgress"][];
+      /** Credit Balance */
+      credit_balance: number;
+      /** Current Continuous Days */
+      current_continuous_days: number;
+      /** Current Week Reading Days */
+      current_week_reading_days: number;
+      /** Current Weekly Streak */
+      current_weekly_streak: number;
+      /** Finished Books */
+      finished_books: number;
+      /** Longest Continuous Days */
+      longest_continuous_days: number;
+      /** Longest Weekly Streak */
+      longest_weekly_streak: number;
+      /**
+       * Reader Id
+       * Format: uuid
+       */
+      reader_id: string;
+    };
+    /** RewardTransactionResponse */
+    RewardTransactionResponse: {
+      /** Amount */
+      amount: number;
+      /**
+       * Created At
+       * Format: date-time
+       */
+      created_at: string;
+      /** Description */
+      description: string;
+      /**
+       * Id
+       * Format: uuid
+       */
+      id: string;
+      /**
+       * Reader Id
+       * Format: uuid
+       */
+      reader_id: string;
+      /** Source Id */
+      source_id: string | null;
+      /** Transaction Type */
+      transaction_type: string;
     };
     /** ValidationError */
     ValidationError: {
@@ -1728,6 +2224,295 @@ export interface operations {
         };
         content: {
           "application/json": components["schemas"]["ReportSummaryResponse"];
+        };
+      };
+      /** @description Validation Error */
+      422: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["HTTPValidationError"];
+        };
+      };
+    };
+  };
+  list_reward_items_api_v1_reward_items_get: {
+    parameters: {
+      query?: {
+        include_inactive?: boolean;
+      };
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      /** @description Successful Response */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["RewardItemResponse"][];
+        };
+      };
+      /** @description Validation Error */
+      422: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["HTTPValidationError"];
+        };
+      };
+    };
+  };
+  create_reward_item_api_v1_reward_items_post: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    requestBody: {
+      content: {
+        "application/json": components["schemas"]["RewardItemCreate"];
+      };
+    };
+    responses: {
+      /** @description Successful Response */
+      201: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["RewardItemResponse"];
+        };
+      };
+      /** @description Validation Error */
+      422: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["HTTPValidationError"];
+        };
+      };
+    };
+  };
+  retire_reward_item_api_v1_reward_items__item_id__delete: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        item_id: string;
+      };
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      /** @description Successful Response */
+      204: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content?: never;
+      };
+      /** @description Validation Error */
+      422: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["HTTPValidationError"];
+        };
+      };
+    };
+  };
+  update_reward_item_api_v1_reward_items__item_id__patch: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        item_id: string;
+      };
+      cookie?: never;
+    };
+    requestBody: {
+      content: {
+        "application/json": components["schemas"]["RewardItemUpdate"];
+      };
+    };
+    responses: {
+      /** @description Successful Response */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["RewardItemResponse"];
+        };
+      };
+      /** @description Validation Error */
+      422: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["HTTPValidationError"];
+        };
+      };
+    };
+  };
+  list_reward_redemptions_api_v1_reward_redemptions_get: {
+    parameters: {
+      query: {
+        reader_id: string;
+      };
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      /** @description Successful Response */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["RedemptionResponse"][];
+        };
+      };
+      /** @description Validation Error */
+      422: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["HTTPValidationError"];
+        };
+      };
+    };
+  };
+  redeem_reward_api_v1_reward_redemptions_post: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    requestBody: {
+      content: {
+        "application/json": components["schemas"]["RedemptionCreate"];
+      };
+    };
+    responses: {
+      /** @description Successful Response */
+      201: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["RedemptionResponse"];
+        };
+      };
+      /** @description Validation Error */
+      422: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["HTTPValidationError"];
+        };
+      };
+    };
+  };
+  transition_redemption_api_v1_reward_redemptions__redemption_id__patch: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        redemption_id: string;
+      };
+      cookie?: never;
+    };
+    requestBody: {
+      content: {
+        "application/json": components["schemas"]["RedemptionAction"];
+      };
+    };
+    responses: {
+      /** @description Successful Response */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["RedemptionResponse"];
+        };
+      };
+      /** @description Validation Error */
+      422: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["HTTPValidationError"];
+        };
+      };
+    };
+  };
+  get_reward_progress_api_v1_rewards_progress_get: {
+    parameters: {
+      query: {
+        reader_id: string;
+      };
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      /** @description Successful Response */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["RewardProgressResponse"];
+        };
+      };
+      /** @description Validation Error */
+      422: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["HTTPValidationError"];
+        };
+      };
+    };
+  };
+  list_reward_transactions_api_v1_rewards_transactions_get: {
+    parameters: {
+      query: {
+        reader_id: string;
+      };
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      /** @description Successful Response */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["RewardTransactionResponse"][];
         };
       };
       /** @description Validation Error */

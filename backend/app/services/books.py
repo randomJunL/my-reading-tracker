@@ -6,6 +6,7 @@ from app.models import Book, ReaderBook, ReadingStatus
 from app.repositories.books import BookRepository
 from app.repositories.readers import ReaderRepository
 from app.schemas.books import BookCreate, BookUpdate, ReaderBookCreate, ReaderBookUpdate
+from app.services.rewards import RewardService
 
 
 class BookNotFoundError(Exception):
@@ -98,6 +99,7 @@ class BookService:
         self.books.add(assignment)
         self.session.commit()
         self.session.refresh(assignment)
+        RewardService(self.session).evaluate(reader_id, household_id)
         return assignment
 
     def update_assignment(
@@ -117,6 +119,7 @@ class BookService:
             setattr(assignment, field, value)
         self.session.commit()
         self.session.refresh(assignment)
+        RewardService(self.session).evaluate(reader_id, household_id)
         return assignment
 
     def remove_assignment(
