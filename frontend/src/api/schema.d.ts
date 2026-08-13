@@ -92,6 +92,23 @@ export interface paths {
     patch?: never;
     trace?: never;
   };
+  "/api/v1/exports/school-reading-report": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    /** Export School Reading Report */
+    get: operations["export_school_reading_report_api_v1_exports_school_reading_report_get"];
+    put?: never;
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
   "/api/v1/health": {
     parameters: {
       query?: never;
@@ -1704,6 +1721,40 @@ export interface operations {
         content: {
           "application/json": components["schemas"]["ReadingDataExport"];
           "text/csv": unknown;
+        };
+      };
+      /** @description Validation Error */
+      422: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["HTTPValidationError"];
+        };
+      };
+    };
+  };
+  export_school_reading_report_api_v1_exports_school_reading_report_get: {
+    parameters: {
+      query: {
+        reader_id: string;
+        date_from: string;
+        date_to: string;
+      };
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      /** @description Printable school reading achievement report */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": unknown;
+          "application/pdf": unknown;
         };
       };
       /** @description Validation Error */

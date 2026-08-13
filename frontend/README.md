@@ -61,8 +61,8 @@ smoke test.
   range helpers used by the live dashboard.
 - `src/features/rewards` contains badge progress, gift catalog, credit history,
   and redemption queries and mutations.
-- `src/features/exports` contains authenticated JSON and CSV download behavior
-  used by the Reports page.
+- `src/features/exports` contains authenticated JSON, CSV, and printable school
+  PDF download behavior used by the Reports page.
 - `src/layouts` contains the responsive application shell.
 - `src/routes` contains route-level screens and error handling.
 - `src/test` contains shared Vitest setup.

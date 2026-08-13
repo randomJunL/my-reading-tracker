@@ -3463,6 +3463,73 @@
         ]
       }
     },
+    "/api/v1/exports/school-reading-report": {
+      "get": {
+        "operationId": "export_school_reading_report_api_v1_exports_school_reading_report_get",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "reader_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Reader Id",
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "date_from",
+            "required": true,
+            "schema": {
+              "format": "date",
+              "title": "Date From",
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "date_to",
+            "required": true,
+            "schema": {
+              "format": "date",
+              "title": "Date To",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {}
+              },
+              "application/pdf": {}
+            },
+            "description": "Printable school reading achievement report"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "Export School Reading Report",
+        "tags": [
+          "exports"
+        ]
+      }
+    },
     "/api/v1/health": {
       "get": {
         "operationId": "health_check_api_v1_health_get",

@@ -126,7 +126,14 @@ including completion date, total reading time, pages, session count, first and
 last reading dates, book length, and ISBN. The default format is JSON;
 unsupported formats return `422`.
 
-Both responses use dated attachment filenames and only read existing records.
+`GET /api/v1/exports/school-reading-report` accepts `reader_id`, `date_from`,
+and `date_to` and returns a printable one-page PDF achievement report. It
+includes the reader and household names, reporting period, minutes, reading
+days, longest continuous run within the period, finished books with start and
+finish dates, pages, and session totals. The selected reader must belong to the
+authenticated household.
+
+All exports use dated attachment filenames and only read existing records.
 Exporting does not modify saved data, and records from other households are
 never included.
 

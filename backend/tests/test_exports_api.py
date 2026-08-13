@@ -7,6 +7,7 @@ from typing import Any
 
 import pytest
 from fastapi.testclient import TestClient
+from pypdf import PdfReader
 from sqlalchemy.orm import Session
 
 from app.api.dependencies.auth import get_current_user
@@ -143,6 +144,85 @@ def test_finished_books_export_aggregates_each_readers_book(
             "ISBN-13": "",
         }
     ]
+
+
+def test_school_report_pdf_is_printable_and_reader_scoped(
+    export_client: TestClient, db_session: Session
+) -> None:
+    reader, book, _ = _seed_reading(export_client)
+    _seed_other_household(db_session)
+    missing_finished_date = export_client.patch(
+        f"/api/v1/readers/{reader['id']}/books/{book['id']}",
+        json={"finished_at": None},
+    )
+    assert missing_finished_date.status_code == 200
+    later_session = export_client.post(
+        "/api/v1/reading-sessions",
+        json={
+            "reader_id": reader["id"],
+            "book_id": book["id"],
+            "session_date": "2026-08-13",
+            "minutes": 5,
+            "start_page": 35,
+            "end_page": 40,
+            "activity_type": "independent",
+        },
+    )
+    assert later_session.status_code == 201
+    status_only_book = export_client.post(
+        "/api/v1/books",
+        json={
+            "title": "Finished From Library Status",
+            "authors": ["A. Teacher"],
+            "metadata_source": "manual",
+        },
+    ).json()
+    status_only_assignment = export_client.post(
+        f"/api/v1/readers/{reader['id']}/books",
+        json={"book_id": status_only_book["id"], "status": "finished"},
+    )
+    assert status_only_assignment.status_code == 201
+    status_only_session = export_client.post(
+        "/api/v1/reading-sessions",
+        json={
+            "reader_id": reader["id"],
+            "book_id": status_only_book["id"],
+            "session_date": "2026-08-11",
+            "minutes": 10,
+            "activity_type": "independent",
+        },
+    )
+    assert status_only_session.status_code == 201
+
+    response = export_client.get(
+        "/api/v1/exports/school-reading-report",
+        params={
+            "reader_id": reader["id"],
+            "date_from": "2026-08-01",
+            "date_to": "2026-08-31",
+        },
+    )
+
+    assert response.status_code == 200
+    assert response.headers["content-type"] == "application/pdf"
+    assert response.headers["content-disposition"].startswith(
+        'attachment; filename="reading-achievement-maya-'
+    )
+    assert response.content.startswith(b"%PDF")
+    pdf = PdfReader(io.BytesIO(response.content))
+    assert len(pdf.pages) == 1
+    text = "\n".join(page.extract_text() for page in pdf.pages)
+    assert "READING ACHIEVEMENT REPORT" in text
+    assert "Maya" in text
+    assert "Aug 01, 2026 - Aug 31, 2026" in text
+    assert "A Book, With Commas" in text
+    assert "Finished From Library Status" in text
+    assert " 2\nBOOKS FINISHED" in text
+    assert "Aug 12, 2026" in text
+    assert "25" in text
+    assert "ACHIEVEMENTS EARNED" not in text
+    assert "TEACHER NOTES" not in text
+    assert "Hidden reader" not in text
 
 
 def test_empty_export_and_invalid_format(export_client: TestClient) -> None:
