@@ -1,5 +1,10 @@
 import { expect, test } from "@playwright/test";
 
+test.skip(
+  process.env.E2E_AUTH_BYPASS === "true",
+  "Runs in the separate signed-out browser pass",
+);
+
 test("protects the reading dashboard from signed-out visitors", async ({
   page,
 }) => {

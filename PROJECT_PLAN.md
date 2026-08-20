@@ -473,6 +473,10 @@ Exit criteria:
 
 ### Step 12: Complete testing and security review
 
+Status: implemented on 2026-08-14. Automated checks and the review record live
+in `.github/workflows/ci.yml`, `frontend/e2e`, `backend/scripts/run_e2e.py`, and
+`docs/security-review.md`.
+
 Tasks:
 
 1. Unit-test calculations, validation, and metadata normalization.
@@ -496,6 +500,11 @@ Exit criteria:
 - No known high-severity security or data-loss issue remains.
 
 ### Step 13: Deploy the first release
+
+Status: repository deployment configuration and operating procedures were
+implemented on 2026-08-15. Creating the production Supabase, Render, and Vercel
+resources and completing production smoke tests require the account-specific
+URLs and credentials.
 
 Tasks:
 

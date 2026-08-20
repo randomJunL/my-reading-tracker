@@ -37,3 +37,34 @@ def test_auth_bypass_is_rejected_outside_development(app_env: str) -> None:
             app_env=app_env,
             dev_auth_bypass=True,
         )
+
+
+def test_production_requires_remote_database_auth_and_exact_https_cors() -> None:
+    with pytest.raises(ValidationError, match="Invalid production configuration"):
+        Settings(
+            _env_file=None,
+            app_env="production",
+        )
+
+
+def test_production_rejects_wildcard_or_local_cors() -> None:
+    with pytest.raises(ValidationError, match="exact HTTPS production origins"):
+        Settings(
+            _env_file=None,
+            app_env="production",
+            database_url="postgresql+psycopg://user:password@db.example.com/app",
+            cors_origins="https://*.example.com,http://localhost:5173",
+            supabase_url="https://project.supabase.co",
+        )
+
+
+def test_valid_production_configuration_is_accepted() -> None:
+    settings = Settings(
+        _env_file=None,
+        app_env="production",
+        database_url="postgresql+psycopg://user:password@db.example.com/app",
+        cors_origins="https://reading.example.com",
+        supabase_url="https://project.supabase.co",
+    )
+
+    assert settings.app_env == "production"

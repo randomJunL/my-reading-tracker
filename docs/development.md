@@ -226,6 +226,22 @@ Playwright is configured separately for browser smoke tests:
 make frontend-e2e
 ```
 
+This command creates a uniquely named PostgreSQL database, applies and checks
+all migrations, runs both signed-out and authenticated primary-workflow tests,
+and removes the database afterward. It requires the local PostgreSQL service
+and Playwright Chromium. It never writes browser-test data to the normal
+development database.
+
+Run the same workflow against Chromium, Firefox, and WebKit with:
+
+```bash
+E2E_ALL_BROWSERS=true make frontend-e2e
+```
+
+Install those browser binaries once with `pnpm --dir frontend exec playwright
+install chromium firefox webkit`. See `docs/security-review.md` for the Step 12
+review and the remaining manual release checks.
+
 ## Local PostgreSQL
 
 Start the database and wait for its health check:
@@ -257,12 +273,12 @@ starts with an empty database. It never affects a hosted Supabase database.
 
 ## Planned local ports
 
-| Service | Address |
-| --- | --- |
-| React website | `http://localhost:5173` |
-| FastAPI | `http://localhost:8000` |
+| Service               | Address                      |
+| --------------------- | ---------------------------- |
+| React website         | `http://localhost:5173`      |
+| FastAPI               | `http://localhost:8000`      |
 | FastAPI documentation | `http://localhost:8000/docs` |
-| PostgreSQL | `localhost:5432` |
+| PostgreSQL            | `localhost:5432`             |
 
 ## Development conventions
 

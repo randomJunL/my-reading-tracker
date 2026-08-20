@@ -62,7 +62,10 @@ def test_sessions_award_permanent_badges_and_session_credits_once(
     earned = {badge["code"] for badge in data["badges"] if badge["earned"]}
     assert {"first-book", "three-day-reader", "one-week-reader"} <= earned
     first_balance = data["credit_balance"]
-    assert first_balance == 7
+    earned_credit_value = sum(
+        badge["credit_value"] for badge in data["badges"] if badge["earned"]
+    )
+    assert first_balance == 7 + earned_credit_value
 
     second = reward_client.get(
         "/api/v1/rewards/progress", params={"reader_id": reader["id"]}
@@ -78,12 +81,18 @@ def test_sessions_award_permanent_badges_and_session_credits_once(
     assert len(
         {transaction.idempotency_key for transaction in session_transactions}
     ) == len(session_transactions)
-    assert not db_session.scalars(
+    badge_transactions = db_session.scalars(
         select(RewardTransaction).where(
             RewardTransaction.reader_id == uuid.UUID(reader["id"]),
             RewardTransaction.transaction_type == "badge_award",
         )
     ).all()
+    assert sum(transaction.amount for transaction in badge_transactions) == (
+        earned_credit_value
+    )
+    assert len({item.idempotency_key for item in badge_transactions}) == len(
+        badge_transactions
+    )
 
 
 def test_session_credits_are_capped_at_two_per_calendar_day(
@@ -125,7 +134,7 @@ def test_session_credits_are_capped_at_two_per_calendar_day(
 
 
 def test_gift_redemption_spends_and_refunds_credits(
-    reward_client: TestClient,
+    reward_client: TestClient, db_session: Session
 ) -> None:
     reader, book = _create_library(reward_client)
     finished = reward_client.post(
@@ -136,7 +145,6 @@ def test_gift_redemption_spends_and_refunds_credits(
             "session_date": date.today().isoformat(),
             "minutes": 10,
             "activity_type": "independent",
-            "finished_book": True,
         },
     )
     assert finished.status_code == 201
@@ -156,6 +164,23 @@ def test_gift_redemption_spends_and_refunds_credits(
     )
     assert redemption.status_code == 201
     assert redemption.json()["status"] == "pending"
+    updated = reward_client.patch(
+        f"/api/v1/reward-items/{gift.json()['id']}",
+        json={
+            "name": "Choose a movie",
+            "description": "Family movie night",
+            "credit_cost": 5,
+            "quantity": 4,
+            "active": False,
+        },
+    )
+    assert updated.status_code == 200
+    assert updated.json()["name"] == "Choose a movie"
+    snapshot = reward_client.get(
+        "/api/v1/reward-redemptions", params={"reader_id": reader["id"]}
+    ).json()[0]
+    assert snapshot["reward_name"] == "Choose dessert"
+    assert snapshot["credit_cost"] == 1
     balance_after_spend = reward_client.get(
         "/api/v1/rewards/progress", params={"reader_id": reader["id"]}
     ).json()["credit_balance"]
@@ -171,15 +196,29 @@ def test_gift_redemption_spends_and_refunds_credits(
         "/api/v1/rewards/progress", params={"reader_id": reader["id"]}
     ).json()["credit_balance"]
     assert balance_after_refund == 1
-    items = reward_client.get("/api/v1/reward-items").json()
-    assert items[0]["quantity"] == 2
     assert (
         reward_client.delete(f"/api/v1/reward-items/{gift.json()['id']}").status_code
-        == 409
+        == 204
     )
+    assert reward_client.get("/api/v1/reward-items").json() == []
+    history = reward_client.get(
+        "/api/v1/reward-redemptions", params={"reader_id": reader["id"]}
+    ).json()
+    assert history[0]["reward_name"] == "Choose dessert"
+    deleted = db_session.get(RewardItem, uuid.UUID(gift.json()["id"]))
+    assert deleted is not None
+    assert deleted.active is False
+    assert deleted.deleted_at is not None
+    unavailable = reward_client.post(
+        "/api/v1/reward-redemptions",
+        json={"reader_id": reader["id"], "reward_item_id": gift.json()["id"]},
+    )
+    assert unavailable.status_code == 404
 
 
-def test_unused_gift_can_be_deleted(reward_client: TestClient) -> None:
+def test_unused_gift_is_soft_deleted(
+    reward_client: TestClient, db_session: Session
+) -> None:
     gift = reward_client.post(
         "/api/v1/reward-items",
         json={"name": "Choose a game", "credit_cost": 2},
@@ -191,6 +230,9 @@ def test_unused_gift_can_be_deleted(reward_client: TestClient) -> None:
         == 204
     )
     assert reward_client.get("/api/v1/reward-items").json() == []
+    deleted = db_session.get(RewardItem, uuid.UUID(gift.json()["id"]))
+    assert deleted is not None
+    assert deleted.deleted_at is not None
 
 
 def test_rewards_are_household_scoped(

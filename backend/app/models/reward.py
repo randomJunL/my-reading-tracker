@@ -132,6 +132,7 @@ class RewardItem(UUIDPrimaryKeyMixin, TimestampMixin, Base):
     image_url: Mapped[str | None] = mapped_column(Text)
     quantity: Mapped[int | None] = mapped_column(Integer)
     active: Mapped[bool] = mapped_column(Boolean, nullable=False, default=True)
+    deleted_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
 
 
 class RewardRedemption(UUIDPrimaryKeyMixin, TimestampMixin, Base):

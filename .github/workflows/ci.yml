@@ -1,0 +1,85 @@
+name: CI
+
+on:
+  push:
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:17-alpine
+        env:
+          POSTGRES_DB: my_reading_tracker
+          POSTGRES_USER: my_reading_tracker
+          POSTGRES_PASSWORD: my_reading_tracker_local
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U my_reading_tracker -d my_reading_tracker"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+
+    env:
+      APP_ENV: test
+      DATABASE_URL: postgresql+psycopg://my_reading_tracker:my_reading_tracker_local@127.0.0.1:5432/my_reading_tracker
+      DEV_AUTH_BYPASS: "false"
+      E2E_ALL_BROWSERS: "true"
+
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: actions/setup-python@v7
+        with:
+          python-version: "3.12"
+          cache: pip
+          cache-dependency-path: backend/pyproject.toml
+
+      - uses: actions/setup-node@v7
+        with:
+          node-version: "24"
+          package-manager-cache: false
+
+      - name: Install pnpm
+        run: npm install --global pnpm@10.4.0
+
+      - name: Install backend dependencies
+        run: |
+          python -m venv .venv
+          .venv/bin/python -m pip install --upgrade pip
+          .venv/bin/python -m pip install --editable "backend[dev]"
+
+      - name: Install frontend dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Install browser test dependencies
+        run: pnpm --dir frontend exec playwright install --with-deps chromium firefox webkit
+
+      - name: Check backend
+        run: make backend-check
+
+      - name: Build production API image
+        run: docker build --file backend/Dockerfile --tag my-reading-tracker-backend backend
+
+      - name: Check frontend
+        run: pnpm --dir frontend check
+
+      - name: Check deployment configuration formatting
+        run: pnpm --dir frontend exec prettier --check ../render.yaml vercel.json ../docs/deployment.md
+
+      - name: Check generated API contract
+        run: |
+          cd backend
+          ../.venv/bin/python scripts/export_openapi.py
+          cd ../frontend
+          pnpm api:generate
+          cd ..
+          git diff --exit-code -- backend/openapi.json frontend/src/api/schema.d.ts
+
+      - name: Run primary browser workflows
+        run: .venv/bin/python backend/scripts/run_e2e.py

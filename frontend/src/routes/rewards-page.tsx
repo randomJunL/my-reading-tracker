@@ -6,6 +6,7 @@ import {
   CircleDollarSign,
   Flame,
   Gift,
+  Pencil,
   Plus,
   Sparkles,
   Trash2,
@@ -155,7 +156,7 @@ export function RewardsPage() {
         <GiftsSection
           readerId={selectedReaderId}
           balance={progress.data.credit_balance}
-          items={items.data ?? []}
+          items={(items.data ?? []).filter((item) => !item.deleted_at)}
           isAdmin={isAdmin}
         />
       ) : null}
@@ -194,7 +195,7 @@ function RewardGuide() {
       icon: Award,
       title: "Collect badges",
       description:
-        "Finish books and build consistent reading streaks. Badges celebrate progress but do not add credits.",
+        "Finish books and build consistent reading streaks. Each new badge adds its displayed value to your credits.",
     },
     {
       icon: Gift,
@@ -318,6 +319,11 @@ function BadgesSection({ badges }: { badges: RewardProgress["badges"] }) {
               <p className="mt-1 text-xs leading-5 text-[#687b74]">
                 {badge.description}
               </p>
+              <p className="mt-3 inline-flex items-center gap-1 rounded-full bg-[#f8e6b9] px-3 py-1 text-xs font-bold text-[#815416]">
+                <CircleDollarSign className="size-3.5" />
+                Worth {badge.credit_value}{" "}
+                {badge.credit_value === 1 ? "credit" : "credits"}
+              </p>
               {badge.earned_at ? (
                 <p className="mt-3 text-[10px] font-bold text-[#9a621e] uppercase">
                   Earned {formatDate(badge.earned_at)}
@@ -357,6 +363,9 @@ function BadgeProgressCard({
               {categoryLabels[badge.category]}
             </p>
             <p className="mt-1 font-bold text-[#294f45]">{badge.name}</p>
+            <p className="mt-1 text-xs font-bold text-[#a16023]">
+              +{badge.credit_value} credits when earned
+            </p>
           </div>
           <span className="text-xs font-bold">
             {badge.current_value}/{badge.threshold}
@@ -390,9 +399,11 @@ function GiftsSection({
   const redeem = useRedeemReward();
   const [showForm, setShowForm] = useState(false);
   const [giftToDelete, setGiftToDelete] = useState<RewardItem | null>(null);
+  const [giftToEdit, setGiftToEdit] = useState<RewardItem | null>(null);
   async function submit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
-    const form = new FormData(event.currentTarget);
+    const formElement = event.currentTarget;
+    const form = new FormData(formElement);
     const name = form.get("name");
     const description = form.get("description");
     await create.mutateAsync({
@@ -404,8 +415,29 @@ function GiftsSection({
       active: true,
       image_url: null,
     });
-    event.currentTarget.reset();
+    formElement.reset();
     setShowForm(false);
+  }
+  async function submitEdit(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    if (!giftToEdit) return;
+    const form = new FormData(event.currentTarget);
+    const name = form.get("edit_name");
+    const description = form.get("edit_description");
+    await update.mutateAsync({
+      itemId: giftToEdit.id,
+      data: {
+        name: typeof name === "string" ? name : "",
+        description:
+          typeof description === "string" && description ? description : null,
+        credit_cost: Number(form.get("edit_cost")),
+        quantity: form.get("edit_quantity")
+          ? Number(form.get("edit_quantity"))
+          : null,
+        active: form.get("edit_availability") === "active",
+      },
+    });
+    setGiftToEdit(null);
   }
   return (
     <>
@@ -500,33 +532,42 @@ function GiftsSection({
                 {item.quantity === null ? "Unlimited" : `${item.quantity} left`}
               </span>
             </div>
-            <div className="mt-5 flex gap-2">
-              {isAdmin ? (
-                <Button
-                  disabled={
-                    !item.active ||
-                    item.quantity === 0 ||
-                    balance < item.credit_cost ||
-                    redeem.isPending
-                  }
-                  onClick={() =>
-                    redeem.mutate({ readerId, rewardItemId: item.id })
-                  }
-                >
-                  Redeem
-                </Button>
-              ) : null}
+            <div className="mt-5 flex flex-wrap gap-2">
               <Button
-                variant="ghost"
+                disabled={
+                  !item.active ||
+                  item.quantity === 0 ||
+                  balance < item.credit_cost ||
+                  redeem.isPending
+                }
                 onClick={() =>
-                  update.mutate({
-                    itemId: item.id,
-                    data: { active: !item.active },
-                  })
+                  redeem.mutate({ readerId, rewardItemId: item.id })
                 }
               >
-                {item.active ? "Retire" : "Activate"}
+                Redeem
               </Button>
+              {isAdmin ? (
+                <>
+                  <Button
+                    variant="secondary"
+                    onClick={() => setGiftToEdit(item)}
+                  >
+                    <Pencil className="size-3.5" />
+                    Edit
+                  </Button>
+                  <Button
+                    variant="ghost"
+                    onClick={() =>
+                      update.mutate({
+                        itemId: item.id,
+                        data: { active: !item.active },
+                      })
+                    }
+                  >
+                    {item.active ? "Retire" : "Activate"}
+                  </Button>
+                </>
+              ) : null}
             </div>
           </Card>
         ))}
@@ -557,8 +598,9 @@ function GiftsSection({
               Delete {giftToDelete.name}?
             </h2>
             <p className="mt-3 text-sm leading-6 text-[#687b74]">
-              This permanently removes the gift from the reward shop. Gifts with
-              redemption history must be retired instead.
+              This hides the gift from the reward shop. Its database record and
+              all redemption history will be kept for school records. It will
+              not appear in the app after deletion.
             </p>
             {deletion.error ? (
               <p role="alert" className="mt-3 text-sm text-[#943f30]">
@@ -580,6 +622,94 @@ function GiftsSection({
                 Cancel
               </Button>
             </div>
+          </Card>
+        </div>
+      ) : null}
+      {giftToEdit ? (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-[#102f29]/55 p-4">
+          <Card
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="edit-gift-heading"
+            className="w-full max-w-2xl p-7"
+          >
+            <Pencil className="size-7 text-[#c65c43]" />
+            <h2
+              id="edit-gift-heading"
+              className="mt-3 font-serif text-2xl font-bold"
+            >
+              Edit {giftToEdit.name}
+            </h2>
+            <p className="mt-2 text-sm text-[#687b74]">
+              Changes apply to future redemptions. Existing redemption history
+              keeps its original gift name and credit price.
+            </p>
+            <form
+              onSubmit={(event) => void submitEdit(event)}
+              className="mt-6 grid gap-4 sm:grid-cols-2"
+            >
+              <label className="text-xs font-bold">
+                Gift name
+                <input
+                  name="edit_name"
+                  defaultValue={giftToEdit.name}
+                  required
+                  className="mt-1 h-10 w-full rounded-xl border px-3 text-sm font-normal"
+                />
+              </label>
+              <label className="text-xs font-bold">
+                Description
+                <input
+                  name="edit_description"
+                  defaultValue={giftToEdit.description ?? ""}
+                  className="mt-1 h-10 w-full rounded-xl border px-3 text-sm font-normal"
+                />
+              </label>
+              <label className="text-xs font-bold">
+                Credit cost
+                <input
+                  name="edit_cost"
+                  type="number"
+                  min="1"
+                  defaultValue={giftToEdit.credit_cost}
+                  required
+                  className="mt-1 h-10 w-full rounded-xl border px-3 text-sm font-normal"
+                />
+              </label>
+              <label className="text-xs font-bold">
+                Quantity (blank means unlimited)
+                <input
+                  name="edit_quantity"
+                  type="number"
+                  min="0"
+                  defaultValue={giftToEdit.quantity ?? ""}
+                  className="mt-1 h-10 w-full rounded-xl border px-3 text-sm font-normal"
+                />
+              </label>
+              <label className="text-xs font-bold sm:col-span-2">
+                Availability
+                <select
+                  name="edit_availability"
+                  defaultValue={giftToEdit.active ? "active" : "retired"}
+                  className="mt-1 h-10 w-full rounded-xl border bg-white px-3 text-sm font-normal"
+                >
+                  <option value="active">Active in Gift Shop</option>
+                  <option value="retired">Retired</option>
+                </select>
+              </label>
+              <div className="flex gap-2 sm:col-span-2">
+                <Button disabled={update.isPending}>
+                  {update.isPending ? "Saving…" : "Save changes"}
+                </Button>
+                <Button
+                  type="button"
+                  variant="secondary"
+                  onClick={() => setGiftToEdit(null)}
+                >
+                  Cancel
+                </Button>
+              </div>
+            </form>
           </Card>
         </div>
       ) : null}

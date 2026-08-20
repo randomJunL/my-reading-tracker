@@ -24,7 +24,6 @@ from app.services.households import HouseholdContext
 from app.services.rewards import (
     InsufficientCreditsError,
     InvalidRedemptionTransitionError,
-    RewardItemHistoryConflictError,
     RewardNotFoundError,
     RewardService,
     RewardUnavailableError,
@@ -69,7 +68,8 @@ def list_reward_items(
     return [
         RewardItemResponse.model_validate(item)
         for item in RewardService(session).list_items(
-            context.household.id, include_inactive=include_inactive
+            context.household.id,
+            include_inactive=include_inactive,
         )
     ]
 
@@ -116,14 +116,6 @@ def delete_reward_item(
         RewardService(session).delete_item(item_id, context.household.id)
     except RewardNotFoundError as error:
         raise _not_found() from error
-    except RewardItemHistoryConflictError as error:
-        raise HTTPException(
-            status_code=409,
-            detail=(
-                "This gift has redemption history and cannot be deleted. "
-                "Retire it instead."
-            ),
-        ) from error
     return Response(status_code=status.HTTP_204_NO_CONTENT)
 
 

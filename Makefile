@@ -106,7 +106,7 @@ frontend-build:
 frontend-check: frontend-lint frontend-test frontend-build
 
 frontend-e2e:
-	@PATH="$(CURDIR)/.tools/node/bin:$$PATH" $(LOCAL_PNPM) --dir frontend test:e2e
+	@PATH="$(CURDIR)/.tools/node/bin:$$PATH" .venv/bin/python backend/scripts/run_e2e.py
 
 db-up:
 	@docker compose up --detach --wait postgres

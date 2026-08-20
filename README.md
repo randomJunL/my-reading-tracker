@@ -6,9 +6,10 @@ user-facing name is configured separately with `VITE_APP_NAME`.
 
 ## Current status
 
-Steps 1 through 5 are established: the application and database schema are
-scaffolded, and Supabase magic-link authentication protects the React routes
-and household-scoped FastAPI API.
+Steps 1 through 12 are implemented and verified. Step 13 deployment
+configuration is checked in for a Vercel frontend, Render FastAPI service, and
+production Supabase project. Creating the hosted resources and completing the
+production smoke test require the deployment accounts and final URLs.
 
 The full roadmap is in [PROJECT_PLAN.md](PROJECT_PLAN.md).
 
@@ -70,6 +71,9 @@ is running.
 
 See [docs/development.md](docs/development.md) for detailed development and
 troubleshooting instructions.
+
+See [docs/deployment.md](docs/deployment.md) for production provisioning,
+migrations, smoke testing, backup, export, and rollback procedures.
 
 ## Repository layout
 

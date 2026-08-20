@@ -43,10 +43,6 @@ class RewardUnavailableError(Exception):
     pass
 
 
-class RewardItemHistoryConflictError(Exception):
-    pass
-
-
 class InvalidRedemptionTransitionError(Exception):
     pass
 
@@ -184,9 +180,14 @@ class RewardService:
     def list_items(
         self, household_id: uuid.UUID, *, include_inactive: bool = True
     ) -> list[RewardItem]:
-        statement = select(RewardItem).where(RewardItem.household_id == household_id)
+        statement = select(RewardItem).where(
+            RewardItem.household_id == household_id,
+            RewardItem.deleted_at.is_(None),
+        )
         if not include_inactive:
-            statement = statement.where(RewardItem.active.is_(True))
+            statement = statement.where(
+                RewardItem.active.is_(True), RewardItem.deleted_at.is_(None)
+            )
         return list(self.session.scalars(statement.order_by(RewardItem.created_at)))
 
     def create_item(
@@ -210,14 +211,8 @@ class RewardService:
 
     def delete_item(self, item_id: uuid.UUID, household_id: uuid.UUID) -> None:
         item = self._item(item_id, household_id)
-        has_redemptions = self.session.scalar(
-            select(RewardRedemption.id)
-            .where(RewardRedemption.reward_item_id == item.id)
-            .limit(1)
-        )
-        if has_redemptions is not None:
-            raise RewardItemHistoryConflictError
-        self.session.delete(item)
+        item.active = False
+        item.deleted_at = datetime.now(UTC)
         self.session.commit()
 
     def list_redemptions(
@@ -317,7 +312,7 @@ class RewardService:
     def transactions(
         self, reader_id: uuid.UUID, household_id: uuid.UUID
     ) -> list[RewardTransaction]:
-        self._require_reader(reader_id, household_id)
+        self.evaluate(reader_id, household_id)
         return list(
             self.session.scalars(
                 select(RewardTransaction)
@@ -338,25 +333,41 @@ class RewardService:
                 select(BadgeDefinition).where(BadgeDefinition.active.is_(True))
             )
         )
-        existing = set(
-            self.session.scalars(
-                select(ReaderBadge.badge_definition_id).where(
-                    ReaderBadge.reader_id == reader_id
-                )
+        existing = {
+            award.badge_definition_id: award
+            for award in self.session.scalars(
+                select(ReaderBadge).where(ReaderBadge.reader_id == reader_id)
             )
-        )
+        }
         now = datetime.now(UTC)
         for definition in definitions:
             value = values.get(definition.category, 0)
-            if definition.id in existing or value < definition.threshold:
+            award = existing.get(definition.id)
+            if award is None and value >= definition.threshold:
+                award = ReaderBadge(
+                    reader_id=reader_id,
+                    badge_definition_id=definition.id,
+                    earned_at=now,
+                    progress_value=value,
+                )
+                self.session.add(award)
+            if award is None or award.revoked_at is not None:
                 continue
-            award = ReaderBadge(
-                reader_id=reader_id,
-                badge_definition_id=definition.id,
-                earned_at=now,
-                progress_value=value,
-            )
-            self.session.add(award)
+            key = f"badge:{reader_id}:{definition.id}:award"
+            if definition.credit_value > 0 and not self.session.scalar(
+                select(RewardTransaction.id).where(
+                    RewardTransaction.idempotency_key == key
+                )
+            ):
+                self._add_transaction(
+                    reader_id,
+                    definition.credit_value,
+                    RewardTransactionType.BADGE_AWARD,
+                    definition.id,
+                    f"Earned {definition.name} badge",
+                    key,
+                    now,
+                )
 
     def _award_session_credits(self, reader_id: uuid.UUID) -> None:
         sessions = self.session.execute(
@@ -436,11 +447,16 @@ class RewardService:
             raise RewardNotFoundError
 
     def _item(
-        self, item_id: uuid.UUID, household_id: uuid.UUID, *, lock: bool = False
+        self,
+        item_id: uuid.UUID,
+        household_id: uuid.UUID,
+        *,
+        lock: bool = False,
     ) -> RewardItem:
         statement = select(RewardItem).where(
             RewardItem.id == item_id,
             RewardItem.household_id == household_id,
+            RewardItem.deleted_at.is_(None),
         )
         if lock:
             statement = statement.with_for_update()

@@ -1,6 +1,7 @@
 import uuid
 from functools import lru_cache
 from typing import Literal
+from urllib.parse import urlsplit
 
 from pydantic import Field, model_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
@@ -39,6 +40,44 @@ class Settings(BaseSettings):
     def prevent_production_auth_bypass(self) -> "Settings":
         if self.dev_auth_bypass and self.app_env != "development":
             raise ValueError("DEV_AUTH_BYPASS is allowed only when APP_ENV=development")
+        return self
+
+    @model_validator(mode="after")
+    def validate_production_configuration(self) -> "Settings":
+        if self.app_env != "production":
+            return self
+
+        problems: list[str] = []
+        if not (self.supabase_url or self.supabase_jwt_issuer):
+            problems.append("Supabase authentication is not configured")
+
+        database = urlsplit(self.database_url)
+        if not database.scheme.startswith("postgresql"):
+            problems.append("DATABASE_URL must use PostgreSQL")
+        if database.hostname in {None, "localhost", "127.0.0.1", "::1"}:
+            problems.append("DATABASE_URL must not point to localhost")
+
+        origins = self.cors_origin_list
+        if not origins:
+            problems.append("CORS_ORIGINS must contain the production frontend")
+        for origin in origins:
+            parsed = urlsplit(origin)
+            if (
+                parsed.scheme != "https"
+                or not parsed.netloc
+                or parsed.hostname in {"localhost", "127.0.0.1", "::1"}
+                or "*" in origin
+                or parsed.path not in {"", "/"}
+                or parsed.query
+                or parsed.fragment
+            ):
+                problems.append(
+                    "CORS_ORIGINS must contain only exact HTTPS production origins"
+                )
+                break
+
+        if problems:
+            raise ValueError("Invalid production configuration: " + "; ".join(problems))
         return self
 
     @property

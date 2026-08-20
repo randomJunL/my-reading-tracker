@@ -42,6 +42,36 @@ def test_migration_builds_complete_schema(db_session: Session) -> None:
     }
 
 
+def test_application_tables_have_row_level_security_enabled(
+    db_session: Session,
+) -> None:
+    rows = db_session.execute(
+        text(
+            "SELECT c.relname "
+            "FROM pg_class AS c "
+            "JOIN pg_namespace AS n ON n.oid = c.relnamespace "
+            "WHERE n.nspname = 'public' AND c.relrowsecurity"
+        )
+    )
+
+    assert {row.relname for row in rows} == {
+        "badge_definitions",
+        "book_recommendations",
+        "books",
+        "household_members",
+        "households",
+        "reader_badges",
+        "reader_books",
+        "reader_login_invitations",
+        "reader_reward_progress",
+        "readers",
+        "reading_sessions",
+        "reward_items",
+        "reward_redemptions",
+        "reward_transactions",
+    }
+
+
 def test_models_persist_with_server_generated_fields(db_session: Session) -> None:
     household, reader, book = _create_library(db_session)
     membership = HouseholdMember(

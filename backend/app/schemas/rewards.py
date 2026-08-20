@@ -73,6 +73,7 @@ class RewardItemResponse(BaseModel):
     image_url: str | None
     quantity: int | None
     active: bool
+    deleted_at: datetime | None
     created_at: datetime
     updated_at: datetime
 

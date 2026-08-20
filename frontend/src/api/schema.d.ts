@@ -953,6 +953,8 @@ export interface components {
       created_at: string;
       /** Credit Cost */
       credit_cost: number;
+      /** Deleted At */
+      deleted_at: string | null;
       /** Description */
       description: string | null;
       /**
@@ -1502,6 +1504,8 @@ export interface components {
       created_at: string;
       /** Credit Cost */
       credit_cost: number;
+      /** Deleted At */
+      deleted_at: string | null;
       /** Description */
       description: string | null;
       /**

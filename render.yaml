@@ -1,0 +1,34 @@
+services:
+  - type: web
+    name: my-reading-tracker-api
+    runtime: docker
+    dockerfilePath: ./backend/Dockerfile
+    dockerContext: ./backend
+    autoDeployTrigger: checksPass
+    healthCheckPath: /api/v1/health
+    preDeployCommand: python -m scripts.production_migrate
+    envVars:
+      - key: APP_ENV
+        value: production
+      - key: DEV_AUTH_BYPASS
+        value: "false"
+      - key: LOG_LEVEL
+        value: INFO
+      - key: DATABASE_URL
+        sync: false
+      - key: CORS_ORIGINS
+        sync: false
+      - key: SUPABASE_URL
+        sync: false
+      - key: SUPABASE_JWT_AUDIENCE
+        value: authenticated
+      - key: GOOGLE_BOOKS_API_KEY
+        sync: false
+      - key: OPEN_LIBRARY_CONTACT_EMAIL
+        sync: false
+      - key: BOOK_PROVIDER_TIMEOUT_SECONDS
+        value: "4"
+      - key: BOOK_PROVIDER_MAX_RETRIES
+        value: "1"
+      - key: BOOK_SEARCH_CACHE_TTL_SECONDS
+        value: "300"

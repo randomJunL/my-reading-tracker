@@ -59,12 +59,22 @@ them through the credit ledger.
 
 Each logged reading session grants one credit, up to two credits per reader on
 the same calendar date. Additional sessions that day still count toward reading
-history and achievements but do not grant more credits. Badges remain permanent
-achievements and do not grant credits. Parents configure gift names,
-descriptions, costs, availability, and optional quantity. A redemption deducts
-credits immediately and begins as `pending`. Rejected or cancelled requests
-refund credits; approved requests may be marked `fulfilled`. All credit changes
-are append-only ledger transactions with idempotency keys.
+history and achievements but do not grant more session credits. Each badge also
+has a displayed credit value that is added to the reader's balance once when
+the badge is earned. Previously earned badges receive their missing credit
+award once after this rule is enabled. Parents configure gift names,
+descriptions, costs, availability, and optional quantity. Gifts have no badge
+requirement and can only be redeemed with credits. A redemption deducts credits
+immediately and begins as `pending`. Rejected or cancelled requests refund
+credits; approved requests may be marked `fulfilled`. All credit changes are
+append-only ledger transactions with idempotency keys. Deleting a gift is a
+soft-delete: it disappears from the reward shop while its database record and
+all associated redemption history remain available for auditing and exports.
+Deleted gifts are not exposed in the normal application interface and cannot be
+restored there.
+Admins can edit a current gift's name, description, credit cost, quantity, and
+availability without changing the name or cost snapshots stored on earlier
+redemptions.
 
 ## Product surfaces
 
