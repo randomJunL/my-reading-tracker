@@ -4,12 +4,19 @@ from fastapi.testclient import TestClient
 
 from app.api.dependencies.auth import get_current_user
 from app.api.dependencies.book_search import get_book_search_service
+from app.api.dependencies.household import get_household_context
 from app.core.security import AuthenticatedUser
 from app.integrations.books import BookSearchQuery
 from app.main import app
-from app.models import MetadataSource
+from app.models import (
+    Household,
+    HouseholdMember,
+    HouseholdRole,
+    MetadataSource,
+)
 from app.schemas.book_search import BookSearchResult
 from app.services.book_search import BookSearchUnavailableError
+from app.services.households import HouseholdContext
 
 
 def test_book_search_requires_authentication() -> None:
@@ -126,7 +133,15 @@ def _override_dependencies(service: StubBookSearchService) -> None:
     user = AuthenticatedUser(
         id=uuid.uuid4(), email="parent@example.com", session_id=uuid.uuid4()
     )
+    household = Household(id=uuid.uuid4(), name="Test Household")
+    membership = HouseholdMember(
+        household=household,
+        user_id=user.id,
+        role=HouseholdRole.OWNER,
+    )
+    context = HouseholdContext(household=household, membership=membership)
     app.dependency_overrides[get_current_user] = lambda: user
+    app.dependency_overrides[get_household_context] = lambda: context
     app.dependency_overrides[get_book_search_service] = lambda: service
 
 
