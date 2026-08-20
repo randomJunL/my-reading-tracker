@@ -3,15 +3,15 @@ from typing import Annotated
 
 from fastapi import APIRouter, Depends, HTTPException, Path, status
 
-from app.api.dependencies.auth import get_current_user
 from app.api.dependencies.book_search import get_book_search_service
-from app.core.security import AuthenticatedUser
+from app.api.dependencies.household import get_household_context, require_admin
 from app.integrations.books import BookSearchQuery
 from app.schemas.book_search import (
     BookSearchParameters,
     BookSearchResult,
 )
 from app.services.book_search import BookSearchService, BookSearchUnavailableError
+from app.services.households import HouseholdContext
 
 router = APIRouter(prefix="/book-search")
 
@@ -19,9 +19,10 @@ router = APIRouter(prefix="/book-search")
 @router.get("", response_model=list[BookSearchResult])
 async def search_books(
     parameters: Annotated[BookSearchParameters, Depends()],
-    _: Annotated[AuthenticatedUser, Depends(get_current_user)],
+    context: Annotated[HouseholdContext, Depends(get_household_context)],
     service: Annotated[BookSearchService, Depends(get_book_search_service)],
 ) -> list[BookSearchResult]:
+    require_admin(context)
     if not any((parameters.q, parameters.title, parameters.author)):
         raise HTTPException(
             status_code=status.HTTP_422_UNPROCESSABLE_CONTENT,
@@ -38,9 +39,10 @@ async def search_books(
 @router.get("/isbn/{isbn}", response_model=list[BookSearchResult])
 async def search_book_by_isbn(
     isbn: Annotated[str, Path(min_length=10, max_length=20)],
-    _: Annotated[AuthenticatedUser, Depends(get_current_user)],
+    context: Annotated[HouseholdContext, Depends(get_household_context)],
     service: Annotated[BookSearchService, Depends(get_book_search_service)],
 ) -> list[BookSearchResult]:
+    require_admin(context)
     normalized_isbn = re.sub(r"[-\s]", "", isbn).upper()
     if not re.fullmatch(r"(?:\d{13}|\d{9}[\dX])", normalized_isbn):
         raise HTTPException(

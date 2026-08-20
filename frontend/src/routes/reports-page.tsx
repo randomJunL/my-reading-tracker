@@ -10,6 +10,7 @@ import { useState } from "react";
 
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
+import { useCurrentUser } from "@/features/auth/current-user";
 import {
   type ExportFormat,
   useReadingDataExport,
@@ -39,6 +40,8 @@ const exportOptions = [
 ];
 
 export function ReportsPage() {
+  const { data: currentUser } = useCurrentUser();
+  const isAdmin = currentUser?.is_admin ?? false;
   const { selectedReaderId } = useReaderSelection();
   const download = useReadingDataExport();
   const schoolReport = useSchoolReportExport();
@@ -158,67 +161,69 @@ export function ReportsPage() {
         </div>
       </Card>
 
-      <Card className="mx-auto w-full max-w-6xl overflow-hidden">
-        <div className="border-b border-[#eceae2] bg-[#faf8f2] px-6 py-6 text-center sm:px-8">
-          <span className="mx-auto flex size-12 items-center justify-center rounded-2xl bg-white text-[#416b60] shadow-sm ring-1 ring-[#dfddd2]">
-            <FileSpreadsheet className="size-6" />
-          </span>
-          <p className="mt-4 text-xs font-bold tracking-[0.14em] text-[#71827c] uppercase">
-            Raw data files
-          </p>
-          <h2 className="mt-1 font-serif text-3xl font-bold text-[#21483e]">
-            Spreadsheet downloads
-          </h2>
-          <p className="mx-auto mt-2 max-w-2xl text-sm leading-6 text-[#687b74]">
-            Choose the data you need. Both options download a standard CSV file
-            that opens directly in Excel, Numbers, and Google Sheets.
-          </p>
-        </div>
+      {isAdmin ? (
+        <Card className="mx-auto w-full max-w-6xl overflow-hidden">
+          <div className="border-b border-[#eceae2] bg-[#faf8f2] px-6 py-6 text-center sm:px-8">
+            <span className="mx-auto flex size-12 items-center justify-center rounded-2xl bg-white text-[#416b60] shadow-sm ring-1 ring-[#dfddd2]">
+              <FileSpreadsheet className="size-6" />
+            </span>
+            <p className="mt-4 text-xs font-bold tracking-[0.14em] text-[#71827c] uppercase">
+              Raw data files
+            </p>
+            <h2 className="mt-1 font-serif text-3xl font-bold text-[#21483e]">
+              Spreadsheet downloads
+            </h2>
+            <p className="mx-auto mt-2 max-w-2xl text-sm leading-6 text-[#687b74]">
+              Choose the data you need. Both options download a standard CSV
+              file that opens directly in Excel, Numbers, and Google Sheets.
+            </p>
+          </div>
 
-        <div
-          className="grid gap-4 p-5 sm:p-7 md:grid-cols-2"
-          role="group"
-          aria-label="Spreadsheet download options"
-        >
-          {exportOptions.map((option) => {
-            const Icon = option.icon;
-            const isCurrent =
-              download.isPending && download.variables === option.format;
-            return (
-              <section
-                key={option.format}
-                className="flex flex-col rounded-2xl border border-[#dfddd2] bg-[#faf9f5] p-5 text-left sm:p-6"
-              >
-                <div className="flex items-start justify-between gap-3">
-                  <span
-                    className={`flex size-11 shrink-0 items-center justify-center rounded-xl ${option.color}`}
-                  >
-                    <Icon className="size-5" />
-                  </span>
-                  <span className="rounded-full border border-[#dedbd0] bg-white px-2.5 py-1 text-[10px] font-bold tracking-wide text-[#6d7d77] uppercase">
-                    CSV · Excel-compatible
-                  </span>
-                </div>
-                <h3 className="mt-4 font-serif text-2xl font-bold text-[#21483e]">
-                  {option.title}
-                </h3>
-                <p className="mt-2 flex-1 text-sm leading-6 text-[#687b74]">
-                  {option.description}
-                </p>
-                <Button
-                  variant="secondary"
-                  className="mt-5 w-full"
-                  disabled={download.isPending}
-                  onClick={() => startDownload(option.format)}
+          <div
+            className="grid gap-4 p-5 sm:p-7 md:grid-cols-2"
+            role="group"
+            aria-label="Spreadsheet download options"
+          >
+            {exportOptions.map((option) => {
+              const Icon = option.icon;
+              const isCurrent =
+                download.isPending && download.variables === option.format;
+              return (
+                <section
+                  key={option.format}
+                  className="flex flex-col rounded-2xl border border-[#dfddd2] bg-[#faf9f5] p-5 text-left sm:p-6"
                 >
-                  <FileSpreadsheet className="size-4" />
-                  {isCurrent ? "Preparing spreadsheet…" : option.button}
-                </Button>
-              </section>
-            );
-          })}
-        </div>
-      </Card>
+                  <div className="flex items-start justify-between gap-3">
+                    <span
+                      className={`flex size-11 shrink-0 items-center justify-center rounded-xl ${option.color}`}
+                    >
+                      <Icon className="size-5" />
+                    </span>
+                    <span className="rounded-full border border-[#dedbd0] bg-white px-2.5 py-1 text-[10px] font-bold tracking-wide text-[#6d7d77] uppercase">
+                      CSV · Excel-compatible
+                    </span>
+                  </div>
+                  <h3 className="mt-4 font-serif text-2xl font-bold text-[#21483e]">
+                    {option.title}
+                  </h3>
+                  <p className="mt-2 flex-1 text-sm leading-6 text-[#687b74]">
+                    {option.description}
+                  </p>
+                  <Button
+                    variant="secondary"
+                    className="mt-5 w-full"
+                    disabled={download.isPending}
+                    onClick={() => startDownload(option.format)}
+                  >
+                    <FileSpreadsheet className="size-4" />
+                    {isCurrent ? "Preparing spreadsheet…" : option.button}
+                  </Button>
+                </section>
+              );
+            })}
+          </div>
+        </Card>
+      ) : null}
 
       <Card className="mt-5 flex gap-4 p-5 sm:p-6">
         <span className="flex size-10 shrink-0 items-center justify-center rounded-xl bg-[#edf1ee] text-[#416b60]">

@@ -5,7 +5,7 @@ from typing import Annotated
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 
-from app.api.dependencies.household import get_household_context
+from app.api.dependencies.household import get_household_context, require_reader_access
 from app.database.session import get_db
 from app.schemas.reports import CalendarReportResponse, ReportSummaryResponse
 from app.services.households import HouseholdContext
@@ -22,6 +22,7 @@ def get_report_summary(
     context: Annotated[HouseholdContext, Depends(get_household_context)],
     session: Annotated[Session, Depends(get_db)],
 ) -> ReportSummaryResponse:
+    require_reader_access(reader_id, context)
     _validate_dates(date_from, date_to)
     try:
         return ReportService(session).summary(
@@ -39,6 +40,7 @@ def get_calendar_report(
     context: Annotated[HouseholdContext, Depends(get_household_context)],
     session: Annotated[Session, Depends(get_db)],
 ) -> CalendarReportResponse:
+    require_reader_access(reader_id, context)
     _validate_dates(date_from, date_to)
     try:
         return ReportService(session).calendar(

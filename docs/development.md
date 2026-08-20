@@ -96,6 +96,21 @@ After both applications start, visit `http://localhost:5173/sign-in`. The first
 successful authenticated call to `/api/v1/me` creates the user's household and
 owner membership in the configured PostgreSQL database.
 
+### Admin and reader accounts
+
+Owners and caregivers are administrators. From **Readers → Reader login
+access**, an administrator links an existing reader profile to an email address.
+Create the link before the reader first opens the application. The reader then
+uses the normal Supabase magic-link sign-in with that exact email; the first
+authenticated request joins the administrator's household and locks the account
+to the linked reader profile.
+
+Reader accounts can use their own dashboard, recommended library books, reading
+log, rewards, gift requests, history, and printable report. Only administrators
+can manage readers, recommendations, gifts, redemption approvals, household
+spreadsheet exports, or another reader's records. Removing a reader login link
+revokes its access to the household without deleting the reader's saved data.
+
 ### Development-only authentication bypass
 
 For routine local feature work, authentication can be bypassed without sending
@@ -174,10 +189,10 @@ make backend-migrate
 
 The migration seeds the permanent badge catalog. Saving, editing, or deleting a
 session and changing a reader-book status automatically recalculates progress.
-The Rewards page uses the selected reader from the application header. Badge
-awards, recurring bonuses, spending, and refunds are stored in the transaction
-ledger; never update a displayed balance directly. See `REWARD_SYSTEM_PLAN.md`
-for milestone thresholds and reset behavior.
+The Rewards page uses the selected reader from the application header. Eligible
+reading sessions, spending, and refunds are stored in the transaction ledger;
+never update a displayed balance directly. See `REWARD_SYSTEM_PLAN.md` for
+milestone thresholds and reset behavior.
 
 Before committing backend changes, run the complete check suite:
 

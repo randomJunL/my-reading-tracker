@@ -43,6 +43,10 @@ class RewardUnavailableError(Exception):
     pass
 
 
+class RewardItemHistoryConflictError(Exception):
+    pass
+
+
 class InvalidRedemptionTransitionError(Exception):
     pass
 
@@ -204,9 +208,16 @@ class RewardService:
         self.session.refresh(item)
         return item
 
-    def retire_item(self, item_id: uuid.UUID, household_id: uuid.UUID) -> None:
+    def delete_item(self, item_id: uuid.UUID, household_id: uuid.UUID) -> None:
         item = self._item(item_id, household_id)
-        item.active = False
+        has_redemptions = self.session.scalar(
+            select(RewardRedemption.id)
+            .where(RewardRedemption.reward_item_id == item.id)
+            .limit(1)
+        )
+        if has_redemptions is not None:
+            raise RewardItemHistoryConflictError
+        self.session.delete(item)
         self.session.commit()
 
     def list_redemptions(

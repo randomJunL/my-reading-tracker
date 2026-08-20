@@ -2,10 +2,12 @@ import { UserRound } from "lucide-react";
 import { useEffect } from "react";
 import { Link } from "react-router-dom";
 
+import { useCurrentUser } from "@/features/auth/current-user";
 import { useReaders } from "@/features/readers/reader-api";
 import { useReaderSelection } from "@/features/readers/use-reader-selection";
 
 export function ReaderSelector() {
+  const { data: currentUser } = useCurrentUser();
   const { data: readers = [], isLoading } = useReaders();
   const { selectedReaderId, setSelectedReaderId } = useReaderSelection();
 
@@ -18,6 +20,16 @@ export function ReaderSelector() {
       setSelectedReaderId(readers[0]?.id ?? null);
     }
   }, [isLoading, readers, selectedReaderId, setSelectedReaderId]);
+
+  if (currentUser && !currentUser.is_admin) {
+    const reader = readers.find((item) => item.id === currentUser.reader_id);
+    return (
+      <div className="flex h-11 items-center gap-2 rounded-xl border border-[#d7d5c9] bg-white px-3 text-sm font-semibold text-[#264940]">
+        <UserRound className="size-4 text-[#667b74]" />
+        {reader?.name ?? "My profile"}
+      </div>
+    );
+  }
 
   if (!isLoading && readers.length === 0) {
     return (

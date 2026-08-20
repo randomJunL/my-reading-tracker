@@ -173,6 +173,24 @@ def test_gift_redemption_spends_and_refunds_credits(
     assert balance_after_refund == 1
     items = reward_client.get("/api/v1/reward-items").json()
     assert items[0]["quantity"] == 2
+    assert (
+        reward_client.delete(f"/api/v1/reward-items/{gift.json()['id']}").status_code
+        == 409
+    )
+
+
+def test_unused_gift_can_be_deleted(reward_client: TestClient) -> None:
+    gift = reward_client.post(
+        "/api/v1/reward-items",
+        json={"name": "Choose a game", "credit_cost": 2},
+    )
+    assert gift.status_code == 201
+
+    assert (
+        reward_client.delete(f"/api/v1/reward-items/{gift.json()['id']}").status_code
+        == 204
+    )
+    assert reward_client.get("/api/v1/reward-items").json() == []
 
 
 def test_rewards_are_household_scoped(

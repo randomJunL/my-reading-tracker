@@ -913,6 +913,22 @@
             "title": "Household Name",
             "type": "string"
           },
+          "is_admin": {
+            "title": "Is Admin",
+            "type": "boolean"
+          },
+          "reader_id": {
+            "anyOf": [
+              {
+                "format": "uuid",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Reader Id"
+          },
           "role": {
             "$ref": "#/components/schemas/HouseholdRole"
           },
@@ -927,7 +943,9 @@
           "email",
           "household_id",
           "household_name",
-          "role"
+          "role",
+          "reader_id",
+          "is_admin"
         ],
         "title": "CurrentUserResponse",
         "type": "object"
@@ -1703,7 +1721,8 @@
       "HouseholdRole": {
         "enum": [
           "owner",
-          "caregiver"
+          "caregiver",
+          "reader"
         ],
         "title": "HouseholdRole",
         "type": "string"
@@ -1894,6 +1913,55 @@
           "name"
         ],
         "title": "ReaderCreate",
+        "type": "object"
+      },
+      "ReaderLoginInvitationCreate": {
+        "properties": {
+          "email": {
+            "title": "Email",
+            "type": "string"
+          },
+          "reader_id": {
+            "format": "uuid",
+            "title": "Reader Id",
+            "type": "string"
+          }
+        },
+        "required": [
+          "reader_id",
+          "email"
+        ],
+        "title": "ReaderLoginInvitationCreate",
+        "type": "object"
+      },
+      "ReaderLoginInvitationResponse": {
+        "properties": {
+          "accepted": {
+            "title": "Accepted",
+            "type": "boolean"
+          },
+          "email": {
+            "title": "Email",
+            "type": "string"
+          },
+          "id": {
+            "format": "uuid",
+            "title": "Id",
+            "type": "string"
+          },
+          "reader_id": {
+            "format": "uuid",
+            "title": "Reader Id",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "reader_id",
+          "email",
+          "accepted"
+        ],
+        "title": "ReaderLoginInvitationResponse",
         "type": "object"
       },
       "ReaderResponse": {
@@ -3770,6 +3838,121 @@
         ]
       }
     },
+    "/api/v1/reader-login-invitations": {
+      "get": {
+        "operationId": "list_invitations_api_v1_reader_login_invitations_get",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/ReaderLoginInvitationResponse"
+                  },
+                  "title": "Response List Invitations Api V1 Reader Login Invitations Get",
+                  "type": "array"
+                }
+              }
+            },
+            "description": "Successful Response"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "List Invitations",
+        "tags": [
+          "reader access"
+        ]
+      },
+      "post": {
+        "operationId": "create_invitation_api_v1_reader_login_invitations_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ReaderLoginInvitationCreate"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ReaderLoginInvitationResponse"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "Create Invitation",
+        "tags": [
+          "reader access"
+        ]
+      }
+    },
+    "/api/v1/reader-login-invitations/{invitation_id}": {
+      "delete": {
+        "operationId": "delete_invitation_api_v1_reader_login_invitations__invitation_id__delete",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "invitation_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Invitation Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "Delete Invitation",
+        "tags": [
+          "reader access"
+        ]
+      }
+    },
     "/api/v1/readers": {
       "get": {
         "operationId": "list_readers_api_v1_readers_get",
@@ -4719,7 +4902,7 @@
     },
     "/api/v1/reward-items/{item_id}": {
       "delete": {
-        "operationId": "retire_reward_item_api_v1_reward_items__item_id__delete",
+        "operationId": "delete_reward_item_api_v1_reward_items__item_id__delete",
         "parameters": [
           {
             "in": "path",
@@ -4752,7 +4935,7 @@
             "HTTPBearer": []
           }
         ],
-        "summary": "Retire Reward Item",
+        "summary": "Delete Reward Item",
         "tags": [
           "rewards"
         ]

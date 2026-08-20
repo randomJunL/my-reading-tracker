@@ -4,7 +4,11 @@ from typing import Annotated
 from fastapi import APIRouter, Depends, HTTPException, Response, status
 from sqlalchemy.orm import Session
 
-from app.api.dependencies.household import get_household_context
+from app.api.dependencies.household import (
+    get_household_context,
+    require_admin,
+    require_reader_access,
+)
 from app.database.session import get_db
 from app.schemas.rewards import (
     RedemptionAction,
@@ -20,6 +24,7 @@ from app.services.households import HouseholdContext
 from app.services.rewards import (
     InsufficientCreditsError,
     InvalidRedemptionTransitionError,
+    RewardItemHistoryConflictError,
     RewardNotFoundError,
     RewardService,
     RewardUnavailableError,
@@ -34,6 +39,7 @@ def get_reward_progress(
     context: Annotated[HouseholdContext, Depends(get_household_context)],
     session: Annotated[Session, Depends(get_db)],
 ) -> RewardProgressResponse:
+    require_reader_access(reader_id, context)
     try:
         return RewardService(session).progress(reader_id, context.household.id)
     except RewardNotFoundError as error:
@@ -46,6 +52,7 @@ def list_reward_transactions(
     context: Annotated[HouseholdContext, Depends(get_household_context)],
     session: Annotated[Session, Depends(get_db)],
 ) -> list[RewardTransactionResponse]:
+    require_reader_access(reader_id, context)
     try:
         records = RewardService(session).transactions(reader_id, context.household.id)
     except RewardNotFoundError as error:
@@ -77,6 +84,7 @@ def create_reward_item(
     context: Annotated[HouseholdContext, Depends(get_household_context)],
     session: Annotated[Session, Depends(get_db)],
 ) -> RewardItemResponse:
+    require_admin(context)
     return RewardItemResponse.model_validate(
         RewardService(session).create_item(context.household.id, data)
     )
@@ -89,6 +97,7 @@ def update_reward_item(
     context: Annotated[HouseholdContext, Depends(get_household_context)],
     session: Annotated[Session, Depends(get_db)],
 ) -> RewardItemResponse:
+    require_admin(context)
     try:
         item = RewardService(session).update_item(item_id, context.household.id, data)
     except RewardNotFoundError as error:
@@ -97,15 +106,24 @@ def update_reward_item(
 
 
 @router.delete("/reward-items/{item_id}", status_code=status.HTTP_204_NO_CONTENT)
-def retire_reward_item(
+def delete_reward_item(
     item_id: uuid.UUID,
     context: Annotated[HouseholdContext, Depends(get_household_context)],
     session: Annotated[Session, Depends(get_db)],
 ) -> Response:
+    require_admin(context)
     try:
-        RewardService(session).retire_item(item_id, context.household.id)
+        RewardService(session).delete_item(item_id, context.household.id)
     except RewardNotFoundError as error:
         raise _not_found() from error
+    except RewardItemHistoryConflictError as error:
+        raise HTTPException(
+            status_code=409,
+            detail=(
+                "This gift has redemption history and cannot be deleted. "
+                "Retire it instead."
+            ),
+        ) from error
     return Response(status_code=status.HTTP_204_NO_CONTENT)
 
 
@@ -115,6 +133,7 @@ def list_reward_redemptions(
     context: Annotated[HouseholdContext, Depends(get_household_context)],
     session: Annotated[Session, Depends(get_db)],
 ) -> list[RedemptionResponse]:
+    require_reader_access(reader_id, context)
     try:
         records = RewardService(session).list_redemptions(
             reader_id, context.household.id
@@ -134,6 +153,7 @@ def redeem_reward(
     context: Annotated[HouseholdContext, Depends(get_household_context)],
     session: Annotated[Session, Depends(get_db)],
 ) -> RedemptionResponse:
+    require_reader_access(data.reader_id, context)
     try:
         redemption = RewardService(session).redeem(context.household.id, data)
     except RewardNotFoundError as error:
@@ -156,6 +176,7 @@ def transition_redemption(
     context: Annotated[HouseholdContext, Depends(get_household_context)],
     session: Annotated[Session, Depends(get_db)],
 ) -> RedemptionResponse:
+    require_admin(context)
     try:
         redemption = RewardService(session).transition_redemption(
             redemption_id, context.household.id, data

@@ -5,6 +5,7 @@ import { Link, useNavigate, useParams } from "react-router-dom";
 import { ApiError } from "@/api/client";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
+import { useCurrentUser } from "@/features/auth/current-user";
 import {
   useBook,
   useDeleteBook,
@@ -14,6 +15,7 @@ import { useReaderSelection } from "@/features/readers/use-reader-selection";
 import { BookCover } from "@/routes/library-page";
 
 export function BookDetailPage() {
+  const { data: currentUser } = useCurrentUser();
   const { bookId } = useParams();
   const navigate = useNavigate();
   const { selectedReaderId } = useReaderSelection();
@@ -92,14 +94,16 @@ export function BookDetailPage() {
                   Remove from this reader
                 </Button>
               ) : null}
-              <Button
-                variant="ghost"
-                className="text-[#a34435]"
-                onClick={() => setConfirmDelete(true)}
-              >
-                <Trash2 className="size-4" />
-                Delete book everywhere
-              </Button>
+              {currentUser?.is_admin ? (
+                <Button
+                  variant="ghost"
+                  className="text-[#a34435]"
+                  onClick={() => setConfirmDelete(true)}
+                >
+                  <Trash2 className="size-4" />
+                  Delete book everywhere
+                </Button>
+              ) : null}
             </div>
             {remove.error ? (
               <p role="alert" className="mt-3 text-sm text-[#943f30]">
@@ -110,7 +114,7 @@ export function BookDetailPage() {
         </div>
       </Card>
 
-      {confirmDelete ? (
+      {currentUser?.is_admin && confirmDelete ? (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-[#102f29]/55 p-4">
           <Card role="dialog" aria-modal="true" className="max-w-md p-7">
             <BookOpen className="size-8 text-[#a34435]" />

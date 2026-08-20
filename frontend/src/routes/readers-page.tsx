@@ -1,5 +1,13 @@
 import { zodResolver } from "@hookform/resolvers/zod";
-import { Pencil, Plus, Trash2, UserRound, UsersRound, X } from "lucide-react";
+import {
+  KeyRound,
+  Pencil,
+  Plus,
+  Trash2,
+  UserRound,
+  UsersRound,
+  X,
+} from "lucide-react";
 import { useState } from "react";
 import { useForm, useWatch } from "react-hook-form";
 import { z } from "zod";
@@ -11,7 +19,10 @@ import {
   type Reader,
   type ReaderCreate,
   useCreateReader,
+  useCreateReaderLoginInvitation,
   useDeleteReader,
+  useDeleteReaderLoginInvitation,
+  useReaderLoginInvitations,
   useReaders,
   useUpdateReader,
 } from "@/features/readers/reader-api";
@@ -39,6 +50,9 @@ type ReaderFormValues = z.infer<typeof readerFormSchema>;
 export function ReadersPage() {
   const { data: readers = [], isLoading, error } = useReaders();
   const createMutation = useCreateReader();
+  const invitations = useReaderLoginInvitations();
+  const createInvitation = useCreateReaderLoginInvitation();
+  const deleteInvitation = useDeleteReaderLoginInvitation();
   const updateMutation = useUpdateReader();
   const { selectedReaderId, setSelectedReaderId } = useReaderSelection();
   const [showCreateForm, setShowCreateForm] = useState(false);
@@ -77,6 +91,89 @@ export function ReadersPage() {
           Add reader
         </Button>
       </div>
+
+      <Card className="mb-6 p-5 sm:p-6">
+        <div className="flex items-start gap-3">
+          <KeyRound className="mt-1 size-5 text-[#c65c43]" />
+          <div>
+            <h2 className="font-serif text-xl font-bold text-[#21483e]">
+              Reader login access
+            </h2>
+            <p className="mt-1 text-sm leading-6 text-[#667b74]">
+              Link a reader profile to an email. They sign in with that same
+              email and automatically receive reader-only access.
+            </p>
+          </div>
+        </div>
+        <form
+          className="mt-4 grid gap-3 sm:grid-cols-[1fr_1.5fr_auto]"
+          onSubmit={(event) => {
+            event.preventDefault();
+            const form = new FormData(event.currentTarget);
+            const readerId = form.get("reader_id");
+            const email = form.get("email");
+            if (typeof readerId !== "string" || typeof email !== "string") {
+              return;
+            }
+            createInvitation.mutate({
+              reader_id: readerId,
+              email,
+            });
+            event.currentTarget.reset();
+          }}
+        >
+          <select
+            name="reader_id"
+            aria-label="Reader for login access"
+            required
+            className="h-11 rounded-xl border border-[#d7d5c9] bg-white px-3 text-sm"
+          >
+            <option value="">Choose reader</option>
+            {readers.map((reader) => (
+              <option key={reader.id} value={reader.id}>
+                {reader.name}
+              </option>
+            ))}
+          </select>
+          <input
+            name="email"
+            type="email"
+            required
+            aria-label="Reader login email"
+            placeholder="reader@school.org"
+            className="h-11 rounded-xl border border-[#d7d5c9] bg-white px-3 text-sm"
+          />
+          <Button disabled={createInvitation.isPending}>Grant access</Button>
+        </form>
+        {createInvitation.error ? (
+          <p role="alert" className="mt-3 text-sm text-[#943f30]">
+            {createInvitation.error.message}
+          </p>
+        ) : null}
+        <div className="mt-4 flex flex-wrap gap-2">
+          {invitations.data?.map((item) => {
+            const reader = readers.find((value) => value.id === item.reader_id);
+            return (
+              <span
+                key={item.id}
+                className="inline-flex items-center gap-2 rounded-full bg-[#edf2ee] px-3 py-2 text-xs text-[#31564c]"
+              >
+                <strong>{reader?.name ?? "Reader"}</strong>
+                {item.email} ·{" "}
+                {item.accepted ? "Active" : "Waiting for sign-in"}
+                <button
+                  type="button"
+                  aria-label={`Remove login access for ${item.email}`}
+                  onClick={() => deleteInvitation.mutate(item.id)}
+                  className="cursor-pointer text-[#a34435]"
+                >
+                  <X className="size-3.5" />
+                </button>
+              </span>
+            );
+          })}
+        </div>
+      </Card>
 
       {showCreateForm ? (
         <Card className="mb-6 p-5 sm:p-7">

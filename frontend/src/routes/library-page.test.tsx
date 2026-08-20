@@ -20,6 +20,10 @@ vi.mock("@/features/readers/use-reader-selection", () => ({
   useReaderSelection: () => ({ selectedReaderId: "reader-1" }),
 }));
 
+vi.mock("@/features/auth/current-user", () => ({
+  useCurrentUser: () => ({ data: { is_admin: true } }),
+}));
+
 vi.mock("@/features/books/book-api", () => ({
   useBooks: () => ({ data: mocks.books, isLoading: false }),
   useBookRecommendations: () => ({

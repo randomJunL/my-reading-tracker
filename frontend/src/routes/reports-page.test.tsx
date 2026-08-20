@@ -3,6 +3,10 @@ import userEvent from "@testing-library/user-event";
 
 import { ReportsPage } from "@/routes/reports-page";
 
+vi.mock("@/features/auth/current-user", () => ({
+  useCurrentUser: () => ({ data: { is_admin: true } }),
+}));
+
 const mocks = vi.hoisted(() => ({
   mutate: vi.fn(),
   reset: vi.fn(),

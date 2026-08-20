@@ -11,3 +11,17 @@ class CurrentUserResponse(BaseModel):
     household_id: uuid.UUID
     household_name: str
     role: HouseholdRole
+    reader_id: uuid.UUID | None
+    is_admin: bool
+
+
+class ReaderLoginInvitationCreate(BaseModel):
+    reader_id: uuid.UUID
+    email: str
+
+
+class ReaderLoginInvitationResponse(BaseModel):
+    id: uuid.UUID
+    reader_id: uuid.UUID
+    email: str
+    accepted: bool

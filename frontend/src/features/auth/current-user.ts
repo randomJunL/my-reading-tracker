@@ -7,7 +7,9 @@ export type CurrentUser = {
   email: string;
   household_id: string;
   household_name: string;
-  role: "owner" | "caregiver";
+  role: "owner" | "caregiver" | "reader";
+  reader_id: string | null;
+  is_admin: boolean;
 };
 
 export function useCurrentUser() {

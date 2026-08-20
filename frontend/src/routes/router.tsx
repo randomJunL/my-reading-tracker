@@ -1,6 +1,7 @@
 import { createBrowserRouter } from "react-router-dom";
 
 import { AppLayout } from "@/layouts/app-layout";
+import { AdminRoute } from "@/features/auth/admin-route";
 import { ProtectedRoute } from "@/features/auth/protected-route";
 import { DashboardPage } from "@/routes/dashboard-page";
 import { BookDetailPage } from "@/routes/book-detail-page";
@@ -24,7 +25,10 @@ export const router = createBrowserRouter([
         errorElement: <RouteErrorBoundary />,
         children: [
           { index: true, element: <DashboardPage /> },
-          { path: "readers", element: <ReadersPage /> },
+          {
+            element: <AdminRoute />,
+            children: [{ path: "readers", element: <ReadersPage /> }],
+          },
           { path: "library", element: <LibraryPage /> },
           { path: "library/:bookId", element: <BookDetailPage /> },
           { path: "log-reading", element: <LogReadingPage /> },

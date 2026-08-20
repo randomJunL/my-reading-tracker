@@ -2,11 +2,16 @@ import uuid
 from typing import Annotated
 
 from fastapi import APIRouter, Depends, HTTPException, Query, Response, status
+from sqlalchemy import select
 from sqlalchemy.orm import Session
 
-from app.api.dependencies.household import get_household_context
+from app.api.dependencies.household import (
+    get_household_context,
+    require_admin,
+    require_reader_access,
+)
 from app.database.session import get_db
-from app.models import ReadingStatus
+from app.models import BookRecommendation, ReadingStatus
 from app.schemas.books import (
     BookCreate,
     BookResponse,
@@ -36,6 +41,10 @@ def list_books(
     reader_id: uuid.UUID | None = None,
     reading_status: Annotated[ReadingStatus | None, Query(alias="status")] = None,
 ) -> list[BookResponse]:
+    if context.reader_id is not None:
+        if reader_id is not None:
+            require_reader_access(reader_id, context)
+        reader_id = context.reader_id
     if reading_status is not None and reader_id is None:
         raise HTTPException(status_code=422, detail="status requires reader_id")
     try:
@@ -53,6 +62,7 @@ def create_book(
     context: Annotated[HouseholdContext, Depends(get_household_context)],
     session: Annotated[Session, Depends(get_db)],
 ) -> BookResponse:
+    require_admin(context)
     return BookResponse.model_validate(
         BookService(session).create(context.household.id, data)
     )
@@ -65,9 +75,12 @@ def get_book(
     session: Annotated[Session, Depends(get_db)],
 ) -> BookResponse:
     try:
-        return BookResponse.model_validate(
-            BookService(session).get(book_id, context.household.id)
-        )
+        book = BookService(session).get(book_id, context.household.id)
+        if context.reader_id is not None and not any(
+            item.reader_id == context.reader_id for item in book.reader_books
+        ):
+            raise BookNotFoundError
+        return BookResponse.model_validate(book)
     except BookNotFoundError as error:
         raise _not_found("Book") from error
 
@@ -79,6 +92,7 @@ def update_book(
     context: Annotated[HouseholdContext, Depends(get_household_context)],
     session: Annotated[Session, Depends(get_db)],
 ) -> BookResponse:
+    require_admin(context)
     try:
         return BookResponse.model_validate(
             BookService(session).update(book_id, context.household.id, data)
@@ -94,6 +108,7 @@ def delete_book(
     session: Annotated[Session, Depends(get_db)],
     confirm_history: bool = False,
 ) -> Response:
+    require_admin(context)
     try:
         BookService(session).delete(
             book_id, context.household.id, confirm_history=confirm_history
@@ -124,6 +139,19 @@ def add_book_to_reader(
     context: Annotated[HouseholdContext, Depends(get_household_context)],
     session: Annotated[Session, Depends(get_db)],
 ) -> ReaderBookResponse:
+    require_reader_access(reader_id, context)
+    if context.reader_id is not None:
+        recommended = session.scalar(
+            select(BookRecommendation.id).where(
+                BookRecommendation.household_id == context.household.id,
+                BookRecommendation.book_id == data.book_id,
+            )
+        )
+        if recommended is None:
+            raise HTTPException(
+                status_code=403,
+                detail="Readers can only add books from recommendations",
+            )
     try:
         assignment = BookService(session).add_to_reader(
             reader_id, context.household.id, data
@@ -145,6 +173,7 @@ def update_reader_book(
     context: Annotated[HouseholdContext, Depends(get_household_context)],
     session: Annotated[Session, Depends(get_db)],
 ) -> ReaderBookResponse:
+    require_reader_access(reader_id, context)
     try:
         assignment = BookService(session).update_assignment(
             reader_id, book_id, context.household.id, data
@@ -163,6 +192,7 @@ def remove_reader_book(
     context: Annotated[HouseholdContext, Depends(get_household_context)],
     session: Annotated[Session, Depends(get_db)],
 ) -> Response:
+    require_reader_access(reader_id, context)
     try:
         BookService(session).remove_assignment(reader_id, book_id, context.household.id)
     except (ReaderNotFoundError, BookNotFoundError, ReaderBookNotFoundError) as error:

@@ -6,6 +6,12 @@ import type { components } from "@/api/schema";
 export type Reader = components["schemas"]["ReaderResponse"];
 export type ReaderCreate = components["schemas"]["ReaderCreate"];
 export type ReaderUpdate = components["schemas"]["ReaderUpdate"];
+export type ReaderLoginInvitation = {
+  id: string;
+  reader_id: string;
+  email: string;
+  accepted: boolean;
+};
 
 export const readersQueryKey = ["readers"] as const;
 
@@ -82,5 +88,38 @@ export function useDeleteReader() {
         current.filter((reader) => reader.id !== readerId),
       );
     },
+  });
+}
+
+export function useReaderLoginInvitations() {
+  return useQuery({
+    queryKey: ["reader-login-invitations"],
+    queryFn: () =>
+      apiFetch<ReaderLoginInvitation[]>("/reader-login-invitations"),
+  });
+}
+
+export function useCreateReaderLoginInvitation() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (data: { reader_id: string; email: string }) =>
+      apiFetch<ReaderLoginInvitation>("/reader-login-invitations", {
+        method: "POST",
+        body: JSON.stringify(data),
+      }),
+    onSuccess: () =>
+      queryClient.invalidateQueries({ queryKey: ["reader-login-invitations"] }),
+  });
+}
+
+export function useDeleteReaderLoginInvitation() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (invitationId: string) =>
+      apiFetch<void>(`/reader-login-invitations/${invitationId}`, {
+        method: "DELETE",
+      }),
+    onSuccess: () =>
+      queryClient.invalidateQueries({ queryKey: ["reader-login-invitations"] }),
   });
 }

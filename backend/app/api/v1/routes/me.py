@@ -22,4 +22,6 @@ def get_me(
         household_id=context.household.id,
         household_name=context.household.name,
         role=context.membership.role,
+        reader_id=context.reader_id,
+        is_admin=context.is_admin,
     )

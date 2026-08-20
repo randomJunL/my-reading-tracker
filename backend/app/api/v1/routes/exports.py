@@ -7,7 +7,11 @@ from fastapi import APIRouter, Depends, HTTPException, Query, Response
 from fastapi.responses import JSONResponse
 from sqlalchemy.orm import Session
 
-from app.api.dependencies.household import get_household_context
+from app.api.dependencies.household import (
+    get_household_context,
+    require_admin,
+    require_reader_access,
+)
 from app.database.session import get_db
 from app.schemas.exports import ReadingDataExport
 from app.services.exports import ExportService
@@ -36,6 +40,7 @@ def export_school_reading_report(
     context: Annotated[HouseholdContext, Depends(get_household_context)],
     session: Annotated[Session, Depends(get_db)],
 ) -> Response:
+    require_reader_access(reader_id, context)
     if date_to < date_from:
         raise HTTPException(
             status_code=422, detail="date_to cannot be before date_from"
@@ -81,6 +86,7 @@ def export_reading_data(
         Literal["json", "csv", "finished-books-csv"], Query(alias="format")
     ] = "json",
 ) -> Response:
+    require_admin(context)
     service = ExportService(session)
     exported_on = date.today().isoformat()
     if export_format == "finished-books-csv":

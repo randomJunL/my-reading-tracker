@@ -4,7 +4,11 @@ from typing import Annotated
 from fastapi import APIRouter, Depends, HTTPException, Query, Response, status
 from sqlalchemy.orm import Session
 
-from app.api.dependencies.household import get_household_context
+from app.api.dependencies.household import (
+    get_household_context,
+    require_admin,
+    require_reader_access,
+)
 from app.database.session import get_db
 from app.schemas.readers import ReaderCreate, ReaderResponse, ReaderUpdate
 from app.services.households import HouseholdContext
@@ -22,6 +26,9 @@ def list_readers(
     context: Annotated[HouseholdContext, Depends(get_household_context)],
     session: Annotated[Session, Depends(get_db)],
 ) -> list[ReaderResponse]:
+    if context.reader_id is not None:
+        reader = ReaderService(session).get(context.reader_id, context.household.id)
+        return [ReaderResponse.model_validate(reader)]
     readers = ReaderService(session).list(context.household.id)
     return [ReaderResponse.model_validate(reader) for reader in readers]
 
@@ -32,6 +39,7 @@ def create_reader(
     context: Annotated[HouseholdContext, Depends(get_household_context)],
     session: Annotated[Session, Depends(get_db)],
 ) -> ReaderResponse:
+    require_admin(context)
     reader = ReaderService(session).create(context.household.id, data)
     return ReaderResponse.model_validate(reader)
 
@@ -42,6 +50,7 @@ def get_reader(
     context: Annotated[HouseholdContext, Depends(get_household_context)],
     session: Annotated[Session, Depends(get_db)],
 ) -> ReaderResponse:
+    require_reader_access(reader_id, context)
     try:
         reader = ReaderService(session).get(reader_id, context.household.id)
     except ReaderNotFoundError as error:
@@ -56,6 +65,7 @@ def update_reader(
     context: Annotated[HouseholdContext, Depends(get_household_context)],
     session: Annotated[Session, Depends(get_db)],
 ) -> ReaderResponse:
+    require_admin(context)
     try:
         reader = ReaderService(session).update(reader_id, context.household.id, data)
     except ReaderNotFoundError as error:
@@ -70,6 +80,7 @@ def delete_reader(
     session: Annotated[Session, Depends(get_db)],
     confirm_history: Annotated[bool, Query()] = False,
 ) -> Response:
+    require_admin(context)
     try:
         ReaderService(session).delete(
             reader_id,

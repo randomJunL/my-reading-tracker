@@ -4,10 +4,18 @@ import { MemoryRouter } from "react-router-dom";
 
 import { RewardsPage } from "@/routes/rewards-page";
 
-const mocks = vi.hoisted(() => ({ redeem: vi.fn(), transition: vi.fn() }));
+const mocks = vi.hoisted(() => ({
+  redeem: vi.fn(),
+  transition: vi.fn(),
+  deleteGift: vi.fn(),
+}));
 
 vi.mock("@/features/readers/use-reader-selection", () => ({
   useReaderSelection: () => ({ selectedReaderId: "reader-1" }),
+}));
+
+vi.mock("@/features/auth/current-user", () => ({
+  useCurrentUser: () => ({ data: { is_admin: true } }),
 }));
 
 vi.mock("@/features/rewards/reward-api", () => ({
@@ -58,6 +66,12 @@ vi.mock("@/features/rewards/reward-api", () => ({
   useRewardRedemptions: () => ({ data: [] }),
   useCreateRewardItem: () => ({ mutateAsync: vi.fn(), isPending: false }),
   useUpdateRewardItem: () => ({ mutate: vi.fn() }),
+  useDeleteRewardItem: () => ({
+    mutate: mocks.deleteGift,
+    reset: vi.fn(),
+    isPending: false,
+    error: null,
+  }),
   useRedeemReward: () => ({
     mutate: mocks.redeem,
     isPending: false,
@@ -97,5 +111,25 @@ describe("RewardsPage", () => {
       readerId: "reader-1",
       rewardItemId: "gift-1",
     });
+  });
+
+  it("confirms before deleting an added gift", async () => {
+    const user = userEvent.setup();
+    render(<RewardsPage />, { wrapper: MemoryRouter });
+
+    await user.click(screen.getByRole("tab", { name: "gifts" }));
+    await user.click(
+      screen.getByRole("button", { name: "Delete Choose dessert" }),
+    );
+    expect(
+      screen.getByRole("dialog", { name: "Delete Choose dessert?" }),
+    ).toBeVisible();
+    await user.click(screen.getByRole("button", { name: "Delete gift" }));
+
+    expect(mocks.deleteGift).toHaveBeenCalledOnce();
+    expect(mocks.deleteGift.mock.calls[0]?.[0]).toBe("gift-1");
+    const options = mocks.deleteGift.mock.calls[0]?.[1] as
+      { onSuccess?: unknown } | undefined;
+    expect(typeof options?.onSuccess).toBe("function");
   });
 });

@@ -28,3 +28,15 @@ def require_household_access(record: HouseholdOwned, context: HouseholdContext) 
             status_code=status.HTTP_404_NOT_FOUND,
             detail="Resource not found",
         )
+
+
+def require_admin(context: HouseholdContext) -> None:
+    if not context.is_admin:
+        raise HTTPException(status_code=403, detail="Admin access is required")
+
+
+def require_reader_access(reader_id: uuid.UUID, context: HouseholdContext) -> None:
+    if not context.is_admin and context.reader_id != reader_id:
+        raise HTTPException(
+            status_code=403, detail="You can only access your own profile"
+        )

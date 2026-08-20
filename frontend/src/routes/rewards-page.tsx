@@ -8,6 +8,7 @@ import {
   Gift,
   Plus,
   Sparkles,
+  Trash2,
   Trophy,
   X,
 } from "lucide-react";
@@ -16,6 +17,7 @@ import { Link, useLocation } from "react-router-dom";
 
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
+import { useCurrentUser } from "@/features/auth/current-user";
 import { useReaderSelection } from "@/features/readers/use-reader-selection";
 import { BadgeEmblem } from "@/features/rewards/badge-emblem";
 import {
@@ -24,6 +26,7 @@ import {
   type RewardProgress,
   type RewardTransaction,
   useCreateRewardItem,
+  useDeleteRewardItem,
   useRedeemReward,
   useRewardItems,
   useRewardProgress,
@@ -43,6 +46,8 @@ const categoryLabels: Record<string, string> = {
 };
 
 export function RewardsPage() {
+  const { data: currentUser } = useCurrentUser();
+  const isAdmin = currentUser?.is_admin ?? false;
   const location = useLocation();
   const { selectedReaderId } = useReaderSelection();
   const [section, setSection] = useState<Section>("progress");
@@ -151,12 +156,14 @@ export function RewardsPage() {
           readerId={selectedReaderId}
           balance={progress.data.credit_balance}
           items={items.data ?? []}
+          isAdmin={isAdmin}
         />
       ) : null}
       {section === "history" ? (
         <HistorySection
           transactions={transactions.data ?? []}
           redemptions={redemptions.data ?? []}
+          isAdmin={isAdmin}
         />
       ) : null}
 
@@ -370,15 +377,19 @@ function GiftsSection({
   readerId,
   balance,
   items,
+  isAdmin,
 }: {
   readerId: string;
   balance: number;
   items: RewardItem[];
+  isAdmin: boolean;
 }) {
   const create = useCreateRewardItem();
+  const deletion = useDeleteRewardItem();
   const update = useUpdateRewardItem();
   const redeem = useRedeemReward();
   const [showForm, setShowForm] = useState(false);
+  const [giftToDelete, setGiftToDelete] = useState<RewardItem | null>(null);
   async function submit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     const form = new FormData(event.currentTarget);
@@ -398,12 +409,14 @@ function GiftsSection({
   }
   return (
     <>
-      <div className="mb-4 flex justify-end">
-        <Button variant="secondary" onClick={() => setShowForm(!showForm)}>
-          <Plus className="size-4" />
-          Add a gift
-        </Button>
-      </div>
+      {isAdmin ? (
+        <div className="mb-4 flex justify-end">
+          <Button variant="secondary" onClick={() => setShowForm(!showForm)}>
+            <Plus className="size-4" />
+            Add a gift
+          </Button>
+        </div>
+      ) : null}
       {showForm ? (
         <Card className="mb-5 p-5">
           <form
@@ -457,8 +470,22 @@ function GiftsSection({
         {items.map((item) => (
           <Card
             key={item.id}
-            className={`p-5 ${item.active ? "" : "opacity-60"}`}
+            className={`relative p-5 ${item.active ? "" : "opacity-60"}`}
           >
+            {isAdmin ? (
+              <button
+                type="button"
+                aria-label={`Delete ${item.name}`}
+                title="Delete gift"
+                onClick={() => {
+                  deletion.reset();
+                  setGiftToDelete(item);
+                }}
+                className="absolute top-3 right-3 cursor-pointer rounded-lg p-1.5 text-[#87958f] hover:bg-[#f7e9e5] hover:text-[#a34435]"
+              >
+                <Trash2 className="size-4" />
+              </button>
+            ) : null}
             <Gift className="size-6 text-[#c65c43]" />
             <h2 className="mt-4 font-serif text-xl font-bold">{item.name}</h2>
             <p className="mt-1 min-h-10 text-xs leading-5 text-[#687b74]">
@@ -474,19 +501,21 @@ function GiftsSection({
               </span>
             </div>
             <div className="mt-5 flex gap-2">
-              <Button
-                disabled={
-                  !item.active ||
-                  item.quantity === 0 ||
-                  balance < item.credit_cost ||
-                  redeem.isPending
-                }
-                onClick={() =>
-                  redeem.mutate({ readerId, rewardItemId: item.id })
-                }
-              >
-                Redeem
-              </Button>
+              {isAdmin ? (
+                <Button
+                  disabled={
+                    !item.active ||
+                    item.quantity === 0 ||
+                    balance < item.credit_cost ||
+                    redeem.isPending
+                  }
+                  onClick={() =>
+                    redeem.mutate({ readerId, rewardItemId: item.id })
+                  }
+                >
+                  Redeem
+                </Button>
+              ) : null}
               <Button
                 variant="ghost"
                 onClick={() =>
@@ -512,6 +541,48 @@ function GiftsSection({
           {redeem.error.message}
         </p>
       ) : null}
+      {giftToDelete ? (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-[#102f29]/55 p-4">
+          <Card
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="delete-gift-heading"
+            className="max-w-md p-7"
+          >
+            <Trash2 className="size-8 text-[#a34435]" />
+            <h2
+              id="delete-gift-heading"
+              className="mt-4 font-serif text-2xl font-bold"
+            >
+              Delete {giftToDelete.name}?
+            </h2>
+            <p className="mt-3 text-sm leading-6 text-[#687b74]">
+              This permanently removes the gift from the reward shop. Gifts with
+              redemption history must be retired instead.
+            </p>
+            {deletion.error ? (
+              <p role="alert" className="mt-3 text-sm text-[#943f30]">
+                {deletion.error.message}
+              </p>
+            ) : null}
+            <div className="mt-6 flex gap-2">
+              <Button
+                disabled={deletion.isPending}
+                onClick={() =>
+                  deletion.mutate(giftToDelete.id, {
+                    onSuccess: () => setGiftToDelete(null),
+                  })
+                }
+              >
+                {deletion.isPending ? "Deleting…" : "Delete gift"}
+              </Button>
+              <Button variant="secondary" onClick={() => setGiftToDelete(null)}>
+                Cancel
+              </Button>
+            </div>
+          </Card>
+        </div>
+      ) : null}
     </>
   );
 }
@@ -519,9 +590,11 @@ function GiftsSection({
 function HistorySection({
   transactions,
   redemptions,
+  isAdmin,
 }: {
   transactions: RewardTransaction[];
   redemptions: Redemption[];
+  isAdmin: boolean;
 }) {
   const transition = useTransitionRedemption();
   return (
@@ -568,7 +641,7 @@ function HistorySection({
               <p className="mt-1 text-xs text-[#71827c]">
                 {item.credit_cost} credits · {formatDate(item.requested_at)}
               </p>
-              {item.status === "pending" ? (
+              {isAdmin && item.status === "pending" ? (
                 <div className="mt-3 flex gap-2">
                   <Button
                     size="sm"
@@ -597,7 +670,7 @@ function HistorySection({
                   </Button>
                 </div>
               ) : null}
-              {item.status === "approved" ? (
+              {isAdmin && item.status === "approved" ? (
                 <Button
                   className="mt-3"
                   size="sm"

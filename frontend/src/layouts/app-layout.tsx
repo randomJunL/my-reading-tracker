@@ -21,7 +21,7 @@ import { cn } from "@/lib/utils";
 
 const primaryNavigation = [
   { label: "Home", to: "/", icon: Home },
-  { label: "Readers", to: "/readers", icon: Users },
+  { label: "Readers", to: "/readers", icon: Users, adminOnly: true },
   { label: "Library", to: "/library", icon: Library },
   { label: "History", to: "/history", icon: Clock3 },
   { label: "Rewards", to: "/rewards", icon: Gift },
@@ -32,6 +32,9 @@ export function AppLayout() {
   const navigate = useNavigate();
   const { isDevAuthBypass, user, signOut } = useAuth();
   const { data: currentUser } = useCurrentUser();
+  const navigation = primaryNavigation.filter(
+    (item) => !item.adminOnly || currentUser?.is_admin,
+  );
   const displayName =
     (user?.email ?? currentUser?.email)?.split("@")[0] ?? "Reader";
   const initial = displayName.charAt(0).toUpperCase();
@@ -58,7 +61,7 @@ export function AppLayout() {
         </NavLink>
 
         <nav aria-label="Primary navigation" className="space-y-1.5">
-          {primaryNavigation.map(({ label, to, icon: Icon }) => (
+          {navigation.map(({ label, to, icon: Icon }) => (
             <NavLink
               key={label}
               to={to}
@@ -87,7 +90,12 @@ export function AppLayout() {
               <p className="truncate text-sm font-semibold">
                 {currentUser?.household_name ?? "My Household"}
               </p>
-              <p className="truncate text-xs text-[#a9c0b9]">{user?.email}</p>
+              <p className="truncate text-xs text-[#a9c0b9]">
+                {user?.email}
+                {currentUser
+                  ? ` · ${currentUser.is_admin ? "Admin" : "Reader"}`
+                  : ""}
+              </p>
             </div>
             {isDevAuthBypass ? (
               <span className="rounded-md bg-[#f4bd62]/15 px-2 py-1 text-[10px] font-bold tracking-wide text-[#f4bd62] uppercase">
@@ -164,7 +172,7 @@ export function AppLayout() {
         aria-label="Mobile navigation"
         className="fixed inset-x-3 bottom-3 z-30 flex items-center justify-around rounded-2xl border border-white/10 bg-[#173f36] px-2 py-2 text-white shadow-2xl lg:hidden"
       >
-        {primaryNavigation.map(({ label, to, icon: Icon }) => (
+        {navigation.map(({ label, to, icon: Icon }) => (
           <NavLink
             key={label}
             to={to}

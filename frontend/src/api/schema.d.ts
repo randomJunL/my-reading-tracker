@@ -178,6 +178,41 @@ export interface paths {
     patch?: never;
     trace?: never;
   };
+  "/api/v1/reader-login-invitations": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    /** List Invitations */
+    get: operations["list_invitations_api_v1_reader_login_invitations_get"];
+    put?: never;
+    /** Create Invitation */
+    post: operations["create_invitation_api_v1_reader_login_invitations_post"];
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  "/api/v1/reader-login-invitations/{invitation_id}": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get?: never;
+    put?: never;
+    post?: never;
+    /** Delete Invitation */
+    delete: operations["delete_invitation_api_v1_reader_login_invitations__invitation_id__delete"];
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
   "/api/v1/readers": {
     parameters: {
       query?: never;
@@ -349,8 +384,8 @@ export interface paths {
     get?: never;
     put?: never;
     post?: never;
-    /** Retire Reward Item */
-    delete: operations["retire_reward_item_api_v1_reward_items__item_id__delete"];
+    /** Delete Reward Item */
+    delete: operations["delete_reward_item_api_v1_reward_items__item_id__delete"];
     options?: never;
     head?: never;
     /** Update Reward Item */
@@ -699,6 +734,10 @@ export interface components {
       household_id: string;
       /** Household Name */
       household_name: string;
+      /** Is Admin */
+      is_admin: boolean;
+      /** Reader Id */
+      reader_id: string | null;
       role: components["schemas"]["HouseholdRole"];
       /**
        * User Id
@@ -1030,7 +1069,7 @@ export interface components {
      * HouseholdRole
      * @enum {string}
      */
-    HouseholdRole: "owner" | "caregiver";
+    HouseholdRole: "owner" | "caregiver" | "reader";
     /**
      * MetadataSource
      * @enum {string}
@@ -1097,6 +1136,33 @@ export interface components {
       avatar_key?: string | null;
       /** Name */
       name: string;
+    };
+    /** ReaderLoginInvitationCreate */
+    ReaderLoginInvitationCreate: {
+      /** Email */
+      email: string;
+      /**
+       * Reader Id
+       * Format: uuid
+       */
+      reader_id: string;
+    };
+    /** ReaderLoginInvitationResponse */
+    ReaderLoginInvitationResponse: {
+      /** Accepted */
+      accepted: boolean;
+      /** Email */
+      email: string;
+      /**
+       * Id
+       * Format: uuid
+       */
+      id: string;
+      /**
+       * Reader Id
+       * Format: uuid
+       */
+      reader_id: string;
     };
     /** ReaderResponse */
     ReaderResponse: {
@@ -1962,6 +2028,88 @@ export interface operations {
       };
     };
   };
+  list_invitations_api_v1_reader_login_invitations_get: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      /** @description Successful Response */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ReaderLoginInvitationResponse"][];
+        };
+      };
+    };
+  };
+  create_invitation_api_v1_reader_login_invitations_post: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    requestBody: {
+      content: {
+        "application/json": components["schemas"]["ReaderLoginInvitationCreate"];
+      };
+    };
+    responses: {
+      /** @description Successful Response */
+      201: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["ReaderLoginInvitationResponse"];
+        };
+      };
+      /** @description Validation Error */
+      422: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["HTTPValidationError"];
+        };
+      };
+    };
+  };
+  delete_invitation_api_v1_reader_login_invitations__invitation_id__delete: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        invitation_id: string;
+      };
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      /** @description Successful Response */
+      204: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content?: never;
+      };
+      /** @description Validation Error */
+      422: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["HTTPValidationError"];
+        };
+      };
+    };
+  };
   list_readers_api_v1_readers_get: {
     parameters: {
       query?: never;
@@ -2506,7 +2654,7 @@ export interface operations {
       };
     };
   };
-  retire_reward_item_api_v1_reward_items__item_id__delete: {
+  delete_reward_item_api_v1_reward_items__item_id__delete: {
     parameters: {
       query?: never;
       header?: never;

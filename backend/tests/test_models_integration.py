@@ -32,6 +32,7 @@ def test_migration_builds_complete_schema(db_session: Session) -> None:
         "households",
         "reader_books",
         "reader_badges",
+        "reader_login_invitations",
         "reader_reward_progress",
         "readers",
         "reading_sessions",

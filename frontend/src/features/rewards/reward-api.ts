@@ -77,6 +77,15 @@ export function useUpdateRewardItem() {
   });
 }
 
+export function useDeleteRewardItem() {
+  const client = useQueryClient();
+  return useMutation({
+    mutationFn: (itemId: string) =>
+      apiFetch<void>(`/reward-items/${itemId}`, { method: "DELETE" }),
+    onSuccess: () => invalidateRewards(client),
+  });
+}
+
 export function useRedeemReward() {
   const client = useQueryClient();
   return useMutation({

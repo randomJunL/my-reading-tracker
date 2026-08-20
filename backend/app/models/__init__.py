@@ -1,6 +1,11 @@
 from app.models.book import Book, MetadataSource
 from app.models.book_recommendation import BookRecommendation
-from app.models.household import Household, HouseholdMember, HouseholdRole
+from app.models.household import (
+    Household,
+    HouseholdMember,
+    HouseholdRole,
+    ReaderLoginInvitation,
+)
 from app.models.reader import Reader
 from app.models.reader_book import ReaderBook, ReadingStatus
 from app.models.reading_session import ActivityType, ReadingSession
@@ -29,6 +34,7 @@ __all__ = [
     "Reader",
     "ReaderBadge",
     "ReaderBook",
+    "ReaderLoginInvitation",
     "ReaderRewardProgress",
     "ReadingSession",
     "ReadingStatus",
