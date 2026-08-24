@@ -120,13 +120,14 @@ python -m scripts.production_migrate
 
 The command requires `APP_ENV=production`, upgrades to the Alembic head, and
 then verifies that the deployed models have no ungenerated schema operations.
-The Free-tier Docker command runs it before starting Uvicorn, so a failed
-migration prevents the API health check from succeeding. Alembic upgrades are
+The Docker image runs it before starting Uvicorn, so a failed migration
+prevents the API health check from succeeding. Keeping startup in the image
+also avoids platform-specific command-string quoting. Alembic upgrades are
 idempotent; waking or restarting an already-migrated service simply confirms
 that the database is current.
 
 When upgrading the web service to a paid instance, change `plan: free` to
-`plan: starter`, remove `dockerCommand`, and restore this Blueprint field:
+`plan: starter` and restore this Blueprint field:
 
 ```yaml
 preDeployCommand: python -m scripts.production_migrate
