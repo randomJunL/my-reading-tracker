@@ -564,33 +564,3 @@ For each implementation step:
 
 Do not begin post-version-one features until the primary logging workflow is
 deployed and used successfully.
-
-## 12. Authentication experience redesign
-
-The production application uses three server-assigned account roles:
-
-- `owner`: the first parent or teacher who creates a household or classroom;
-  retains full administrative access.
-- `caregiver`: an adult invited by an owner; receives day-to-day administrative
-  access without becoming the household owner.
-- `reader`: a child invited by an administrator and linked to exactly one reader
-  profile; can use only that reader's library, logs, rewards, and reports.
-
-The public account-type choice explains these paths but never grants a role.
-Role assignment remains a backend responsibility: new household setup creates
-an owner, and caregiver or reader access requires an invitation. A reader may
-not self-select administrator access.
-
-### Step 1: Confirm account types and permissions
-
-Status: implemented on 2026-08-24. The existing FastAPI authorization rules
-enforce owner/caregiver administration and reader-profile isolation. The role
-rules above are the contract for the remaining authentication redesign.
-
-### Step 2: Add public account entry choices
-
-Status: implemented on 2026-08-24. The sign-in screen now introduces separate
-**Parent or teacher** and **Reader** paths, describes their capabilities, and
-informs readers that an administrator invitation is required. The existing
-magic-link form remains available in both paths until password authentication
-replaces it in the next implementation slice.
