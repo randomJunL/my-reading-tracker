@@ -2,11 +2,14 @@ services:
   - type: web
     name: my-reading-tracker-api
     runtime: docker
+    plan: free
     dockerfilePath: ./backend/Dockerfile
     dockerContext: ./backend
+    dockerCommand: >-
+      sh -c 'python -m scripts.production_migrate && exec uvicorn
+      app.main:app --host 0.0.0.0 --port "${PORT:-8000}"'
     autoDeployTrigger: checksPass
     healthCheckPath: /api/v1/health
-    preDeployCommand: python -m scripts.production_migrate
     envVars:
       - key: APP_ENV
         value: production

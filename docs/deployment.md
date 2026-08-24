@@ -40,8 +40,15 @@ Supabase's Security Advisor after the migration.
 ## 2. Deploy FastAPI on Render
 
 Connect the repository as a Render Blueprint. Render reads `render.yaml`, builds
-`backend/Dockerfile`, runs the migration command before each release, checks
-`/api/v1/health`, and deploys only after repository checks pass.
+`backend/Dockerfile`, and creates one Free web-service instance. Because Render's
+dedicated pre-deploy command is a paid feature, the container applies migrations
+before starting FastAPI. Render then checks `/api/v1/health` and deploys only
+after repository checks pass.
+
+The Free instance is intended for evaluation and light family testing. It spins
+down after an idle period and can take time to answer the first request after it
+wakes. Upgrade the same service to Starter before relying on it for regular
+school use.
 
 Provide these prompted values in the Render dashboard:
 
@@ -105,7 +112,7 @@ intended for testing and its low email quota is not suitable for normal users.
 
 ## 5. Migration procedure
 
-Every Render deployment runs:
+Every Render container start runs:
 
 ```bash
 python -m scripts.production_migrate
@@ -113,7 +120,19 @@ python -m scripts.production_migrate
 
 The command requires `APP_ENV=production`, upgrades to the Alembic head, and
 then verifies that the deployed models have no ungenerated schema operations.
-It must run before the new application process starts.
+The Free-tier Docker command runs it before starting Uvicorn, so a failed
+migration prevents the API health check from succeeding. Alembic upgrades are
+idempotent; waking or restarting an already-migrated service simply confirms
+that the database is current.
+
+When upgrading the web service to a paid instance, change `plan: free` to
+`plan: starter`, remove `dockerCommand`, and restore this Blueprint field:
+
+```yaml
+preDeployCommand: python -m scripts.production_migrate
+```
+
+That moves migration execution back to Render's dedicated pre-deploy phase.
 
 Before merging a migration:
 
