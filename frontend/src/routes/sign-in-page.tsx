@@ -25,7 +25,7 @@ const accountPaths = {
     title: "Manage a family or classroom",
     description:
       "Set up readers, recommend books, manage gifts, approve redemptions, and review reports.",
-    emailHint: "Use your parent, teacher, or caregiver email.",
+    emailHint: "Use the email for this family or classroom account.",
     placeholder: "parent@example.com",
     icon: UsersRound,
   },
@@ -107,7 +107,7 @@ export function SignInPage() {
           throw new Error("The passwords do not match.");
         }
         await activateInvitation({
-          accountType: accountPath === "reader" ? "reader" : "caregiver",
+          accountType: "reader",
           email,
           password,
         });
@@ -331,12 +331,7 @@ function SignInCard({
       </div>
 
       {!isRequestingReset && (
-        <div
-          className={cn(
-            "mt-6 grid rounded-xl bg-[#edf1ed] p-1",
-            accountPath === "adult" ? "grid-cols-3" : "grid-cols-2",
-          )}
-        >
+        <div className="mt-6 grid grid-cols-2 rounded-xl bg-[#edf1ed] p-1">
           <AuthModeButton
             active={authMode === "sign-in"}
             onClick={() => onChangeAuthMode("sign-in")}
@@ -351,12 +346,14 @@ function SignInCard({
               Create account
             </AuthModeButton>
           )}
-          <AuthModeButton
-            active={authMode === "activate"}
-            onClick={() => onChangeAuthMode("activate")}
-          >
-            Activate invite
-          </AuthModeButton>
+          {accountPath === "reader" && (
+            <AuthModeButton
+              active={authMode === "activate"}
+              onClick={() => onChangeAuthMode("activate")}
+            >
+              Activate invite
+            </AuthModeButton>
+          )}
         </div>
       )}
 

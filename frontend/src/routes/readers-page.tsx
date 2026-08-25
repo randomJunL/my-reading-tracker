@@ -18,12 +18,9 @@ import { Card } from "@/components/ui/card";
 import {
   type Reader,
   type ReaderCreate,
-  useCaregiverLoginInvitations,
-  useCreateCaregiverLoginInvitation,
   useCreateReader,
   useCreateReaderLoginInvitation,
   useDeleteReader,
-  useDeleteCaregiverLoginInvitation,
   useDeleteReaderLoginInvitation,
   useReaderLoginInvitations,
   useReaders,
@@ -54,9 +51,6 @@ export function ReadersPage() {
   const { data: readers = [], isLoading, error } = useReaders();
   const createMutation = useCreateReader();
   const invitations = useReaderLoginInvitations();
-  const caregiverInvitations = useCaregiverLoginInvitations();
-  const createCaregiverInvitation = useCreateCaregiverLoginInvitation();
-  const deleteCaregiverInvitation = useDeleteCaregiverLoginInvitation();
   const createInvitation = useCreateReaderLoginInvitation();
   const deleteInvitation = useDeleteReaderLoginInvitation();
   const updateMutation = useUpdateReader();
@@ -178,68 +172,6 @@ export function ReadersPage() {
               </span>
             );
           })}
-        </div>
-      </Card>
-
-      <Card className="mb-6 p-5 sm:p-6">
-        <div className="flex items-start gap-3">
-          <UsersRound className="mt-1 size-5 text-[#c65c43]" />
-          <div>
-            <h2 className="font-serif text-xl font-bold text-[#21483e]">
-              Caregiver login access
-            </h2>
-            <p className="mt-1 text-sm leading-6 text-[#667b74]">
-              Approve another adult to help manage this household. Tell them to
-              choose Parent or teacher, then Activate invite using this email.
-            </p>
-          </div>
-        </div>
-        <form
-          className="mt-4 flex flex-col gap-3 sm:flex-row"
-          onSubmit={(event) => {
-            event.preventDefault();
-            const form = new FormData(event.currentTarget);
-            const email = form.get("caregiver_email");
-            if (typeof email !== "string") return;
-            createCaregiverInvitation.mutate({ email });
-            event.currentTarget.reset();
-          }}
-        >
-          <input
-            name="caregiver_email"
-            type="email"
-            required
-            aria-label="Caregiver login email"
-            placeholder="caregiver@example.com"
-            className="h-11 flex-1 rounded-xl border border-[#d7d5c9] bg-white px-3 text-sm"
-          />
-          <Button disabled={createCaregiverInvitation.isPending}>
-            Approve caregiver
-          </Button>
-        </form>
-        {createCaregiverInvitation.error ? (
-          <p role="alert" className="mt-3 text-sm text-[#943f30]">
-            {createCaregiverInvitation.error.message}
-          </p>
-        ) : null}
-        <div className="mt-4 flex flex-wrap gap-2">
-          {caregiverInvitations.data?.map((item) => (
-            <span
-              key={item.id}
-              className="inline-flex items-center gap-2 rounded-full bg-[#edf2ee] px-3 py-2 text-xs text-[#31564c]"
-            >
-              {item.email} ·{" "}
-              {item.accepted ? "Active" : "Waiting for activation"}
-              <button
-                type="button"
-                aria-label={`Remove caregiver access for ${item.email}`}
-                onClick={() => deleteCaregiverInvitation.mutate(item.id)}
-                className="cursor-pointer text-[#a34435]"
-              >
-                <X className="size-3.5" />
-              </button>
-            </span>
-          ))}
         </div>
       </Card>
 

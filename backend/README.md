@@ -46,12 +46,11 @@ first request it creates a household and owner membership. Subsequent requests
 return the same household. The backend never accepts a publishable key or JWT
 secret as proof of user identity.
 
-Administrators manage reader and caregiver activation through
-`/api/v1/reader-login-invitations` and
-`/api/v1/caregiver-login-invitations`. Pending access is matched by normalized
-email on the invitee's first authenticated request. FastAPI assigns the reader
-or caregiver role; client-supplied account metadata can require an invitation
-but never grants that role by itself.
+The owner manages reader activation through
+`/api/v1/reader-login-invitations`. Pending access is matched by normalized
+email on the reader's first authenticated request. FastAPI assigns the reader
+role; client-supplied account metadata can require an invitation but never
+grants that role by itself. Each household has one adult owner login.
 
 Local development can use the explicitly gated identity bypass documented in
 `docs/development.md`. The settings validator prevents this bypass from being

@@ -7,7 +7,6 @@ from sqlalchemy.orm import Session, joinedload
 
 from app.core.security import AuthenticatedUser
 from app.models import (
-    CaregiverLoginInvitation,
     Household,
     HouseholdMember,
     HouseholdRole,
@@ -23,10 +22,7 @@ class HouseholdContext:
 
     @property
     def is_admin(self) -> bool:
-        return self.membership.role in {
-            HouseholdRole.OWNER,
-            HouseholdRole.CAREGIVER,
-        }
+        return self.membership.role is HouseholdRole.OWNER
 
     @property
     def reader_id(self) -> uuid.UUID | None:
@@ -73,28 +69,7 @@ def get_or_create_household(
             raise ReaderLoginInvitationNotFoundError
         return HouseholdContext(household, membership)
 
-    caregiver_invitation = session.scalar(
-        select(CaregiverLoginInvitation).where(
-            func.lower(CaregiverLoginInvitation.email) == user.email.strip().lower(),
-            CaregiverLoginInvitation.accepted_at.is_(None),
-        )
-    )
-    if caregiver_invitation is not None:
-        membership = HouseholdMember(
-            household_id=caregiver_invitation.household_id,
-            user_id=user.id,
-            role=HouseholdRole.CAREGIVER,
-        )
-        caregiver_invitation.accepted_user_id = user.id
-        caregiver_invitation.accepted_at = datetime.now(UTC)
-        session.add(membership)
-        session.commit()
-        household = session.get(Household, caregiver_invitation.household_id)
-        if household is None:
-            raise LoginInvitationNotFoundError
-        return HouseholdContext(household, membership)
-
-    if user.account_type in {"reader", "caregiver"}:
+    if user.account_type == "reader":
         raise LoginInvitationRequiredError
 
     household = Household(name=user.household_name or "My Household")
@@ -134,14 +109,6 @@ class LoginInvitationRequiredError(Exception):
     pass
 
 
-class LoginInvitationConflictError(Exception):
-    pass
-
-
-class LoginInvitationNotFoundError(Exception):
-    pass
-
-
 def list_reader_login_invitations(
     session: Session, household_id: uuid.UUID
 ) -> list[ReaderLoginInvitation]:
@@ -174,14 +141,9 @@ def create_reader_login_invitation(
             | (func.lower(ReaderLoginInvitation.email) == normalized_email)
         )
     )
-    caregiver_existing = session.scalar(
-        select(CaregiverLoginInvitation).where(
-            func.lower(CaregiverLoginInvitation.email) == normalized_email
-        )
-    )
     if reader is None:
         raise ReaderLoginInvitationNotFoundError
-    if existing is not None or caregiver_existing is not None:
+    if existing is not None:
         raise ReaderLoginInvitationConflictError
     invitation = ReaderLoginInvitation(
         household_id=household_id, reader_id=reader_id, email=normalized_email
@@ -203,69 +165,6 @@ def delete_reader_login_invitation(
     )
     if invitation is None:
         raise ReaderLoginInvitationNotFoundError
-    if invitation.accepted_user_id is not None:
-        membership = session.scalar(
-            select(HouseholdMember).where(
-                HouseholdMember.user_id == invitation.accepted_user_id,
-                HouseholdMember.household_id == household_id,
-            )
-        )
-        if membership is not None:
-            session.delete(membership)
-    session.delete(invitation)
-    session.commit()
-
-
-def list_caregiver_login_invitations(
-    session: Session, household_id: uuid.UUID
-) -> list[CaregiverLoginInvitation]:
-    return list(
-        session.scalars(
-            select(CaregiverLoginInvitation)
-            .where(CaregiverLoginInvitation.household_id == household_id)
-            .order_by(CaregiverLoginInvitation.created_at)
-        )
-    )
-
-
-def create_caregiver_login_invitation(
-    session: Session, household_id: uuid.UUID, email: str
-) -> CaregiverLoginInvitation:
-    normalized_email = email.strip().lower()
-    if "@" not in normalized_email:
-        raise ValueError("Enter a valid email address")
-    existing_caregiver = session.scalar(
-        select(CaregiverLoginInvitation).where(
-            func.lower(CaregiverLoginInvitation.email) == normalized_email
-        )
-    )
-    existing_reader = session.scalar(
-        select(ReaderLoginInvitation).where(
-            func.lower(ReaderLoginInvitation.email) == normalized_email
-        )
-    )
-    if existing_caregiver is not None or existing_reader is not None:
-        raise LoginInvitationConflictError
-    invitation = CaregiverLoginInvitation(
-        household_id=household_id, email=normalized_email
-    )
-    session.add(invitation)
-    session.commit()
-    session.refresh(invitation)
-    return invitation
-
-
-def delete_caregiver_login_invitation(
-    session: Session, household_id: uuid.UUID, invitation_id: uuid.UUID
-) -> None:
-    invitation = session.scalar(
-        select(CaregiverLoginInvitation).where(
-            CaregiverLoginInvitation.id == invitation_id,
-            CaregiverLoginInvitation.household_id == household_id,
-        )
-    )
-    if invitation is None:
-        raise LoginInvitationNotFoundError
     if invitation.accepted_user_id is not None:
         membership = session.scalar(
             select(HouseholdMember).where(

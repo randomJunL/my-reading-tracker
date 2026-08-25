@@ -88,7 +88,7 @@ def _optional_metadata_text(metadata: dict[str, Any], key: str) -> str | None:
 
 def _optional_account_type(metadata: dict[str, Any]) -> str | None:
     value = metadata.get("account_type")
-    return value if value in {"adult", "caregiver", "reader"} else None
+    return value if value in {"adult", "reader"} else None
 
 
 @lru_cache

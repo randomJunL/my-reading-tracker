@@ -15,7 +15,7 @@ export type AuthContextValue = {
     password: string;
   }) => Promise<void>;
   activateInvitation: (details: {
-    accountType: "caregiver" | "reader";
+    accountType: "reader";
     email: string;
     password: string;
   }) => Promise<void>;

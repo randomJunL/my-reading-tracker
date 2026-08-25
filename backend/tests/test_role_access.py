@@ -84,44 +84,15 @@ def test_reader_login_is_linked_and_restricted(
     )
 
 
-def test_caregiver_invitation_assigns_admin_access(
+def test_invited_reader_cannot_create_an_owner_household(
     role_client: tuple[TestClient, dict[str, AuthenticatedUser]],
-) -> None:
-    client, current = role_client
-    owner_me = client.get("/api/v1/me").json()
-    invitation = client.post(
-        "/api/v1/caregiver-login-invitations",
-        json={"email": "helper@example.com"},
-    )
-    assert invitation.status_code == 201
-    assert invitation.json()["accepted"] is False
-
-    current["user"] = AuthenticatedUser(
-        id=uuid.uuid4(),
-        email="HELPER@example.com",
-        session_id=uuid.uuid4(),
-        account_type="caregiver",
-    )
-    me = client.get("/api/v1/me")
-
-    assert me.status_code == 200
-    assert me.json()["household_id"] == owner_me["household_id"]
-    assert me.json()["role"] == "caregiver"
-    assert me.json()["is_admin"] is True
-    assert client.post("/api/v1/readers", json={"name": "Sam"}).status_code == 201
-
-
-@pytest.mark.parametrize("account_type", ["reader", "caregiver"])
-def test_invited_account_types_cannot_create_an_owner_household(
-    role_client: tuple[TestClient, dict[str, AuthenticatedUser]],
-    account_type: str,
 ) -> None:
     client, current = role_client
     current["user"] = AuthenticatedUser(
         id=uuid.uuid4(),
-        email=f"uninvited-{account_type}@example.com",
+        email="uninvited-reader@example.com",
         session_id=uuid.uuid4(),
-        account_type=account_type,
+        account_type="reader",
     )
 
     response = client.get("/api/v1/me")

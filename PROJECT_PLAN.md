@@ -42,7 +42,6 @@ backend or database to be rewritten.
 - Native mobile application
 - Barcode camera scanning
 - Offline support
-- Caregiver invitations
 - Goals, streaks, badges, or leaderboards
 - Teacher and school reports
 - Reviews, recommendations, or social features
@@ -172,7 +171,7 @@ The backend remains a modular monolith; microservices are unnecessary.
 
 - `household_id`: foreign key to households
 - `user_id`: Supabase Auth user UUID
-- `role`: owner or caregiver
+- `role`: owner or reader
 - `created_at`: timestamp with time zone
 - Unique constraint on household and user
 
@@ -542,14 +541,13 @@ Version one is complete only when a parent can:
 Potential additions should be prioritized from real usage rather than built in
 advance:
 
-1. Caregiver invitations and household roles
-2. Reading goals and noncompetitive celebrations
-3. Barcode scanning
-4. Printable teacher reports
-5. Custom cover uploads
-6. Offline-capable reading logging
-7. React Native mobile client using the existing API
-8. Notifications and reminders
+1. Reading goals and noncompetitive celebrations
+2. Barcode scanning
+3. Printable teacher reports
+4. Custom cover uploads
+5. Offline-capable reading logging
+6. React Native mobile client using the existing API
+7. Notifications and reminders
 
 ## 11. Working method
 
@@ -567,25 +565,24 @@ deployed and used successfully.
 
 ## 12. Authentication experience redesign
 
-The production application uses three server-assigned account roles:
+The production application uses two server-assigned account roles:
 
 - `owner`: the first parent or teacher who creates a household or classroom;
   retains full administrative access.
-- `caregiver`: an adult invited by an owner; receives day-to-day administrative
-  access without becoming the household owner.
 - `reader`: a child invited by an administrator and linked to exactly one reader
   profile; can use only that reader's library, logs, rewards, and reports.
 
 The public account-type choice explains these paths but never grants a role.
 Role assignment remains a backend responsibility: new household setup creates
-an owner, and caregiver or reader access requires an invitation. A reader may
-not self-select administrator access.
+the single owner, and reader access requires an invitation. A reader may not
+self-select administrator access.
 
 ### Step 1: Confirm account types and permissions
 
-Status: implemented on 2026-08-24. The existing FastAPI authorization rules
-enforce owner/caregiver administration and reader-profile isolation. The role
-rules above are the contract for the remaining authentication redesign.
+Status: implemented on 2026-08-24 and revised on 2026-08-25. The existing
+FastAPI authorization rules enforce one owner administrator and reader-profile
+isolation. The role rules above are the contract for the remaining
+authentication redesign.
 
 ### Step 2: Add public account entry choices
 
@@ -609,13 +606,12 @@ account creation and invitation delivery remain part of Step 4.
 
 ### Step 4: Add administrator-managed account invitations
 
-Status: implemented on 2026-08-25. Owners and caregivers can approve an email
-for reader access linked to one reader profile. Administrators can also approve
-a caregiver email for household-wide administrative access. No invitation
-email is sent: the administrator shares the approved email directly, and the
-invitee chooses **Activate invite** on the appropriate public account path to
-create a password. FastAPI consumes the pending invitation on first access and
-assigns the server-controlled role. A reader or caregiver activation without a
+Status: implemented on 2026-08-25. The owner can approve an email for reader
+access linked to one reader profile. No invitation email is sent: the owner
+shares the approved email directly, and the reader chooses **Activate invite**
+to create a password. FastAPI consumes the pending invitation on first access
+and assigns the server-controlled reader role. A reader activation without a
 matching invitation is rejected instead of creating a new owner household.
 Removing pending access cancels it; removing accepted access revokes the linked
-household membership without deleting reading data.
+reader membership without deleting reading data. Each household has only one
+adult management login: its owner.

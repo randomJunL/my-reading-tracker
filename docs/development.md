@@ -114,8 +114,8 @@ in the Supabase redirect allow list.
 
 ### Admin and reader accounts
 
-Owners and caregivers are administrators. From **Readers → Reader login
-access**, an administrator links an existing reader profile to an email address.
+The owner is the only administrator. From **Readers → Reader login access**, the
+owner links an existing reader profile to an email address.
 Create the link before the reader first opens the application. FastAPI matches
 the authenticated email to that link; the first authenticated request joins the
 administrator's household and locks the account to the linked reader profile.
@@ -123,10 +123,8 @@ The administrator shares the approved email directly; no invitation email is
 sent. The reader chooses **Reader → Activate invite**, enters the exact approved
 email, and creates a password.
 
-To add another adult, use **Readers → Caregiver login access** and approve their
-email. The adult chooses **Parent or teacher → Activate invite** and creates a
-password with that email. They join as a caregiver and receive administrative
-access without becoming the household owner. An activation without a matching
+There is no additional adult role or invitation. Each household has one owner
+email for all management actions. A reader activation without a matching
 invitation is rejected instead of creating an owner household.
 
 Reader accounts can use their own dashboard, recommended library books, reading

@@ -25,13 +25,3 @@ class ReaderLoginInvitationResponse(BaseModel):
     reader_id: uuid.UUID
     email: str
     accepted: bool
-
-
-class CaregiverLoginInvitationCreate(BaseModel):
-    email: str
-
-
-class CaregiverLoginInvitationResponse(BaseModel):
-    id: uuid.UUID
-    email: str
-    accepted: bool
