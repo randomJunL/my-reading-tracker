@@ -1,7 +1,8 @@
-import { render, screen } from "@testing-library/react";
+import { render, screen, waitFor } from "@testing-library/react";
 import { MemoryRouter, Route, Routes } from "react-router-dom";
 
 import { ProtectedRoute } from "@/features/auth/protected-route";
+import { ApiError } from "@/api/client";
 
 const authMocks = vi.hoisted(() => ({
   useAuth: vi.fn(),
@@ -68,5 +69,64 @@ describe("ProtectedRoute", () => {
     );
 
     expect(screen.getByText("Private dashboard")).toBeInTheDocument();
+  });
+
+  it("explains missing or revoked reader access", () => {
+    authMocks.useAuth.mockReturnValue({
+      isLoading: false,
+      isDevAuthBypass: false,
+      session: { user: { id: "reader" } },
+      signOut: vi.fn(),
+    });
+    authMocks.useCurrentUser.mockReturnValue({
+      error: new ApiError("A valid invitation is required", 403),
+      isPending: false,
+      isError: true,
+    });
+
+    render(
+      <MemoryRouter>
+        <Routes>
+          <Route element={<ProtectedRoute />}>
+            <Route index element={<p>Private dashboard</p>} />
+          </Route>
+        </Routes>
+      </MemoryRouter>,
+    );
+
+    expect(
+      screen.getByRole("heading", { name: "Reader access unavailable" }),
+    ).toBeInTheDocument();
+    expect(screen.getByText(/active reader invitation/i)).toBeInTheDocument();
+  });
+
+  it("clears an expired session", async () => {
+    const signOut = vi.fn().mockResolvedValue(undefined);
+    authMocks.useAuth.mockReturnValue({
+      isLoading: false,
+      isDevAuthBypass: false,
+      session: { user: { id: "expired" } },
+      signOut,
+    });
+    authMocks.useCurrentUser.mockReturnValue({
+      error: new ApiError("Invalid or expired authentication token", 401),
+      isPending: false,
+      isError: true,
+    });
+
+    render(
+      <MemoryRouter>
+        <Routes>
+          <Route element={<ProtectedRoute />}>
+            <Route index element={<p>Private dashboard</p>} />
+          </Route>
+        </Routes>
+      </MemoryRouter>,
+    );
+
+    expect(
+      screen.getByRole("heading", { name: "Your session expired" }),
+    ).toBeInTheDocument();
+    await waitFor(() => expect(signOut).toHaveBeenCalled());
   });
 });

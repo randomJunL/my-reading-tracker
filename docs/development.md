@@ -128,10 +128,23 @@ email for all management actions. A reader activation without a matching
 invitation is rejected instead of creating an owner household.
 
 Reader accounts can use their own dashboard, recommended library books, reading
-log, rewards, gift requests, history, and printable report. Only administrators
-can manage readers, recommendations, gifts, redemption approvals, household
+log, rewards, gift requests, history, and printable report. Only the owner can
+manage readers, recommendations, gifts, redemption approvals, household
 spreadsheet exports, or another reader's records. Removing a reader login link
 revokes its access to the household without deleting the reader's saved data.
+
+### Account and session management
+
+Use the account button in the application header or the signed-in identity in
+the desktop sidebar to open **Account**. It shows the authenticated email,
+server-assigned role, household, and linked reader profile. A signed-in user can
+change their password there without sending email. **Forgot password?** remains
+the email-based recovery path when the user cannot sign in.
+
+If FastAPI rejects an expired token, the frontend clears the stale Supabase
+session and returns to sign in. If a reader invitation is missing or has been
+revoked, the frontend shows an access explanation rather than the generic API
+configuration error.
 
 ### Development-only authentication bypass
 

@@ -1,6 +1,7 @@
 import { createBrowserRouter } from "react-router-dom";
 
 import { AppLayout } from "@/layouts/app-layout";
+import { AccountPage } from "@/routes/account-page";
 import { AdminRoute } from "@/features/auth/admin-route";
 import { ProtectedRoute } from "@/features/auth/protected-route";
 import { DashboardPage } from "@/routes/dashboard-page";
@@ -27,6 +28,7 @@ export const router = createBrowserRouter([
         errorElement: <RouteErrorBoundary />,
         children: [
           { index: true, element: <DashboardPage /> },
+          { path: "account", element: <AccountPage /> },
           {
             element: <AdminRoute />,
             children: [{ path: "readers", element: <ReadersPage /> }],

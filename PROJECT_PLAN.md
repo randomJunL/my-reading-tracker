@@ -615,3 +615,14 @@ matching invitation is rejected instead of creating a new owner household.
 Removing pending access cancels it; removing accepted access revokes the linked
 reader membership without deleting reading data. Each household has only one
 adult management login: its owner.
+
+### Step 5: Harden account and session experience
+
+Status: implemented on 2026-08-25. Expected authorization failures now have
+specific user guidance: an uninvited or revoked reader is told to contact the
+owner, while an expired backend session is cleared and returned to normal sign
+in. The authenticated Account page displays email, role, household, and linked
+reader access. Owners and readers can change their password from an active
+session without sending email; email remains reserved for forgotten-password
+recovery. Automated tests cover account details, password changes, invitation
+errors, and expired-session handling.
