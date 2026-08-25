@@ -70,6 +70,26 @@ def test_token_verifier_accepts_valid_supabase_access_token(
     )
 
 
+def test_token_verifier_reads_optional_registration_metadata(
+    signing_keys: tuple[Any, Any],
+) -> None:
+    private_key, public_key = signing_keys
+
+    user = _verifier(public_key).verify(
+        _token(
+            private_key,
+            user_metadata={
+                "full_name": "  Jordan Parent  ",
+                "household_name": "  The Bookworms  ",
+                "role": "reader",
+            },
+        )
+    )
+
+    assert user.full_name == "Jordan Parent"
+    assert user.household_name == "The Bookworms"
+
+
 @pytest.mark.parametrize(
     "claim_overrides",
     [
@@ -143,6 +163,35 @@ def test_me_provisions_one_owner_household(
     assert membership is not None
     assert membership.role == HouseholdRole.OWNER
     assert str(membership.household_id) == first_response.json()["household_id"]
+
+
+def test_me_uses_registration_household_name_without_trusting_a_role(
+    db_session: Session,
+) -> None:
+    user = AuthenticatedUser(
+        id=uuid.uuid4(),
+        email="teacher@example.com",
+        session_id=uuid.uuid4(),
+        full_name="Jordan Teacher",
+        household_name="Room 12 Readers",
+    )
+
+    def override_db() -> Generator[Session, None, None]:
+        yield db_session
+
+    app.dependency_overrides[get_request_token_verifier] = lambda: StaticVerifier(user)
+    app.dependency_overrides[get_db] = override_db
+    try:
+        with TestClient(app) as client:
+            response = client.get(
+                "/api/v1/me", headers={"Authorization": "Bearer valid"}
+            )
+    finally:
+        app.dependency_overrides.clear()
+
+    assert response.status_code == 200
+    assert response.json()["household_name"] == "Room 12 Readers"
+    assert response.json()["role"] == "owner"
 
 
 def test_development_bypass_provisions_household_without_token(

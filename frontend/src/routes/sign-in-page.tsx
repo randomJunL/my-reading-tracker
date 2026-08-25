@@ -1,8 +1,9 @@
 import {
   ArrowLeft,
   BookOpenCheck,
-  Mail,
+  LockKeyhole,
   ShieldCheck,
+  UserPlus,
   UsersRound,
 } from "lucide-react";
 import { type FormEvent, useState } from "react";
@@ -16,6 +17,7 @@ import { useAuth } from "@/features/auth/auth";
 import { cn } from "@/lib/utils";
 
 type AccountPath = "adult" | "reader";
+type AuthMode = "sign-in" | "register";
 
 const accountPaths = {
   adult: {
@@ -40,10 +42,21 @@ const accountPaths = {
 } as const;
 
 export function SignInPage() {
-  const { isConfigured, isDevAuthBypass, isLoading, session, sendMagicLink } =
-    useAuth();
+  const {
+    isConfigured,
+    isDevAuthBypass,
+    isLoading,
+    registerAdult,
+    session,
+    signInWithPassword,
+  } = useAuth();
   const [accountPath, setAccountPath] = useState<AccountPath | null>(null);
+  const [authMode, setAuthMode] = useState<AuthMode>("sign-in");
   const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
+  const [fullName, setFullName] = useState("");
+  const [householdName, setHouseholdName] = useState("");
   const [isSending, setIsSending] = useState(false);
   const [message, setMessage] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -54,7 +67,12 @@ export function SignInPage() {
 
   function chooseAccountPath(path: AccountPath) {
     setAccountPath(path);
+    setAuthMode("sign-in");
     setEmail("");
+    setPassword("");
+    setConfirmPassword("");
+    setFullName("");
+    setHouseholdName("");
     setMessage(null);
     setError(null);
   }
@@ -65,13 +83,32 @@ export function SignInPage() {
     setMessage(null);
     setIsSending(true);
     try {
-      await sendMagicLink(email.trim());
-      setMessage("Check your email for a secure sign-in link.");
+      if (authMode === "register") {
+        if (password.length < 8) {
+          throw new Error("Use at least 8 characters for your password.");
+        }
+        if (password !== confirmPassword) {
+          throw new Error("The passwords do not match.");
+        }
+        const result = await registerAdult({
+          email,
+          fullName,
+          householdName,
+          password,
+        });
+        setMessage(
+          result.requiresEmailConfirmation
+            ? "Account created. Check your email once to confirm your account, then return here to sign in."
+            : "Your account is ready. Signing you in…",
+        );
+      } else {
+        await signInWithPassword(email, password);
+      }
     } catch (requestError) {
       setError(
         requestError instanceof Error
           ? requestError.message
-          : "We couldn’t send the sign-in link.",
+          : "We couldn’t complete the request.",
       );
     } finally {
       setIsSending(false);
@@ -89,15 +126,33 @@ export function SignInPage() {
         {accountPath ? (
           <SignInCard
             accountPath={accountPath}
+            authMode={authMode}
+            confirmPassword={confirmPassword}
             email={email}
             error={error}
+            fullName={fullName}
+            householdName={householdName}
             isConfigured={isConfigured}
             isSending={isSending}
             message={message}
+            password={password}
+            onChangeAuthMode={(mode) => {
+              setAuthMode(mode);
+              setMessage(null);
+              setError(null);
+              setPassword("");
+              setConfirmPassword("");
+            }}
+            onChangeConfirmPassword={setConfirmPassword}
             onChangeEmail={setEmail}
+            onChangeFullName={setFullName}
+            onChangeHouseholdName={setHouseholdName}
+            onChangePassword={setPassword}
             onChooseAnother={() => {
               setAccountPath(null);
+              setAuthMode("sign-in");
               setEmail("");
+              setPassword("");
               setMessage(null);
               setError(null);
             }}
@@ -173,26 +228,47 @@ function AccountPathChooser({
 
 function SignInCard({
   accountPath,
+  authMode,
+  confirmPassword,
   email,
   error,
+  fullName,
+  householdName,
   isConfigured,
   isSending,
   message,
+  password,
+  onChangeAuthMode,
+  onChangeConfirmPassword,
   onChangeEmail,
+  onChangeFullName,
+  onChangeHouseholdName,
+  onChangePassword,
   onChooseAnother,
   onSubmit,
 }: {
   accountPath: AccountPath;
+  authMode: AuthMode;
+  confirmPassword: string;
   email: string;
   error: string | null;
+  fullName: string;
+  householdName: string;
   isConfigured: boolean;
   isSending: boolean;
   message: string | null;
+  password: string;
+  onChangeAuthMode: (mode: AuthMode) => void;
+  onChangeConfirmPassword: (password: string) => void;
   onChangeEmail: (email: string) => void;
+  onChangeFullName: (name: string) => void;
+  onChangeHouseholdName: (name: string) => void;
+  onChangePassword: (password: string) => void;
   onChooseAnother: () => void;
   onSubmit: (event: FormEvent<HTMLFormElement>) => void;
 }) {
   const option = accountPaths[accountPath];
+  const isRegistering = accountPath === "adult" && authMode === "register";
 
   return (
     <Card className="p-7 sm:p-9">
@@ -207,20 +283,63 @@ function SignInCard({
 
       <div className="mt-5 text-center">
         <span className="mx-auto flex size-12 items-center justify-center rounded-2xl bg-[#e4f0eb] text-[#28705f]">
-          <Mail className="size-5" />
+          {isRegistering ? (
+            <UserPlus className="size-5" />
+          ) : (
+            <LockKeyhole className="size-5" />
+          )}
         </span>
         <p className="mt-5 text-xs font-bold tracking-[0.12em] text-[#c65c43] uppercase">
           {option.eyebrow}
         </p>
         <h1 className="mt-1 font-serif text-3xl font-bold tracking-[-0.025em] text-[#173f36]">
-          Sign in to your account
+          {isRegistering ? "Create your account" : "Sign in to your account"}
         </h1>
         <p className="mt-2 text-sm leading-6 text-[#6b7e77]">
-          {option.emailHint}
+          {isRegistering
+            ? "Tell us a little about your family or classroom. You’ll become its owner."
+            : option.emailHint}
         </p>
       </div>
 
+      {accountPath === "adult" && (
+        <div className="mt-6 grid grid-cols-2 rounded-xl bg-[#edf1ed] p-1">
+          <AuthModeButton
+            active={authMode === "sign-in"}
+            onClick={() => onChangeAuthMode("sign-in")}
+          >
+            Sign in
+          </AuthModeButton>
+          <AuthModeButton
+            active={authMode === "register"}
+            onClick={() => onChangeAuthMode("register")}
+          >
+            Create account
+          </AuthModeButton>
+        </div>
+      )}
+
       <form className="mt-7" onSubmit={onSubmit}>
+        {isRegistering && (
+          <>
+            <FormField
+              autoComplete="name"
+              id="full-name"
+              label="Your name"
+              placeholder="Jordan Smith"
+              value={fullName}
+              onChange={onChangeFullName}
+            />
+            <FormField
+              autoComplete="organization"
+              id="household-name"
+              label="Family or classroom name"
+              placeholder="The Smith Family or Room 12"
+              value={householdName}
+              onChange={onChangeHouseholdName}
+            />
+          </>
+        )}
         <label htmlFor="email" className="text-sm font-semibold text-[#294d43]">
           Email address
         </label>
@@ -235,6 +354,48 @@ function SignInCard({
           className="mt-2 h-12 w-full rounded-xl border border-[#d7d5c9] bg-white px-4 text-sm text-[#173f36] transition outline-none focus:border-[#28705f] focus:ring-3 focus:ring-[#28705f]/15"
           placeholder={option.placeholder}
         />
+        <label
+          htmlFor="password"
+          className="mt-4 block text-sm font-semibold text-[#294d43]"
+        >
+          Password
+        </label>
+        <input
+          id="password"
+          name="password"
+          type="password"
+          autoComplete={isRegistering ? "new-password" : "current-password"}
+          minLength={8}
+          required
+          value={password}
+          onChange={(event) => onChangePassword(event.target.value)}
+          className="mt-2 h-12 w-full rounded-xl border border-[#d7d5c9] bg-white px-4 text-sm text-[#173f36] transition outline-none focus:border-[#28705f] focus:ring-3 focus:ring-[#28705f]/15"
+          placeholder={
+            isRegistering ? "At least 8 characters" : "Your password"
+          }
+        />
+        {isRegistering && (
+          <>
+            <label
+              htmlFor="confirm-password"
+              className="mt-4 block text-sm font-semibold text-[#294d43]"
+            >
+              Confirm password
+            </label>
+            <input
+              id="confirm-password"
+              name="confirm-password"
+              type="password"
+              autoComplete="new-password"
+              minLength={8}
+              required
+              value={confirmPassword}
+              onChange={(event) => onChangeConfirmPassword(event.target.value)}
+              className="mt-2 h-12 w-full rounded-xl border border-[#d7d5c9] bg-white px-4 text-sm text-[#173f36] transition outline-none focus:border-[#28705f] focus:ring-3 focus:ring-[#28705f]/15"
+              placeholder="Enter the same password again"
+            />
+          </>
+        )}
         {message && (
           <p className="mt-3 text-sm text-[#28705f]" role="status">
             {message}
@@ -256,9 +417,78 @@ function SignInCard({
           className="mt-5 w-full"
           disabled={!isConfigured || isSending}
         >
-          {isSending ? "Sending link…" : "Email me a sign-in link"}
+          {isSending
+            ? isRegistering
+              ? "Creating account…"
+              : "Signing in…"
+            : isRegistering
+              ? "Create parent or teacher account"
+              : "Sign in"}
         </Button>
       </form>
     </Card>
+  );
+}
+
+function AuthModeButton({
+  active,
+  children,
+  onClick,
+}: {
+  active: boolean;
+  children: string;
+  onClick: () => void;
+}) {
+  return (
+    <button
+      type="button"
+      aria-label={`Show ${children.toLowerCase()} form`}
+      onClick={onClick}
+      className={cn(
+        "cursor-pointer rounded-lg px-3 py-2 text-sm font-semibold transition",
+        active
+          ? "bg-white text-[#21483e] shadow-sm"
+          : "text-[#6b7e77] hover:text-[#21483e]",
+      )}
+    >
+      {children}
+    </button>
+  );
+}
+
+function FormField({
+  autoComplete,
+  id,
+  label,
+  onChange,
+  placeholder,
+  value,
+}: {
+  autoComplete: string;
+  id: string;
+  label: string;
+  onChange: (value: string) => void;
+  placeholder: string;
+  value: string;
+}) {
+  return (
+    <label
+      className="mb-4 block text-sm font-semibold text-[#294d43]"
+      htmlFor={id}
+    >
+      {label}
+      <input
+        id={id}
+        name={id}
+        type="text"
+        autoComplete={autoComplete}
+        maxLength={120}
+        required
+        value={value}
+        onChange={(event) => onChange(event.target.value)}
+        className="mt-2 h-12 w-full rounded-xl border border-[#d7d5c9] bg-white px-4 text-sm font-normal text-[#173f36] transition outline-none focus:border-[#28705f] focus:ring-3 focus:ring-[#28705f]/15"
+        placeholder={placeholder}
+      />
+    </label>
   );
 }

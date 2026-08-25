@@ -72,7 +72,7 @@ def get_or_create_household(
             raise ReaderLoginInvitationNotFoundError
         return HouseholdContext(household, membership)
 
-    household = Household(name="My Household")
+    household = Household(name=user.household_name or "My Household")
     membership = HouseholdMember(
         household=household,
         user_id=user.id,

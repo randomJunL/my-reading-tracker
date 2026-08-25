@@ -74,10 +74,10 @@ screen supports correction and confirmed deletion of individual entries.
 
 ## Supabase Auth configuration
 
-Create or select a Supabase development project and enable email authentication.
-My Reading Tracker uses passwordless magic links. In the Supabase Auth URL
-configuration, set the local site URL to `http://localhost:5173` and allow that
-same address as a redirect URL.
+Create or select a Supabase development project and enable email/password
+authentication. Keep email confirmation enabled for production. In the
+Supabase Auth URL configuration, set the local site URL to
+`http://localhost:5173` and allow that same address as a redirect URL.
 
 Copy these public project values into `.env`:
 
@@ -92,18 +92,22 @@ accepts only authenticated access tokens signed with the project's asymmetric
 key. If necessary, `SUPABASE_JWT_ISSUER` and `SUPABASE_JWKS_URL` can override
 the derived addresses. Do not configure a JWT secret or Supabase secret key.
 
-After both applications start, visit `http://localhost:5173/sign-in`. The first
-successful authenticated call to `/api/v1/me` creates the user's household and
-owner membership in the configured PostgreSQL database.
+After both applications start, visit `http://localhost:5173/sign-in`. A parent
+or teacher can create an account with basic information and then confirm the
+account once by email. Normal access after that uses the email and password;
+the persisted Supabase session avoids requesting a new email on every visit.
+The first successful authenticated call to `/api/v1/me` creates the named
+household and owner membership in the configured PostgreSQL database.
 
 ### Admin and reader accounts
 
 Owners and caregivers are administrators. From **Readers → Reader login
 access**, an administrator links an existing reader profile to an email address.
-Create the link before the reader first opens the application. The reader then
-uses the normal Supabase magic-link sign-in with that exact email; the first
-authenticated request joins the administrator's household and locks the account
-to the linked reader profile.
+Create the link before the reader first opens the application. FastAPI matches
+the authenticated email to that link; the first authenticated request joins the
+administrator's household and locks the account to the linked reader profile.
+The reader invitation and password-activation interface is Step 4 of the
+authentication redesign.
 
 Reader accounts can use their own dashboard, recommended library books, reading
 log, rewards, gift requests, history, and printable report. Only administrators

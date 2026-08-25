@@ -54,19 +54,36 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       isLoading,
       session,
       user: session?.user ?? null,
-      async sendMagicLink(email: string) {
+      async signInWithPassword(email: string, password: string) {
         if (DEV_AUTH_BYPASS) return;
         if (!supabase) {
           throw new Error("Supabase authentication is not configured.");
         }
-        const { error } = await supabase.auth.signInWithOtp({
-          email,
+        const { error } = await supabase.auth.signInWithPassword({
+          email: email.trim(),
+          password,
+        });
+        if (error) throw error;
+      },
+      async registerAdult({ fullName, householdName, email, password }) {
+        if (DEV_AUTH_BYPASS) return { requiresEmailConfirmation: false };
+        if (!supabase) {
+          throw new Error("Supabase authentication is not configured.");
+        }
+        const { data, error } = await supabase.auth.signUp({
+          email: email.trim(),
+          password,
           options: {
             emailRedirectTo: window.location.origin,
-            shouldCreateUser: true,
+            data: {
+              account_type: "adult",
+              full_name: fullName.trim(),
+              household_name: householdName.trim(),
+            },
           },
         });
         if (error) throw error;
+        return { requiresEmailConfirmation: data.session === null };
       },
       async signOut() {
         if (DEV_AUTH_BYPASS) return;

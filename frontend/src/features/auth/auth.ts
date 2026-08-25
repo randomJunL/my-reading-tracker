@@ -7,7 +7,13 @@ export type AuthContextValue = {
   isLoading: boolean;
   session: Session | null;
   user: User | null;
-  sendMagicLink: (email: string) => Promise<void>;
+  signInWithPassword: (email: string, password: string) => Promise<void>;
+  registerAdult: (details: {
+    fullName: string;
+    householdName: string;
+    email: string;
+    password: string;
+  }) => Promise<{ requiresEmailConfirmation: boolean }>;
   signOut: () => Promise<void>;
 };
 

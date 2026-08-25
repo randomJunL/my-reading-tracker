@@ -19,10 +19,11 @@ Open `http://localhost:5173`. The application uses `VITE_API_BASE_URL` from the
 root environment configuration and defaults to the local FastAPI API.
 
 Private routes require Supabase Auth. Add `VITE_SUPABASE_URL` and the project's
-publishable key as `VITE_SUPABASE_PUBLISHABLE_KEY` in `.env`. The sign-in page
-sends a magic link, persists the resulting session, and includes its access
-token in FastAPI requests. Never use a Supabase secret key in a `VITE_`
-variable.
+publishable key as `VITE_SUPABASE_PUBLISHABLE_KEY` in `.env`. Parents and
+teachers can register with basic household information and then use normal
+email/password sign-in. Supabase persists the resulting session, and the
+frontend includes its access token in FastAPI requests. Never use a Supabase
+secret key in a `VITE_` variable.
 
 For daily local work without Auth emails, see the guarded development bypass in
 `docs/development.md`. It is disabled in production builds and must also be

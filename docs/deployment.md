@@ -104,8 +104,8 @@ In the production project, open **Authentication -> URL Configuration**:
 4. Add preview URL wildcards only if preview deployments must use production
    authentication; a separate preview Supabase project is safer.
 
-The frontend supplies `window.location.origin` as the magic-link redirect, so
-each deployed origin must be present in Supabase's allow list.
+The frontend supplies `window.location.origin` as the registration confirmation
+redirect, so each deployed origin must be present in Supabase's allow list.
 
 For real school use, configure custom SMTP. Supabase's default mail service is
 intended for testing and its low email quota is not suitable for normal users.
@@ -161,7 +161,7 @@ Then use a dedicated production smoke-test household and complete this manual
 workflow in current Chrome, Edge, Firefox, and Safari:
 
 ```text
-Magic-link sign in -> create reader -> find and add book -> log session
+Password sign in -> create reader -> find and add book -> log session
 -> dashboard -> edit session -> download CSV and PDF -> sign out
 ```
 

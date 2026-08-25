@@ -592,5 +592,14 @@ rules above are the contract for the remaining authentication redesign.
 Status: implemented on 2026-08-24. The sign-in screen now introduces separate
 **Parent or teacher** and **Reader** paths, describes their capabilities, and
 informs readers that an administrator invitation is required. The existing
-magic-link form remains available in both paths until password authentication
-replaces it in the next implementation slice.
+magic-link form remained available at this stage and was replaced by password
+authentication in Step 3.
+
+### Step 3: Add password sign-in and adult registration
+
+Status: implemented on 2026-08-25. Parents and teachers can create an account
+with their name, family or classroom name, email, and password. Existing users
+sign in with email and password, and Supabase persists the browser session.
+Registration metadata may name the initial household, but it never assigns an
+application role; FastAPI remains responsible for owner and reader membership.
+Reader account creation and invitation delivery remain part of Step 4.
