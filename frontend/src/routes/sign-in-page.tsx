@@ -17,7 +17,7 @@ import { useAuth } from "@/features/auth/auth";
 import { cn } from "@/lib/utils";
 
 type AccountPath = "adult" | "reader";
-type AuthMode = "sign-in" | "register";
+type AuthMode = "sign-in" | "register" | "forgot-password";
 
 const accountPaths = {
   adult: {
@@ -47,6 +47,7 @@ export function SignInPage() {
     isDevAuthBypass,
     isLoading,
     registerAdult,
+    requestPasswordReset,
     session,
     signInWithPassword,
   } = useAuth();
@@ -90,16 +91,17 @@ export function SignInPage() {
         if (password !== confirmPassword) {
           throw new Error("The passwords do not match.");
         }
-        const result = await registerAdult({
+        await registerAdult({
           email,
           fullName,
           householdName,
           password,
         });
+        setMessage("Your account is ready. Signing you in…");
+      } else if (authMode === "forgot-password") {
+        await requestPasswordReset(email);
         setMessage(
-          result.requiresEmailConfirmation
-            ? "Account created. Check your email once to confirm your account, then return here to sign in."
-            : "Your account is ready. Signing you in…",
+          "If an account exists for this email, a password reset link is on its way.",
         );
       } else {
         await signInWithPassword(email, password);
@@ -269,6 +271,7 @@ function SignInCard({
 }) {
   const option = accountPaths[accountPath];
   const isRegistering = accountPath === "adult" && authMode === "register";
+  const isRequestingReset = authMode === "forgot-password";
 
   return (
     <Card className="p-7 sm:p-9">
@@ -293,16 +296,22 @@ function SignInCard({
           {option.eyebrow}
         </p>
         <h1 className="mt-1 font-serif text-3xl font-bold tracking-[-0.025em] text-[#173f36]">
-          {isRegistering ? "Create your account" : "Sign in to your account"}
+          {isRegistering
+            ? "Create your account"
+            : isRequestingReset
+              ? "Reset your password"
+              : "Sign in to your account"}
         </h1>
         <p className="mt-2 text-sm leading-6 text-[#6b7e77]">
           {isRegistering
             ? "Tell us a little about your family or classroom. You’ll become its owner."
-            : option.emailHint}
+            : isRequestingReset
+              ? "Enter your account email and we’ll send a secure reset link."
+              : option.emailHint}
         </p>
       </div>
 
-      {accountPath === "adult" && (
+      {accountPath === "adult" && !isRequestingReset && (
         <div className="mt-6 grid grid-cols-2 rounded-xl bg-[#edf1ed] p-1">
           <AuthModeButton
             active={authMode === "sign-in"}
@@ -354,26 +363,30 @@ function SignInCard({
           className="mt-2 h-12 w-full rounded-xl border border-[#d7d5c9] bg-white px-4 text-sm text-[#173f36] transition outline-none focus:border-[#28705f] focus:ring-3 focus:ring-[#28705f]/15"
           placeholder={option.placeholder}
         />
-        <label
-          htmlFor="password"
-          className="mt-4 block text-sm font-semibold text-[#294d43]"
-        >
-          Password
-        </label>
-        <input
-          id="password"
-          name="password"
-          type="password"
-          autoComplete={isRegistering ? "new-password" : "current-password"}
-          minLength={8}
-          required
-          value={password}
-          onChange={(event) => onChangePassword(event.target.value)}
-          className="mt-2 h-12 w-full rounded-xl border border-[#d7d5c9] bg-white px-4 text-sm text-[#173f36] transition outline-none focus:border-[#28705f] focus:ring-3 focus:ring-[#28705f]/15"
-          placeholder={
-            isRegistering ? "At least 8 characters" : "Your password"
-          }
-        />
+        {!isRequestingReset && (
+          <>
+            <label
+              htmlFor="password"
+              className="mt-4 block text-sm font-semibold text-[#294d43]"
+            >
+              Password
+            </label>
+            <input
+              id="password"
+              name="password"
+              type="password"
+              autoComplete={isRegistering ? "new-password" : "current-password"}
+              minLength={8}
+              required
+              value={password}
+              onChange={(event) => onChangePassword(event.target.value)}
+              className="mt-2 h-12 w-full rounded-xl border border-[#d7d5c9] bg-white px-4 text-sm text-[#173f36] transition outline-none focus:border-[#28705f] focus:ring-3 focus:ring-[#28705f]/15"
+              placeholder={
+                isRegistering ? "At least 8 characters" : "Your password"
+              }
+            />
+          </>
+        )}
         {isRegistering && (
           <>
             <label
@@ -395,6 +408,15 @@ function SignInCard({
               placeholder="Enter the same password again"
             />
           </>
+        )}
+        {!isRegistering && !isRequestingReset && (
+          <button
+            type="button"
+            onClick={() => onChangeAuthMode("forgot-password")}
+            className="mt-3 cursor-pointer text-sm font-semibold text-[#28705f] hover:text-[#21483e]"
+          >
+            Forgot password?
+          </button>
         )}
         {message && (
           <p className="mt-3 text-sm text-[#28705f]" role="status">
@@ -420,11 +442,24 @@ function SignInCard({
           {isSending
             ? isRegistering
               ? "Creating account…"
-              : "Signing in…"
+              : isRequestingReset
+                ? "Sending reset link…"
+                : "Signing in…"
             : isRegistering
               ? "Create parent or teacher account"
-              : "Sign in"}
+              : isRequestingReset
+                ? "Send password reset link"
+                : "Sign in"}
         </Button>
+        {isRequestingReset && (
+          <button
+            type="button"
+            onClick={() => onChangeAuthMode("sign-in")}
+            className="mt-4 w-full cursor-pointer text-sm font-semibold text-[#567069] hover:text-[#21483e]"
+          >
+            Back to sign in
+          </button>
+        )}
       </form>
     </Card>
   );

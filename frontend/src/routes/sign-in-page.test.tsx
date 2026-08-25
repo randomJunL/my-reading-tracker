@@ -6,6 +6,7 @@ import { SignInPage } from "@/routes/sign-in-page";
 
 const authMocks = vi.hoisted(() => ({
   registerAdult: vi.fn(),
+  requestPasswordReset: vi.fn(),
   signInWithPassword: vi.fn(),
   useAuth: vi.fn(),
 }));
@@ -16,9 +17,8 @@ vi.mock("@/features/auth/auth", () => ({
 
 describe("SignInPage", () => {
   beforeEach(() => {
-    authMocks.registerAdult.mockResolvedValue({
-      requiresEmailConfirmation: true,
-    });
+    authMocks.registerAdult.mockResolvedValue(undefined);
+    authMocks.requestPasswordReset.mockResolvedValue(undefined);
     authMocks.signInWithPassword.mockResolvedValue(undefined);
     authMocks.useAuth.mockReturnValue({
       isConfigured: true,
@@ -26,6 +26,7 @@ describe("SignInPage", () => {
       isLoading: false,
       session: null,
       registerAdult: authMocks.registerAdult,
+      requestPasswordReset: authMocks.requestPasswordReset,
       signInWithPassword: authMocks.signInWithPassword,
     });
   });
@@ -114,7 +115,35 @@ describe("SignInPage", () => {
       password: "safe-password",
     });
     expect(
-      await screen.findByText(/Check your email once to confirm your account/i),
+      await screen.findByText(/Your account is ready/i),
+    ).toBeInTheDocument();
+  });
+
+  it("sends email only when a user requests a password reset", async () => {
+    const user = userEvent.setup();
+    render(
+      <MemoryRouter>
+        <SignInPage />
+      </MemoryRouter>,
+    );
+
+    await user.click(
+      screen.getByRole("button", { name: "Continue as Parent or teacher" }),
+    );
+    await user.click(screen.getByRole("button", { name: "Forgot password?" }));
+    await user.type(
+      screen.getByRole("textbox", { name: "Email address" }),
+      "parent@example.com",
+    );
+    await user.click(
+      screen.getByRole("button", { name: "Send password reset link" }),
+    );
+
+    expect(authMocks.requestPasswordReset).toHaveBeenCalledWith(
+      "parent@example.com",
+    );
+    expect(
+      await screen.findByText(/If an account exists for this email/i),
     ).toBeInTheDocument();
   });
 

@@ -66,7 +66,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         if (error) throw error;
       },
       async registerAdult({ fullName, householdName, email, password }) {
-        if (DEV_AUTH_BYPASS) return { requiresEmailConfirmation: false };
+        if (DEV_AUTH_BYPASS) return;
         if (!supabase) {
           throw new Error("Supabase authentication is not configured.");
         }
@@ -83,7 +83,35 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           },
         });
         if (error) throw error;
-        return { requiresEmailConfirmation: data.session === null };
+        if (data.user?.identities?.length === 0) {
+          throw new Error(
+            "An account with this email already exists. Sign in or reset the password.",
+          );
+        }
+        if (!data.session) {
+          throw new Error(
+            "Email confirmation is still enabled in Supabase. Disable Confirm email, then try again.",
+          );
+        }
+      },
+      async requestPasswordReset(email: string) {
+        if (DEV_AUTH_BYPASS) return;
+        if (!supabase) {
+          throw new Error("Supabase authentication is not configured.");
+        }
+        const { error } = await supabase.auth.resetPasswordForEmail(
+          email.trim(),
+          { redirectTo: `${window.location.origin}/reset-password` },
+        );
+        if (error) throw error;
+      },
+      async updatePassword(password: string) {
+        if (DEV_AUTH_BYPASS) return;
+        if (!supabase) {
+          throw new Error("Supabase authentication is not configured.");
+        }
+        const { error } = await supabase.auth.updateUser({ password });
+        if (error) throw error;
       },
       async signOut() {
         if (DEV_AUTH_BYPASS) return;

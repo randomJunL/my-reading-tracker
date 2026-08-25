@@ -75,9 +75,17 @@ screen supports correction and confirmed deletion of individual entries.
 ## Supabase Auth configuration
 
 Create or select a Supabase development project and enable email/password
-authentication. Keep email confirmation enabled for production. In the
-Supabase Auth URL configuration, set the local site URL to
-`http://localhost:5173` and allow that same address as a redirect URL.
+authentication. In the email provider settings, turn **Confirm email** off.
+This application signs a new account in immediately and uses authentication
+email only when the user asks to reset a forgotten password.
+
+In the Supabase Auth URL configuration, set the local site URL to
+`http://localhost:5173`. Add both of these allowed redirect URLs:
+
+```text
+http://localhost:5173
+http://localhost:5173/reset-password
+```
 
 Copy these public project values into `.env`:
 
@@ -93,11 +101,16 @@ key. If necessary, `SUPABASE_JWT_ISSUER` and `SUPABASE_JWKS_URL` can override
 the derived addresses. Do not configure a JWT secret or Supabase secret key.
 
 After both applications start, visit `http://localhost:5173/sign-in`. A parent
-or teacher can create an account with basic information and then confirm the
-account once by email. Normal access after that uses the email and password;
-the persisted Supabase session avoids requesting a new email on every visit.
-The first successful authenticated call to `/api/v1/me` creates the named
-household and owner membership in the configured PostgreSQL database.
+or teacher can create an account with basic information and enter the app
+without confirming an email. Normal access uses the email and password; the
+persisted Supabase session avoids signing in again on every visit. The first
+successful authenticated call to `/api/v1/me` creates the named household and
+owner membership in the configured PostgreSQL database.
+
+The **Forgot password?** action sends a reset email through Supabase. Its link
+opens `/reset-password`, where the user chooses a new password and then signs in
+normally. If the link is rejected, confirm that the reset URL above is present
+in the Supabase redirect allow list.
 
 ### Admin and reader accounts
 

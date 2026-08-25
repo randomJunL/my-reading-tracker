@@ -598,8 +598,11 @@ authentication in Step 3.
 ### Step 3: Add password sign-in and adult registration
 
 Status: implemented on 2026-08-25. Parents and teachers can create an account
-with their name, family or classroom name, email, and password. Existing users
-sign in with email and password, and Supabase persists the browser session.
-Registration metadata may name the initial household, but it never assigns an
-application role; FastAPI remains responsible for owner and reader membership.
-Reader account creation and invitation delivery remain part of Step 4.
+with their name, family or classroom name, email, and password. Email
+confirmation is disabled, so a successful registration signs the user in
+immediately. Existing users sign in with email and password, and Supabase
+persists the browser session. Email is reserved for the forgot-password flow,
+which returns through `/reset-password` to choose a new password. Registration
+metadata may name the initial household, but it never assigns an application
+role; FastAPI remains responsible for owner and reader membership. Reader
+account creation and invitation delivery remain part of Step 4.

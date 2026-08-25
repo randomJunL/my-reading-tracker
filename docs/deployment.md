@@ -100,12 +100,15 @@ In the production project, open **Authentication -> URL Configuration**:
 
 1. Set **Site URL** to the exact Vercel production origin.
 2. Add the same production origin to **Redirect URLs**.
-3. Keep localhost redirects only in the separate development project.
-4. Add preview URL wildcards only if preview deployments must use production
+3. Add `https://YOUR_FRONTEND_HOST/reset-password` to **Redirect URLs**.
+4. In the email provider settings, turn **Confirm email** off so registration
+   creates an immediately usable account.
+5. Keep localhost redirects only in the separate development project.
+6. Add preview URL wildcards only if preview deployments must use production
    authentication; a separate preview Supabase project is safer.
 
-The frontend supplies `window.location.origin` as the registration confirmation
-redirect, so each deployed origin must be present in Supabase's allow list.
+The frontend sends password reset links to `/reset-password`, so that complete
+path must be present in Supabase's allow list.
 
 For real school use, configure custom SMTP. Supabase's default mail service is
 intended for testing and its low email quota is not suitable for normal users.

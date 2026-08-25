@@ -11,11 +11,13 @@ import { LogReadingPage } from "@/routes/log-reading-page";
 import { ReportsPage } from "@/routes/reports-page";
 import { RewardsPage } from "@/routes/rewards-page";
 import { ReadersPage } from "@/routes/readers-page";
+import { ResetPasswordPage } from "@/routes/reset-password-page";
 import { RouteErrorBoundary } from "@/routes/route-error-boundary";
 import { SignInPage } from "@/routes/sign-in-page";
 
 export const router = createBrowserRouter([
   { path: "/sign-in", element: <SignInPage /> },
+  { path: "/reset-password", element: <ResetPasswordPage /> },
   {
     element: <ProtectedRoute />,
     children: [
