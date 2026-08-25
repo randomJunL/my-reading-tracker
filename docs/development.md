@@ -119,8 +119,15 @@ access**, an administrator links an existing reader profile to an email address.
 Create the link before the reader first opens the application. FastAPI matches
 the authenticated email to that link; the first authenticated request joins the
 administrator's household and locks the account to the linked reader profile.
-The reader invitation and password-activation interface is Step 4 of the
-authentication redesign.
+The administrator shares the approved email directly; no invitation email is
+sent. The reader chooses **Reader → Activate invite**, enters the exact approved
+email, and creates a password.
+
+To add another adult, use **Readers → Caregiver login access** and approve their
+email. The adult chooses **Parent or teacher → Activate invite** and creates a
+password with that email. They join as a caregiver and receive administrative
+access without becoming the household owner. An activation without a matching
+invitation is rejected instead of creating an owner household.
 
 Reader accounts can use their own dashboard, recommended library books, reading
 log, rewards, gift requests, history, and printable report. Only administrators

@@ -54,6 +54,28 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       isLoading,
       session,
       user: session?.user ?? null,
+      async activateInvitation({ accountType, email, password }) {
+        if (DEV_AUTH_BYPASS) return;
+        if (!supabase) {
+          throw new Error("Supabase authentication is not configured.");
+        }
+        const { data, error } = await supabase.auth.signUp({
+          email: email.trim(),
+          password,
+          options: { data: { account_type: accountType } },
+        });
+        if (error) throw error;
+        if (data.user?.identities?.length === 0) {
+          throw new Error(
+            "An account with this email already exists. Sign in or reset the password.",
+          );
+        }
+        if (!data.session) {
+          throw new Error(
+            "Email confirmation is still enabled in Supabase. Disable Confirm email, then try again.",
+          );
+        }
+      },
       async signInWithPassword(email: string, password: string) {
         if (DEV_AUTH_BYPASS) return;
         if (!supabase) {

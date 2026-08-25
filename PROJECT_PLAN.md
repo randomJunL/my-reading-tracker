@@ -606,3 +606,16 @@ which returns through `/reset-password` to choose a new password. Registration
 metadata may name the initial household, but it never assigns an application
 role; FastAPI remains responsible for owner and reader membership. Reader
 account creation and invitation delivery remain part of Step 4.
+
+### Step 4: Add administrator-managed account invitations
+
+Status: implemented on 2026-08-25. Owners and caregivers can approve an email
+for reader access linked to one reader profile. Administrators can also approve
+a caregiver email for household-wide administrative access. No invitation
+email is sent: the administrator shares the approved email directly, and the
+invitee chooses **Activate invite** on the appropriate public account path to
+create a password. FastAPI consumes the pending invitation on first access and
+assigns the server-controlled role. A reader or caregiver activation without a
+matching invitation is rejected instead of creating a new owner household.
+Removing pending access cancels it; removing accepted access revokes the linked
+household membership without deleting reading data.

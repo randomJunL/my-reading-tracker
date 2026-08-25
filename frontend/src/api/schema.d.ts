@@ -110,6 +110,41 @@ export interface paths {
     patch: operations["update_book_api_v1_books__book_id__patch"];
     trace?: never;
   };
+  "/api/v1/caregiver-login-invitations": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    /** List Caregiver Invitations */
+    get: operations["list_caregiver_invitations_api_v1_caregiver_login_invitations_get"];
+    put?: never;
+    /** Create Caregiver Invitation */
+    post: operations["create_caregiver_invitation_api_v1_caregiver_login_invitations_post"];
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  "/api/v1/caregiver-login-invitations/{invitation_id}": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    get?: never;
+    put?: never;
+    post?: never;
+    /** Delete Caregiver Invitation */
+    delete: operations["delete_caregiver_invitation_api_v1_caregiver_login_invitations__invitation_id__delete"];
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
   "/api/v1/exports/reading-data": {
     parameters: {
       query?: never;
@@ -703,6 +738,23 @@ export interface components {
        * Format: uuid
        */
       reader_id: string;
+    };
+    /** CaregiverLoginInvitationCreate */
+    CaregiverLoginInvitationCreate: {
+      /** Email */
+      email: string;
+    };
+    /** CaregiverLoginInvitationResponse */
+    CaregiverLoginInvitationResponse: {
+      /** Accepted */
+      accepted: boolean;
+      /** Email */
+      email: string;
+      /**
+       * Id
+       * Format: uuid
+       */
+      id: string;
     };
     /** CurrentBookProgress */
     CurrentBookProgress: {
@@ -1914,6 +1966,88 @@ export interface operations {
         content: {
           "application/json": components["schemas"]["BookResponse"];
         };
+      };
+      /** @description Validation Error */
+      422: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["HTTPValidationError"];
+        };
+      };
+    };
+  };
+  list_caregiver_invitations_api_v1_caregiver_login_invitations_get: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      /** @description Successful Response */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["CaregiverLoginInvitationResponse"][];
+        };
+      };
+    };
+  };
+  create_caregiver_invitation_api_v1_caregiver_login_invitations_post: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    requestBody: {
+      content: {
+        "application/json": components["schemas"]["CaregiverLoginInvitationCreate"];
+      };
+    };
+    responses: {
+      /** @description Successful Response */
+      201: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["CaregiverLoginInvitationResponse"];
+        };
+      };
+      /** @description Validation Error */
+      422: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["HTTPValidationError"];
+        };
+      };
+    };
+  };
+  delete_caregiver_invitation_api_v1_caregiver_login_invitations__invitation_id__delete: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        invitation_id: string;
+      };
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      /** @description Successful Response */
+      204: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content?: never;
       };
       /** @description Validation Error */
       422: {

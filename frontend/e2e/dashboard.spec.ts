@@ -12,7 +12,15 @@ test("protects the reading dashboard from signed-out visitors", async ({
 
   await expect(page).toHaveURL(/\/sign-in$/);
   await expect(
-    page.getByRole("heading", { name: "Welcome back" }),
+    page.getByRole("heading", {
+      name: "How will you use My Reading Tracker?",
+    }),
+  ).toBeVisible();
+  await page
+    .getByRole("button", { name: "Continue as Parent or teacher" })
+    .click();
+  await expect(
+    page.getByRole("heading", { name: "Sign in to your account" }),
   ).toBeVisible();
   await expect(page.getByLabel("Email address")).toBeVisible();
 });

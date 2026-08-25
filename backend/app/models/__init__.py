@@ -1,6 +1,7 @@
 from app.models.book import Book, MetadataSource
 from app.models.book_recommendation import BookRecommendation
 from app.models.household import (
+    CaregiverLoginInvitation,
     Household,
     HouseholdMember,
     HouseholdRole,
@@ -27,6 +28,7 @@ __all__ = [
     "BadgeDefinition",
     "Book",
     "BookRecommendation",
+    "CaregiverLoginInvitation",
     "Household",
     "HouseholdMember",
     "HouseholdRole",

@@ -827,6 +827,43 @@
         "title": "CalendarReportResponse",
         "type": "object"
       },
+      "CaregiverLoginInvitationCreate": {
+        "properties": {
+          "email": {
+            "title": "Email",
+            "type": "string"
+          }
+        },
+        "required": [
+          "email"
+        ],
+        "title": "CaregiverLoginInvitationCreate",
+        "type": "object"
+      },
+      "CaregiverLoginInvitationResponse": {
+        "properties": {
+          "accepted": {
+            "title": "Accepted",
+            "type": "boolean"
+          },
+          "email": {
+            "title": "Email",
+            "type": "string"
+          },
+          "id": {
+            "format": "uuid",
+            "title": "Id",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "email",
+          "accepted"
+        ],
+        "title": "CaregiverLoginInvitationResponse",
+        "type": "object"
+      },
       "CurrentBookProgress": {
         "properties": {
           "book_id": {
@@ -3693,6 +3730,121 @@
         "summary": "Update Book",
         "tags": [
           "library"
+        ]
+      }
+    },
+    "/api/v1/caregiver-login-invitations": {
+      "get": {
+        "operationId": "list_caregiver_invitations_api_v1_caregiver_login_invitations_get",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/CaregiverLoginInvitationResponse"
+                  },
+                  "title": "Response List Caregiver Invitations Api V1 Caregiver Login Invitations Get",
+                  "type": "array"
+                }
+              }
+            },
+            "description": "Successful Response"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "List Caregiver Invitations",
+        "tags": [
+          "caregiver access"
+        ]
+      },
+      "post": {
+        "operationId": "create_caregiver_invitation_api_v1_caregiver_login_invitations_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CaregiverLoginInvitationCreate"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CaregiverLoginInvitationResponse"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "Create Caregiver Invitation",
+        "tags": [
+          "caregiver access"
+        ]
+      }
+    },
+    "/api/v1/caregiver-login-invitations/{invitation_id}": {
+      "delete": {
+        "operationId": "delete_caregiver_invitation_api_v1_caregiver_login_invitations__invitation_id__delete",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "invitation_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Invitation Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "Delete Caregiver Invitation",
+        "tags": [
+          "caregiver access"
         ]
       }
     },

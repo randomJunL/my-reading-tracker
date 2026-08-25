@@ -6,12 +6,10 @@ import type { components } from "@/api/schema";
 export type Reader = components["schemas"]["ReaderResponse"];
 export type ReaderCreate = components["schemas"]["ReaderCreate"];
 export type ReaderUpdate = components["schemas"]["ReaderUpdate"];
-export type ReaderLoginInvitation = {
-  id: string;
-  reader_id: string;
-  email: string;
-  accepted: boolean;
-};
+export type ReaderLoginInvitation =
+  components["schemas"]["ReaderLoginInvitationResponse"];
+export type CaregiverLoginInvitation =
+  components["schemas"]["CaregiverLoginInvitationResponse"];
 
 export const readersQueryKey = ["readers"] as const;
 
@@ -121,5 +119,42 @@ export function useDeleteReaderLoginInvitation() {
       }),
     onSuccess: () =>
       queryClient.invalidateQueries({ queryKey: ["reader-login-invitations"] }),
+  });
+}
+
+export function useCaregiverLoginInvitations() {
+  return useQuery({
+    queryKey: ["caregiver-login-invitations"],
+    queryFn: () =>
+      apiFetch<CaregiverLoginInvitation[]>("/caregiver-login-invitations"),
+  });
+}
+
+export function useCreateCaregiverLoginInvitation() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (data: { email: string }) =>
+      apiFetch<CaregiverLoginInvitation>("/caregiver-login-invitations", {
+        method: "POST",
+        body: JSON.stringify(data),
+      }),
+    onSuccess: () =>
+      queryClient.invalidateQueries({
+        queryKey: ["caregiver-login-invitations"],
+      }),
+  });
+}
+
+export function useDeleteCaregiverLoginInvitation() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (invitationId: string) =>
+      apiFetch<void>(`/caregiver-login-invitations/${invitationId}`, {
+        method: "DELETE",
+      }),
+    onSuccess: () =>
+      queryClient.invalidateQueries({
+        queryKey: ["caregiver-login-invitations"],
+      }),
   });
 }

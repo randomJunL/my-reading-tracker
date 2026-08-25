@@ -81,6 +81,7 @@ def test_token_verifier_reads_optional_registration_metadata(
             user_metadata={
                 "full_name": "  Jordan Parent  ",
                 "household_name": "  The Bookworms  ",
+                "account_type": "caregiver",
                 "role": "reader",
             },
         )
@@ -88,6 +89,7 @@ def test_token_verifier_reads_optional_registration_metadata(
 
     assert user.full_name == "Jordan Parent"
     assert user.household_name == "The Bookworms"
+    assert user.account_type == "caregiver"
 
 
 @pytest.mark.parametrize(
