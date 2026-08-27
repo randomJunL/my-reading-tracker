@@ -6,12 +6,8 @@ import type { components } from "@/api/schema";
 export type Reader = components["schemas"]["ReaderResponse"];
 export type ReaderCreate = components["schemas"]["ReaderCreate"];
 export type ReaderUpdate = components["schemas"]["ReaderUpdate"];
-export type ReaderLoginInvitation = {
-  id: string;
-  reader_id: string;
-  email: string;
-  accepted: boolean;
-};
+export type ReaderLoginInvitation =
+  components["schemas"]["ReaderLoginInvitationResponse"];
 
 export const readersQueryKey = ["readers"] as const;
 
@@ -102,7 +98,7 @@ export function useReaderLoginInvitations() {
 export function useCreateReaderLoginInvitation() {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: (data: { reader_id: string; email: string }) =>
+    mutationFn: (data: { email: string }) =>
       apiFetch<ReaderLoginInvitation>("/reader-login-invitations", {
         method: "POST",
         body: JSON.stringify(data),

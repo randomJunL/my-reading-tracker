@@ -40,8 +40,8 @@ review. The deployment items listed below remain Step 13 release checks.
 - Household resources are resolved through shared authorization dependencies.
   Tests confirm that identifiers from another household return a hidden `404`
   instead of exposing whether the record exists.
-- Reader accounts are restricted to their linked profile, while owner and
-  caregiver accounts retain administration access. Role tests cover protected
+- Reader accounts are restricted to their linked profile, while only the owner
+  account retains administration access. Role tests cover protected
   reader, recommendation, gift, redemption, report, and export operations.
 
 ### Secrets and browser configuration

@@ -42,7 +42,6 @@ backend or database to be rewritten.
 - Native mobile application
 - Barcode camera scanning
 - Offline support
-- Caregiver invitations
 - Goals, streaks, badges, or leaderboards
 - Teacher and school reports
 - Reviews, recommendations, or social features
@@ -172,7 +171,7 @@ The backend remains a modular monolith; microservices are unnecessary.
 
 - `household_id`: foreign key to households
 - `user_id`: Supabase Auth user UUID
-- `role`: owner or caregiver
+- `role`: owner or reader
 - `created_at`: timestamp with time zone
 - Unique constraint on household and user
 
@@ -542,14 +541,13 @@ Version one is complete only when a parent can:
 Potential additions should be prioritized from real usage rather than built in
 advance:
 
-1. Caregiver invitations and household roles
-2. Reading goals and noncompetitive celebrations
-3. Barcode scanning
-4. Printable teacher reports
-5. Custom cover uploads
-6. Offline-capable reading logging
-7. React Native mobile client using the existing API
-8. Notifications and reminders
+1. Reading goals and noncompetitive celebrations
+2. Barcode scanning
+3. Printable teacher reports
+4. Custom cover uploads
+5. Offline-capable reading logging
+6. React Native mobile client using the existing API
+7. Notifications and reminders
 
 ## 11. Working method
 
@@ -564,3 +562,72 @@ For each implementation step:
 
 Do not begin post-version-one features until the primary logging workflow is
 deployed and used successfully.
+
+## 12. Authentication experience redesign
+
+The production application uses two server-assigned account roles:
+
+- `owner`: the first parent or teacher who creates a household or classroom;
+  retains full administrative access.
+- `reader`: a child invited by an administrator and linked to exactly one reader
+  profile; can use only that reader's library, logs, rewards, and reports.
+
+The public account-type choice explains these paths but never grants a role.
+Role assignment remains a backend responsibility: new household setup creates
+the single owner, and reader access requires an invitation. A reader may not
+self-select administrator access.
+
+### Step 1: Confirm account types and permissions
+
+Status: implemented on 2026-08-24 and revised on 2026-08-25. The existing
+FastAPI authorization rules enforce one owner administrator and reader-profile
+isolation. The role rules above are the contract for the remaining
+authentication redesign.
+
+### Step 2: Add public account entry choices
+
+Status: implemented on 2026-08-24. The sign-in screen now introduces separate
+**Parent or teacher** and **Reader** paths, describes their capabilities, and
+informs readers that an administrator invitation is required. The existing
+magic-link form remained available at this stage and was replaced by password
+authentication in Step 3.
+
+### Step 3: Add password sign-in and adult registration
+
+Status: implemented on 2026-08-25. Parents and teachers can create an account
+with their name, family or classroom name, email, and password. Email
+confirmation is disabled, so a successful registration signs the user in
+immediately. Existing users sign in with email and password, and Supabase
+persists the browser session. Email is reserved for the forgot-password flow,
+which returns through `/reset-password` to choose a new password. Registration
+metadata may name the initial household, but it never assigns an application
+role; FastAPI remains responsible for owner and reader membership. Reader
+account creation and invitation delivery remain part of Step 4.
+
+### Step 4: Add administrator-managed account invitations
+
+Status: implemented on 2026-08-25 and revised on 2026-08-26. The owner can
+invite a reader using only an email address. FastAPI records the invitation and
+uses the Supabase Auth admin API to send a real activation email. The reader
+opens its link, enters their name, and creates a password. On first access,
+FastAPI creates the reader profile card, links it to the login, and assigns the
+server-controlled reader role. The separate **Add reader** flow remains
+available for children who share the owner’s login. A reader activation
+without a matching invitation is rejected instead of creating a new owner household.
+Removing pending access cancels it; removing accepted access revokes the linked
+reader membership without deleting reading data. Each household has only one
+adult management login: its owner. The Readers page presents invitations and
+active logins in a dedicated **Manage reader access** section. Explicit
+**Cancel invitation** and **Revoke access** actions replace ambiguous removable
+badges, and confirmation dialogs explain their effect before access changes.
+
+### Step 5: Harden account and session experience
+
+Status: implemented on 2026-08-25. Expected authorization failures now have
+specific user guidance: an uninvited or revoked reader is told to contact the
+owner, while an expired backend session is cleared and returned to normal sign
+in. The authenticated Account page displays email, role, household, and linked
+reader access. Owners and readers can change their password from an active
+session without sending email; email remains reserved for forgotten-password
+recovery. Automated tests cover account details, password changes, invitation
+errors, and expired-session handling.

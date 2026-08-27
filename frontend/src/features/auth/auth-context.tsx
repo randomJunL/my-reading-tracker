@@ -54,18 +54,79 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       isLoading,
       session,
       user: session?.user ?? null,
-      async sendMagicLink(email: string) {
+      async completeInvitation({ fullName, password }) {
         if (DEV_AUTH_BYPASS) return;
         if (!supabase) {
           throw new Error("Supabase authentication is not configured.");
         }
-        const { error } = await supabase.auth.signInWithOtp({
-          email,
-          options: {
-            emailRedirectTo: window.location.origin,
-            shouldCreateUser: true,
+        const { error } = await supabase.auth.updateUser({
+          password,
+          data: {
+            account_type: "reader",
+            full_name: fullName.trim(),
           },
         });
+        if (error) throw error;
+        const { error: refreshError } = await supabase.auth.refreshSession();
+        if (refreshError) throw refreshError;
+      },
+      async signInWithPassword(email: string, password: string) {
+        if (DEV_AUTH_BYPASS) return;
+        if (!supabase) {
+          throw new Error("Supabase authentication is not configured.");
+        }
+        const { error } = await supabase.auth.signInWithPassword({
+          email: email.trim(),
+          password,
+        });
+        if (error) throw error;
+      },
+      async registerAdult({ fullName, householdName, email, password }) {
+        if (DEV_AUTH_BYPASS) return;
+        if (!supabase) {
+          throw new Error("Supabase authentication is not configured.");
+        }
+        const { data, error } = await supabase.auth.signUp({
+          email: email.trim(),
+          password,
+          options: {
+            emailRedirectTo: window.location.origin,
+            data: {
+              account_type: "adult",
+              full_name: fullName.trim(),
+              household_name: householdName.trim(),
+            },
+          },
+        });
+        if (error) throw error;
+        if (data.user?.identities?.length === 0) {
+          throw new Error(
+            "An account with this email already exists. Sign in or reset the password.",
+          );
+        }
+        if (!data.session) {
+          throw new Error(
+            "Email confirmation is still enabled in Supabase. Disable Confirm email, then try again.",
+          );
+        }
+      },
+      async requestPasswordReset(email: string) {
+        if (DEV_AUTH_BYPASS) return;
+        if (!supabase) {
+          throw new Error("Supabase authentication is not configured.");
+        }
+        const { error } = await supabase.auth.resetPasswordForEmail(
+          email.trim(),
+          { redirectTo: `${window.location.origin}/reset-password` },
+        );
+        if (error) throw error;
+      },
+      async updatePassword(password: string) {
+        if (DEV_AUTH_BYPASS) return;
+        if (!supabase) {
+          throw new Error("Supabase authentication is not configured.");
+        }
+        const { error } = await supabase.auth.updateUser({ password });
         if (error) throw error;
       },
       async signOut() {

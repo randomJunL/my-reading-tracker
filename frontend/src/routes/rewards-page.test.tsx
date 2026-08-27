@@ -127,6 +127,12 @@ describe("RewardsPage", () => {
     ).toBeVisible();
     expect(
       screen.getByText("Each session earns 1 credit.", { exact: false }),
+    ).not.toBeVisible();
+    await user.click(
+      screen.getByRole("heading", { name: "How the reward system works" }),
+    );
+    expect(
+      screen.getByText("Each session earns 1 credit.", { exact: false }),
     ).toBeVisible();
     expect(
       screen.getByText("Each new badge adds", { exact: false }),

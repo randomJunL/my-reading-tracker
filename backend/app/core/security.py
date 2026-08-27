@@ -31,6 +31,9 @@ class AuthenticatedUser:
     id: uuid.UUID
     email: str
     session_id: uuid.UUID
+    full_name: str | None = None
+    household_name: str | None = None
+    account_type: str | None = None
 
 
 class SupabaseTokenVerifier:
@@ -57,15 +60,35 @@ class SupabaseTokenVerifier:
             if not isinstance(email, str) or not email:
                 raise AuthenticationError
 
+            metadata = claims.get("user_metadata")
+            if not isinstance(metadata, dict):
+                metadata = {}
+
             return AuthenticatedUser(
                 id=uuid.UUID(claims["sub"]),
                 email=email,
                 session_id=uuid.UUID(claims["session_id"]),
+                full_name=_optional_metadata_text(metadata, "full_name"),
+                household_name=_optional_metadata_text(metadata, "household_name"),
+                account_type=_optional_account_type(metadata),
             )
         except AuthenticationError:
             raise
         except (InvalidTokenError, PyJWKClientError, TypeError, ValueError) as error:
             raise AuthenticationError from error
+
+
+def _optional_metadata_text(metadata: dict[str, Any], key: str) -> str | None:
+    value = metadata.get(key)
+    if not isinstance(value, str):
+        return None
+    value = value.strip()
+    return value[:120] if value else None
+
+
+def _optional_account_type(metadata: dict[str, Any]) -> str | None:
+    value = metadata.get("account_type")
+    return value if value in {"adult", "reader"} else None
 
 
 @lru_cache

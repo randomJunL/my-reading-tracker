@@ -4,12 +4,11 @@ from typing import Annotated
 from fastapi import APIRouter, Depends, HTTPException, Response, status
 from sqlalchemy.orm import Session
 
+from app.api.dependencies.auth_admin import get_supabase_auth_admin
 from app.api.dependencies.household import get_household_context, require_admin
 from app.database.session import get_db
-from app.schemas.auth import (
-    ReaderLoginInvitationCreate,
-    ReaderLoginInvitationResponse,
-)
+from app.integrations.auth.supabase_admin import InvitationEmailError, SupabaseAuthAdmin
+from app.schemas.auth import ReaderLoginInvitationCreate, ReaderLoginInvitationResponse
 from app.services.households import (
     HouseholdContext,
     ReaderLoginInvitationConflictError,
@@ -48,19 +47,27 @@ def create_invitation(
     data: ReaderLoginInvitationCreate,
     context: Annotated[HouseholdContext, Depends(get_household_context)],
     session: Annotated[Session, Depends(get_db)],
+    auth_admin: Annotated[SupabaseAuthAdmin, Depends(get_supabase_auth_admin)],
 ) -> ReaderLoginInvitationResponse:
     require_admin(context)
     try:
-        item = create_reader_login_invitation(
-            session, context.household.id, data.reader_id, data.email
-        )
+        item = create_reader_login_invitation(session, context.household.id, data.email)
     except ValueError as error:
         raise HTTPException(status_code=422, detail=str(error)) from error
-    except ReaderLoginInvitationNotFoundError as error:
-        raise HTTPException(status_code=404, detail="Reader not found") from error
     except ReaderLoginInvitationConflictError as error:
         raise HTTPException(
-            status_code=409, detail="That reader or email already has login access"
+            status_code=409, detail="That email already has a reader invitation"
+        ) from error
+    try:
+        auth_admin.invite_reader(item.email)
+    except InvitationEmailError as error:
+        delete_reader_login_invitation(session, context.household.id, item.id)
+        raise HTTPException(
+            status_code=502,
+            detail=(
+                "The invitation email could not be sent. Check the Supabase "
+                "Auth email and SMTP configuration, then try again."
+            ),
         ) from error
     return ReaderLoginInvitationResponse(
         id=item.id,

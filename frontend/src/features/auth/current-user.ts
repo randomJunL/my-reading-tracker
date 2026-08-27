@@ -7,7 +7,7 @@ export type CurrentUser = {
   email: string;
   household_id: string;
   household_name: string;
-  role: "owner" | "caregiver" | "reader";
+  role: "owner" | "reader";
   reader_id: string | null;
   is_admin: boolean;
 };

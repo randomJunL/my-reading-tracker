@@ -39,12 +39,21 @@ test session finishes.
 Private endpoints validate Supabase access tokens against the project's
 asymmetric signing keys. Configure `SUPABASE_URL`; the issuer and JWKS URL are
 derived automatically. `SUPABASE_JWT_ISSUER` and `SUPABASE_JWKS_URL` are
-available as explicit overrides.
+available as explicit overrides. The backend-only `SUPABASE_SECRET_KEY` lets
+the owner send reader invitations through Supabase Auth; it must never be
+exposed to the frontend.
 
 `GET /api/v1/me` is the authenticated account bootstrap endpoint. On a user's
 first request it creates a household and owner membership. Subsequent requests
 return the same household. The backend never accepts a publishable key or JWT
 secret as proof of user identity.
+
+The owner manages reader activation through
+`/api/v1/reader-login-invitations`. Creating one sends a Supabase invitation
+email. Pending access is matched by normalized email after the reader follows
+the link and supplies a name and password. FastAPI creates the profile and
+assigns the reader role; client-supplied account metadata never grants that role
+by itself. Each household has one adult owner login.
 
 Local development can use the explicitly gated identity bypass documented in
 `docs/development.md`. The settings validator prevents this bypass from being

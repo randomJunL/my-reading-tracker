@@ -1071,7 +1071,7 @@ export interface components {
      * HouseholdRole
      * @enum {string}
      */
-    HouseholdRole: "owner" | "caregiver" | "reader";
+    HouseholdRole: "owner" | "reader";
     /**
      * MetadataSource
      * @enum {string}
@@ -1143,11 +1143,6 @@ export interface components {
     ReaderLoginInvitationCreate: {
       /** Email */
       email: string;
-      /**
-       * Reader Id
-       * Format: uuid
-       */
-      reader_id: string;
     };
     /** ReaderLoginInvitationResponse */
     ReaderLoginInvitationResponse: {
@@ -1160,11 +1155,8 @@ export interface components {
        * Format: uuid
        */
       id: string;
-      /**
-       * Reader Id
-       * Format: uuid
-       */
-      reader_id: string;
+      /** Reader Id */
+      reader_id: string | null;
     };
     /** ReaderResponse */
     ReaderResponse: {

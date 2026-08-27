@@ -74,10 +74,19 @@ screen supports correction and confirmed deletion of individual entries.
 
 ## Supabase Auth configuration
 
-Create or select a Supabase development project and enable email authentication.
-My Reading Tracker uses passwordless magic links. In the Supabase Auth URL
-configuration, set the local site URL to `http://localhost:5173` and allow that
-same address as a redirect URL.
+Create or select a Supabase development project and enable email/password
+authentication. In the email provider settings, turn **Confirm email** off.
+This application signs a new account in immediately and uses authentication
+email for reader invitations and forgotten-password resets.
+
+In the Supabase Auth URL configuration, set the local site URL to
+`http://localhost:5173`. Add these allowed redirect URLs:
+
+```text
+http://localhost:5173
+http://localhost:5173/reset-password
+http://localhost:5173/accept-invite
+```
 
 Copy these public project values into `.env`:
 
@@ -85,31 +94,61 @@ Copy these public project values into `.env`:
 VITE_SUPABASE_URL=https://YOUR_PROJECT.supabase.co
 VITE_SUPABASE_PUBLISHABLE_KEY=YOUR_PUBLISHABLE_KEY
 SUPABASE_URL=https://YOUR_PROJECT.supabase.co
+SUPABASE_SECRET_KEY=YOUR_BACKEND_ONLY_SECRET_KEY
 ```
 
 FastAPI derives the expected issuer and JWKS endpoint from `SUPABASE_URL` and
 accepts only authenticated access tokens signed with the project's asymmetric
 key. If necessary, `SUPABASE_JWT_ISSUER` and `SUPABASE_JWKS_URL` can override
-the derived addresses. Do not configure a JWT secret or Supabase secret key.
+the derived addresses. `SUPABASE_SECRET_KEY` is used only by local FastAPI to
+request reader invitation emails and must never be placed in a `VITE_` variable.
 
-After both applications start, visit `http://localhost:5173/sign-in`. The first
-successful authenticated call to `/api/v1/me` creates the user's household and
+After both applications start, visit `http://localhost:5173/sign-in`. A parent
+or teacher can create an account with basic information and enter the app
+without confirming an email. Normal access uses the email and password; the
+persisted Supabase session avoids signing in again on every visit. The first
+successful authenticated call to `/api/v1/me` creates the named household and
 owner membership in the configured PostgreSQL database.
+
+The **Forgot password?** action sends a reset email through Supabase. Its link
+opens `/reset-password`, where the user chooses a new password and then signs in
+normally. If the link is rejected, confirm that the reset URL above is present
+in the Supabase redirect allow list.
 
 ### Admin and reader accounts
 
-Owners and caregivers are administrators. From **Readers → Reader login
-access**, an administrator links an existing reader profile to an email address.
-Create the link before the reader first opens the application. The reader then
-uses the normal Supabase magic-link sign-in with that exact email; the first
-authenticated request joins the administrator's household and locks the account
-to the linked reader profile.
+The owner is the only administrator. From **Readers → Invite a reader**, the
+owner enters an email address. FastAPI saves the pending invitation and asks
+Supabase Auth to send the **Invite user** email. The reader opens its activation
+link, enters their name and a password on `/accept-invite`, and the first
+authenticated request creates and links their reader profile automatically.
+
+Sending to normal external addresses requires custom SMTP in Supabase. Without
+custom SMTP, Supabase's testing mail service only delivers to pre-authorized
+project-team addresses and remains rate limited.
+
+There is no additional adult role or invitation. Each household has one owner
+email for all management actions. A reader activation without a matching
+invitation is rejected instead of creating an owner household.
 
 Reader accounts can use their own dashboard, recommended library books, reading
-log, rewards, gift requests, history, and printable report. Only administrators
-can manage readers, recommendations, gifts, redemption approvals, household
+log, rewards, gift requests, history, and printable report. Only the owner can
+manage readers, recommendations, gifts, redemption approvals, household
 spreadsheet exports, or another reader's records. Removing a reader login link
 revokes its access to the household without deleting the reader's saved data.
+
+### Account and session management
+
+Use the account button in the application header or the signed-in identity in
+the desktop sidebar to open **Account**. It shows the authenticated email,
+server-assigned role, household, and linked reader profile. A signed-in user can
+change their password there without sending email. **Forgot password?** remains
+the email-based recovery path when the user cannot sign in.
+
+If FastAPI rejects an expired token, the frontend clears the stale Supabase
+session and returns to sign in. If a reader invitation is missing or has been
+revoked, the frontend shows an access explanation rather than the generic API
+configuration error.
 
 ### Development-only authentication bypass
 

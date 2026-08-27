@@ -45,6 +45,16 @@ test("completes the primary parent reading workflow", async ({
   ).toBeVisible();
   await page.getByLabel("Selected reader").selectOption({ label: readerName });
 
+  await page.getByRole("button", { name: "Open account" }).click();
+  await expect(
+    page.getByRole("heading", { name: "Account", exact: true }),
+  ).toBeVisible();
+  await expect(page.getByText("Owner", { exact: true })).toBeVisible();
+  await expect(
+    page.getByText("Manages all reader profiles", { exact: true }),
+  ).toBeVisible();
+  await page.getByRole("link", { name: "Readers", exact: true }).click();
+
   await page.getByRole("link", { name: "Library", exact: true }).click();
   await page.getByLabel("Search books").fill(bookTitle);
   await page.getByRole("button", { name: "Search", exact: true }).click();

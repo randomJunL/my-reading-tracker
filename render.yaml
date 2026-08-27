@@ -20,6 +20,10 @@ services:
         sync: false
       - key: SUPABASE_URL
         sync: false
+      - key: SUPABASE_SECRET_KEY
+        sync: false
+      - key: FRONTEND_URL
+        sync: false
       - key: SUPABASE_JWT_AUDIENCE
         value: authenticated
       - key: GOOGLE_BOOKS_API_KEY

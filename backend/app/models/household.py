@@ -24,7 +24,6 @@ if TYPE_CHECKING:
 
 class HouseholdRole(StrEnum):
     OWNER = "owner"
-    CAREGIVER = "caregiver"
     READER = "reader"
 
 
@@ -51,7 +50,7 @@ class HouseholdMember(Base):
     __tablename__ = "household_members"
     __table_args__ = (
         CheckConstraint(
-            "role IN ('owner', 'caregiver', 'reader')",
+            "role IN ('owner', 'reader')",
             name="ck_household_members_role",
         ),
     )
@@ -90,8 +89,11 @@ class ReaderLoginInvitation(UUIDPrimaryKeyMixin, TimestampMixin, Base):
     household_id: Mapped[uuid.UUID] = mapped_column(
         UUID(as_uuid=True), ForeignKey("households.id", ondelete="CASCADE")
     )
-    reader_id: Mapped[uuid.UUID] = mapped_column(
-        UUID(as_uuid=True), ForeignKey("readers.id", ondelete="CASCADE"), unique=True
+    reader_id: Mapped[uuid.UUID | None] = mapped_column(
+        UUID(as_uuid=True),
+        ForeignKey("readers.id", ondelete="CASCADE"),
+        unique=True,
+        nullable=True,
     )
     email: Mapped[str] = mapped_column(Text, nullable=False, unique=True)
     accepted_user_id: Mapped[uuid.UUID | None] = mapped_column(UUID(as_uuid=True))

@@ -8,6 +8,7 @@ import {
   Menu,
   Plus,
   Users,
+  UserRound,
 } from "lucide-react";
 import { NavLink, Outlet, useNavigate } from "react-router-dom";
 
@@ -16,6 +17,7 @@ import { Button } from "@/components/ui/button";
 import { APP_NAME } from "@/config/branding";
 import { useAuth } from "@/features/auth/auth";
 import { useCurrentUser } from "@/features/auth/current-user";
+import { getUserFirstName } from "@/features/auth/user-display-name";
 import { ReaderSelector } from "@/features/readers/reader-selector";
 import { cn } from "@/lib/utils";
 
@@ -35,8 +37,10 @@ export function AppLayout() {
   const navigation = primaryNavigation.filter(
     (item) => !item.adminOnly || currentUser?.is_admin,
   );
-  const displayName =
-    (user?.email ?? currentUser?.email)?.split("@")[0] ?? "Reader";
+  const displayName = getUserFirstName(
+    user?.user_metadata.full_name,
+    user?.email ?? currentUser?.email,
+  );
   const initial = displayName.charAt(0).toUpperCase();
   const currentDate = new Intl.DateTimeFormat(undefined, {
     weekday: "long",
@@ -83,20 +87,25 @@ export function AppLayout() {
 
         <div className="mt-auto rounded-2xl bg-white/7 p-3.5">
           <div className="flex items-center gap-3">
-            <span className="flex size-9 items-center justify-center rounded-full bg-[#e79679] text-sm font-bold text-[#173f36]">
-              {initial}
-            </span>
-            <div className="min-w-0 flex-1">
-              <p className="truncate text-sm font-semibold">
-                {currentUser?.household_name ?? "My Household"}
-              </p>
-              <p className="truncate text-xs text-[#a9c0b9]">
-                {user?.email}
-                {currentUser
-                  ? ` · ${currentUser.is_admin ? "Admin" : "Reader"}`
-                  : ""}
-              </p>
-            </div>
+            <NavLink
+              to="/account"
+              className="flex min-w-0 flex-1 items-center gap-3 rounded-xl focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#f4bd62]"
+            >
+              <span className="flex size-9 shrink-0 items-center justify-center rounded-full bg-[#e79679] text-sm font-bold text-[#173f36]">
+                {initial}
+              </span>
+              <span className="min-w-0 flex-1">
+                <span className="block truncate text-sm font-semibold">
+                  {currentUser?.household_name ?? "My Household"}
+                </span>
+                <span className="block truncate text-xs text-[#a9c0b9]">
+                  {user?.email}
+                  {currentUser
+                    ? ` · ${currentUser.is_admin ? "Owner" : "Reader"}`
+                    : ""}
+                </span>
+              </span>
+            </NavLink>
             {isDevAuthBypass ? (
               <span className="rounded-md bg-[#f4bd62]/15 px-2 py-1 text-[10px] font-bold tracking-wide text-[#f4bd62] uppercase">
                 Local
@@ -151,6 +160,15 @@ export function AppLayout() {
             </div>
 
             <div className="flex items-center gap-3">
+              <Button
+                variant="ghost"
+                size="icon"
+                aria-label="Open account"
+                title="Account"
+                onClick={() => void navigate("/account")}
+              >
+                <UserRound className="size-5" />
+              </Button>
               <ReaderSelector />
               <Button
                 aria-label="Log reading"
