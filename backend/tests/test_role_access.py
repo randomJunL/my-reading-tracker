@@ -81,7 +81,17 @@ def test_reader_login_is_linked_and_restricted(
     assert readers[0]["id"] == reader_id
     assert readers[0]["name"] == "Maya Reader"
     assert readers[0]["avatar_key"] is None
+    own_update = client.patch(
+        f"/api/v1/readers/{reader_id}", json={"name": "Maya Updated"}
+    )
+    assert own_update.status_code == 200
+    assert own_update.json()["name"] == "Maya Updated"
     assert client.get(f"/api/v1/readers/{leo['id']}").status_code == 403
+    assert (
+        client.patch(f"/api/v1/readers/{leo['id']}", json={"name": "No"}).status_code
+        == 403
+    )
+    assert client.patch("/api/v1/me", json={"household_name": "No"}).status_code == 403
     assert client.post("/api/v1/readers", json={"name": "No"}).status_code == 403
     assert (
         client.post(

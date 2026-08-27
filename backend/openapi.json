@@ -950,6 +950,21 @@
         "title": "CurrentUserResponse",
         "type": "object"
       },
+      "CurrentUserUpdate": {
+        "properties": {
+          "household_name": {
+            "maxLength": 120,
+            "minLength": 1,
+            "title": "Household Name",
+            "type": "string"
+          }
+        },
+        "required": [
+          "household_name"
+        ],
+        "title": "CurrentUserUpdate",
+        "type": "object"
+      },
       "ExportBadgeDefinition": {
         "properties": {
           "active": {
@@ -3859,6 +3874,50 @@
           }
         ],
         "summary": "Get Me",
+        "tags": [
+          "system"
+        ]
+      },
+      "patch": {
+        "operationId": "update_me_api_v1_me_patch",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CurrentUserUpdate"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CurrentUserResponse"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "Update Me",
         "tags": [
           "system"
         ]

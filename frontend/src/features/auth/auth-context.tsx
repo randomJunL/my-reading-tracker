@@ -121,6 +121,16 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         );
         if (error) throw error;
       },
+      async updateProfile({ fullName }) {
+        if (DEV_AUTH_BYPASS) return;
+        if (!supabase) {
+          throw new Error("Supabase authentication is not configured.");
+        }
+        const { error } = await supabase.auth.updateUser({
+          data: { full_name: fullName.trim() },
+        });
+        if (error) throw error;
+      },
       async updatePassword(password: string) {
         if (DEV_AUTH_BYPASS) return;
         if (!supabase) {

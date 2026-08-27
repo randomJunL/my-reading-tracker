@@ -54,12 +54,12 @@ export function AppLayout() {
         <NavLink
           to="/"
           aria-label={`${APP_NAME} home`}
-          className="mb-11 flex items-center gap-3 px-2"
+          className="mb-11 flex min-w-0 items-center gap-3 overflow-hidden px-2"
         >
           <span className="shrink-0">
             <BrandMark />
           </span>
-          <span className="min-w-0 font-serif text-[23px] leading-tight font-bold tracking-[-0.02em]">
+          <span className="min-w-0 flex-1 font-serif text-[23px] leading-tight font-bold tracking-[-0.02em] [overflow-wrap:anywhere]">
             {APP_NAME}
           </span>
         </NavLink>

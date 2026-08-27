@@ -311,30 +311,6 @@ function SignInCard({
         </p>
       </div>
 
-      {!isRequestingReset && (
-        <div
-          className={cn(
-            "mt-6 grid rounded-xl bg-[#edf1ed] p-1",
-            accountPath === "adult" ? "grid-cols-2" : "grid-cols-1",
-          )}
-        >
-          <AuthModeButton
-            active={authMode === "sign-in"}
-            onClick={() => onChangeAuthMode("sign-in")}
-          >
-            Sign in
-          </AuthModeButton>
-          {accountPath === "adult" && (
-            <AuthModeButton
-              active={authMode === "register"}
-              onClick={() => onChangeAuthMode("register")}
-            >
-              Create account
-            </AuthModeButton>
-          )}
-        </div>
-      )}
-
       <form className="mt-7" onSubmit={onSubmit}>
         {isRegistering && (
           <>
@@ -467,34 +443,22 @@ function SignInCard({
             Back to sign in
           </button>
         )}
+        {accountPath === "adult" && !isRequestingReset ? (
+          <p className="mt-5 text-center text-sm text-[#6b7e77]">
+            {isRegistering ? "Already have an account?" : "New here?"}{" "}
+            <button
+              type="button"
+              onClick={() =>
+                onChangeAuthMode(isRegistering ? "sign-in" : "register")
+              }
+              className="cursor-pointer font-semibold text-[#28705f] hover:text-[#21483e] hover:underline"
+            >
+              {isRegistering ? "Back to sign in" : "Create an account"}
+            </button>
+          </p>
+        ) : null}
       </form>
     </Card>
-  );
-}
-
-function AuthModeButton({
-  active,
-  children,
-  onClick,
-}: {
-  active: boolean;
-  children: string;
-  onClick: () => void;
-}) {
-  return (
-    <button
-      type="button"
-      aria-label={`Show ${children.toLowerCase()} form`}
-      onClick={onClick}
-      className={cn(
-        "cursor-pointer rounded-lg px-3 py-2 text-sm font-semibold transition",
-        active
-          ? "bg-white text-[#21483e] shadow-sm"
-          : "text-[#6b7e77] hover:text-[#21483e]",
-      )}
-    >
-      {children}
-    </button>
   );
 }
 

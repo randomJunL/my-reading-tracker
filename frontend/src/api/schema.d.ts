@@ -175,7 +175,8 @@ export interface paths {
     delete?: never;
     options?: never;
     head?: never;
-    patch?: never;
+    /** Update Me */
+    patch: operations["update_me_api_v1_me_patch"];
     trace?: never;
   };
   "/api/v1/reader-login-invitations": {
@@ -744,6 +745,11 @@ export interface components {
        * Format: uuid
        */
       user_id: string;
+    };
+    /** CurrentUserUpdate */
+    CurrentUserUpdate: {
+      /** Household Name */
+      household_name: string;
     };
     /** ExportBadgeDefinition */
     ExportBadgeDefinition: {
@@ -2020,6 +2026,39 @@ export interface operations {
         };
         content: {
           "application/json": components["schemas"]["CurrentUserResponse"];
+        };
+      };
+    };
+  };
+  update_me_api_v1_me_patch: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    requestBody: {
+      content: {
+        "application/json": components["schemas"]["CurrentUserUpdate"];
+      };
+    };
+    responses: {
+      /** @description Successful Response */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["CurrentUserResponse"];
+        };
+      };
+      /** @description Validation Error */
+      422: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["HTTPValidationError"];
         };
       };
     };
