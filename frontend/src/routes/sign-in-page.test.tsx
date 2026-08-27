@@ -33,27 +33,7 @@ describe("SignInPage", () => {
 
   afterEach(() => vi.clearAllMocks());
 
-  it("explains the adult and reader account paths", () => {
-    render(
-      <MemoryRouter>
-        <SignInPage />
-      </MemoryRouter>,
-    );
-
-    expect(
-      screen.getByRole("heading", {
-        name: "How will you use My Reading Tracker?",
-      }),
-    ).toBeInTheDocument();
-    expect(
-      screen.getByRole("button", { name: "Continue as Parent or teacher" }),
-    ).toHaveTextContent("Manage a family or classroom");
-    expect(
-      screen.getByRole("button", { name: "Continue as Reader" }),
-    ).toHaveTextContent("Open your reading account");
-  });
-
-  it("signs a parent in with an email and password", async () => {
+  it("requests a magic link for the parent email", async () => {
     const user = userEvent.setup();
     render(
       <MemoryRouter>
@@ -61,9 +41,6 @@ describe("SignInPage", () => {
       </MemoryRouter>,
     );
 
-    await user.click(
-      screen.getByRole("button", { name: "Continue as Parent or teacher" }),
-    );
     await user.type(
       screen.getByRole("textbox", { name: "Email address" }),
       "parent@example.com",
@@ -117,72 +94,5 @@ describe("SignInPage", () => {
     expect(
       await screen.findByText(/Your account is ready/i),
     ).toBeInTheDocument();
-  });
-
-  it("requests a password-reset email from the sign-in page", async () => {
-    const user = userEvent.setup();
-    render(
-      <MemoryRouter>
-        <SignInPage />
-      </MemoryRouter>,
-    );
-
-    await user.click(
-      screen.getByRole("button", { name: "Continue as Parent or teacher" }),
-    );
-    await user.click(screen.getByRole("button", { name: "Forgot password?" }));
-    await user.type(
-      screen.getByRole("textbox", { name: "Email address" }),
-      "parent@example.com",
-    );
-    await user.click(
-      screen.getByRole("button", { name: "Send password reset link" }),
-    );
-
-    expect(authMocks.requestPasswordReset).toHaveBeenCalledWith(
-      "parent@example.com",
-    );
-    expect(
-      await screen.findByText(/If an account exists for this email/i),
-    ).toBeInTheDocument();
-  });
-
-  it("tells readers to use the credentials created from their invitation", async () => {
-    const user = userEvent.setup();
-    render(
-      <MemoryRouter>
-        <SignInPage />
-      </MemoryRouter>,
-    );
-
-    await user.click(
-      screen.getByRole("button", { name: "Continue as Reader" }),
-    );
-
-    expect(
-      screen.getByText(/email and password you created from your invitation/i),
-    ).toBeInTheDocument();
-    expect(
-      screen.getByRole("button", { name: "Choose another role" }),
-    ).toBeInTheDocument();
-  });
-
-  it("directs existing readers to use the account created from their email invitation", async () => {
-    const user = userEvent.setup();
-    render(
-      <MemoryRouter>
-        <SignInPage />
-      </MemoryRouter>,
-    );
-
-    await user.click(
-      screen.getByRole("button", { name: "Continue as Reader" }),
-    );
-    expect(
-      screen.getByText(/password you created from your invitation link/i),
-    ).toBeInTheDocument();
-    expect(
-      screen.queryByRole("button", { name: /activate invite/i }),
-    ).not.toBeInTheDocument();
   });
 });
