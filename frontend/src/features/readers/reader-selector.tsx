@@ -1,4 +1,4 @@
-import { UserRound } from "lucide-react";
+import { BookOpen, UserPlus } from "lucide-react";
 import { useEffect } from "react";
 import { Link } from "react-router-dom";
 
@@ -25,7 +25,7 @@ export function ReaderSelector() {
     const reader = readers.find((item) => item.id === currentUser.reader_id);
     return (
       <div className="flex h-11 items-center gap-2 rounded-xl border border-[#d7d5c9] bg-white px-3 text-sm font-semibold text-[#264940]">
-        <UserRound className="size-4 text-[#667b74]" />
+        <BookOpen className="size-4 text-[#667b74]" aria-hidden="true" />
         {reader?.name ?? "My profile"}
       </div>
     );
@@ -37,7 +37,7 @@ export function ReaderSelector() {
         to="/readers"
         className="flex h-11 items-center gap-2 rounded-xl border border-[#d7d5c9] bg-white px-3 text-sm font-semibold text-[#31564c] hover:bg-[#f9f7f1]"
       >
-        <UserRound className="size-4" />
+        <UserPlus className="size-4" aria-hidden="true" />
         <span className="hidden md:inline">Add a reader</span>
       </Link>
     );
@@ -46,7 +46,7 @@ export function ReaderSelector() {
   return (
     <label className="flex items-center gap-2">
       <span className="sr-only">Selected reader</span>
-      <UserRound className="size-4 text-[#667b74]" />
+      <BookOpen className="size-4 text-[#667b74]" aria-hidden="true" />
       <select
         aria-label="Selected reader"
         value={selectedReaderId ?? ""}
