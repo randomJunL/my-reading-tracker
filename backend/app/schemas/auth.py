@@ -16,12 +16,11 @@ class CurrentUserResponse(BaseModel):
 
 
 class ReaderLoginInvitationCreate(BaseModel):
-    reader_id: uuid.UUID
     email: str
 
 
 class ReaderLoginInvitationResponse(BaseModel):
     id: uuid.UUID
-    reader_id: uuid.UUID
+    reader_id: uuid.UUID | None
     email: str
     accepted: bool

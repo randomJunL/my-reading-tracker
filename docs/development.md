@@ -77,14 +77,15 @@ screen supports correction and confirmed deletion of individual entries.
 Create or select a Supabase development project and enable email/password
 authentication. In the email provider settings, turn **Confirm email** off.
 This application signs a new account in immediately and uses authentication
-email only when the user asks to reset a forgotten password.
+email for reader invitations and forgotten-password resets.
 
 In the Supabase Auth URL configuration, set the local site URL to
-`http://localhost:5173`. Add both of these allowed redirect URLs:
+`http://localhost:5173`. Add these allowed redirect URLs:
 
 ```text
 http://localhost:5173
 http://localhost:5173/reset-password
+http://localhost:5173/accept-invite
 ```
 
 Copy these public project values into `.env`:
@@ -93,12 +94,14 @@ Copy these public project values into `.env`:
 VITE_SUPABASE_URL=https://YOUR_PROJECT.supabase.co
 VITE_SUPABASE_PUBLISHABLE_KEY=YOUR_PUBLISHABLE_KEY
 SUPABASE_URL=https://YOUR_PROJECT.supabase.co
+SUPABASE_SECRET_KEY=YOUR_BACKEND_ONLY_SECRET_KEY
 ```
 
 FastAPI derives the expected issuer and JWKS endpoint from `SUPABASE_URL` and
 accepts only authenticated access tokens signed with the project's asymmetric
 key. If necessary, `SUPABASE_JWT_ISSUER` and `SUPABASE_JWKS_URL` can override
-the derived addresses. Do not configure a JWT secret or Supabase secret key.
+the derived addresses. `SUPABASE_SECRET_KEY` is used only by local FastAPI to
+request reader invitation emails and must never be placed in a `VITE_` variable.
 
 After both applications start, visit `http://localhost:5173/sign-in`. A parent
 or teacher can create an account with basic information and enter the app
@@ -114,14 +117,15 @@ in the Supabase redirect allow list.
 
 ### Admin and reader accounts
 
-The owner is the only administrator. From **Readers → Reader login access**, the
-owner links an existing reader profile to an email address.
-Create the link before the reader first opens the application. FastAPI matches
-the authenticated email to that link; the first authenticated request joins the
-administrator's household and locks the account to the linked reader profile.
-The administrator shares the approved email directly; no invitation email is
-sent. The reader chooses **Reader → Activate invite**, enters the exact approved
-email, and creates a password.
+The owner is the only administrator. From **Readers → Invite a reader**, the
+owner enters an email address. FastAPI saves the pending invitation and asks
+Supabase Auth to send the **Invite user** email. The reader opens its activation
+link, enters their name and a password on `/accept-invite`, and the first
+authenticated request creates and links their reader profile automatically.
+
+Sending to normal external addresses requires custom SMTP in Supabase. Without
+custom SMTP, Supabase's testing mail service only delivers to pre-authorized
+project-team addresses and remains rate limited.
 
 There is no additional adult role or invitation. Each household has one owner
 email for all management actions. A reader activation without a matching

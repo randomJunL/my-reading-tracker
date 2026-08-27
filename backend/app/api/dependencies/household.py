@@ -10,6 +10,7 @@ from app.database.session import get_db
 from app.services.households import (
     HouseholdContext,
     LoginInvitationRequiredError,
+    ReaderProfileNameRequiredError,
     get_or_create_household,
 )
 
@@ -28,6 +29,11 @@ def get_household_context(
         raise HTTPException(
             status_code=403,
             detail="A valid invitation is required for this account type",
+        ) from error
+    except ReaderProfileNameRequiredError as error:
+        raise HTTPException(
+            status_code=403,
+            detail="A reader name is required to activate this invitation",
         ) from error
 
 

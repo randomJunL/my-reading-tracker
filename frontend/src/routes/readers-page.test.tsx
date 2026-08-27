@@ -56,6 +56,92 @@ describe("ReadersPage", () => {
     );
   });
 
+  it("sends a reader invitation using only an email address", async () => {
+    const user = userEvent.setup();
+    apiMocks.fetch.mockImplementation((path: string, init?: RequestInit) => {
+      if (path === "/readers" && !init?.method) return Promise.resolve([]);
+      if (path === "/reader-login-invitations" && !init?.method) {
+        return Promise.resolve([]);
+      }
+      if (path === "/reader-login-invitations" && init?.method === "POST") {
+        return Promise.resolve({
+          accepted: false,
+          email: "reader@example.com",
+          id: "invite-id",
+          reader_id: null,
+        });
+      }
+      throw new Error(`Unexpected request: ${path}`);
+    });
+    renderReadersPage();
+
+    await user.type(
+      screen.getByRole("textbox", { name: "Reader login email" }),
+      "reader@example.com",
+    );
+    await user.click(screen.getByRole("button", { name: "Invite reader" }));
+
+    await waitFor(() =>
+      expect(apiMocks.fetch).toHaveBeenCalledWith(
+        "/reader-login-invitations",
+        expect.objectContaining({
+          body: JSON.stringify({ email: "reader@example.com" }),
+          method: "POST",
+        }),
+      ),
+    );
+    expect(await screen.findByText(/Invitation email sent/i)).toBeVisible();
+  });
+
+  it("explains the impact before revoking active reader access", async () => {
+    const user = userEvent.setup();
+    apiMocks.fetch.mockImplementation((path: string, init?: RequestInit) => {
+      if (path === "/readers" && !init?.method) {
+        return Promise.resolve([maya]);
+      }
+      if (path === "/reader-login-invitations" && !init?.method) {
+        return Promise.resolve([
+          {
+            accepted: true,
+            email: "maya@example.com",
+            id: "invite-id",
+            reader_id: maya.id,
+          },
+        ]);
+      }
+      if (
+        path === "/reader-login-invitations/invite-id" &&
+        init?.method === "DELETE"
+      ) {
+        return Promise.resolve();
+      }
+      throw new Error(`Unexpected request: ${path}`);
+    });
+    renderReadersPage();
+
+    await screen.findByRole("heading", { name: "Manage reader access" });
+    await user.click(
+      await screen.findByRole("button", { name: "Revoke access" }),
+    );
+
+    expect(
+      screen.getByRole("heading", { name: "Revoke access for Maya?" }),
+    ).toBeVisible();
+    expect(
+      screen.getByText(/profile, books, and reading history will remain/i),
+    ).toBeVisible();
+    await user.click(
+      screen.getByRole("button", { name: "Revoke reader access" }),
+    );
+
+    await waitFor(() =>
+      expect(apiMocks.fetch).toHaveBeenCalledWith(
+        "/reader-login-invitations/invite-id",
+        { method: "DELETE" },
+      ),
+    );
+  });
+
   it("requires a second explicit confirmation when the reader has history", async () => {
     const user = userEvent.setup();
     apiMocks.fetch.mockImplementation(

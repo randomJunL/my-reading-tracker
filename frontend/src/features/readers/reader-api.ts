@@ -98,7 +98,7 @@ export function useReaderLoginInvitations() {
 export function useCreateReaderLoginInvitation() {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: (data: { reader_id: string; email: string }) =>
+    mutationFn: (data: { email: string }) =>
       apiFetch<ReaderLoginInvitation>("/reader-login-invitations", {
         method: "POST",
         body: JSON.stringify(data),

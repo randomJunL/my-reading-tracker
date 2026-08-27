@@ -14,9 +14,8 @@ export type AuthContextValue = {
     email: string;
     password: string;
   }) => Promise<void>;
-  activateInvitation: (details: {
-    accountType: "reader";
-    email: string;
+  completeInvitation: (details: {
+    fullName: string;
     password: string;
   }) => Promise<void>;
   requestPasswordReset: (email: string) => Promise<void>;

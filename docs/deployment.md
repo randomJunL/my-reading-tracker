@@ -19,6 +19,8 @@ committing them:
 
 - Project URL, used by `SUPABASE_URL` and `VITE_SUPABASE_URL`
 - Publishable key, used only by `VITE_SUPABASE_PUBLISHABLE_KEY`
+- Secret key, used only by FastAPI as `SUPABASE_SECRET_KEY` to send reader
+  invitations
 - PostgreSQL session-pooler connection string, used by `DATABASE_URL`
 
 Use the session pooler when the backend host requires IPv4. Convert the
@@ -28,8 +30,9 @@ connection string to SQLAlchemy's psycopg driver form:
 postgresql+psycopg://USER:PASSWORD@HOST:5432/postgres?sslmode=require
 ```
 
-The application never needs a Supabase secret key or JWT secret. FastAPI
-validates access tokens with the project's public JWKS endpoint.
+Never expose the Supabase secret key in Vercel or a `VITE_` variable. FastAPI
+uses it only from the private Render environment to call Supabase's invitation
+API. Access-token validation still uses the project's public JWKS endpoint.
 
 The `20260815_09` migration enables row-level security without adding direct
 client policies. This deliberately blocks the Supabase Data API's `anon` and
@@ -56,7 +59,9 @@ Provide these prompted values in the Render dashboard:
 | ---------------------------- | ----------------------------------------------------------------- |
 | `DATABASE_URL`               | Supabase session-pooler URL with `sslmode=require`                |
 | `CORS_ORIGINS`               | Exact Vercel production origin, such as `https://reading.example` |
+| `FRONTEND_URL`               | The same exact Vercel production origin                           |
 | `SUPABASE_URL`               | Production Supabase project URL                                   |
+| `SUPABASE_SECRET_KEY`        | Supabase secret key; backend only                                 |
 | `GOOGLE_BOOKS_API_KEY`       | Restricted production key, or blank to use Open Library           |
 | `OPEN_LIBRARY_CONTACT_EMAIL` | Maintained school or administrator contact                        |
 
@@ -101,17 +106,20 @@ In the production project, open **Authentication -> URL Configuration**:
 1. Set **Site URL** to the exact Vercel production origin.
 2. Add the same production origin to **Redirect URLs**.
 3. Add `https://YOUR_FRONTEND_HOST/reset-password` to **Redirect URLs**.
-4. In the email provider settings, turn **Confirm email** off so registration
+4. Add `https://YOUR_FRONTEND_HOST/accept-invite` to **Redirect URLs**.
+5. In the email provider settings, turn **Confirm email** off so registration
    creates an immediately usable account.
-5. Keep localhost redirects only in the separate development project.
-6. Add preview URL wildcards only if preview deployments must use production
+6. Keep localhost redirects only in the separate development project.
+7. Add preview URL wildcards only if preview deployments must use production
    authentication; a separate preview Supabase project is safer.
 
-The frontend sends password reset links to `/reset-password`, so that complete
-path must be present in Supabase's allow list.
+Password reset links return to `/reset-password`; reader invitation links return
+to `/accept-invite`. Both complete paths must be present in Supabase's allow
+list. Supabase sends reader invitations with its **Invite user** email template.
 
-For real school use, configure custom SMTP. Supabase's default mail service is
-intended for testing and its low email quota is not suitable for normal users.
+Configure custom SMTP before inviting real readers. Supabase's default mail
+service is intended for testing, is rate limited, and only delivers to
+pre-authorized project-team addresses.
 
 ## 5. Migration procedure
 

@@ -5,7 +5,6 @@ import { MemoryRouter } from "react-router-dom";
 import { SignInPage } from "@/routes/sign-in-page";
 
 const authMocks = vi.hoisted(() => ({
-  activateInvitation: vi.fn(),
   registerAdult: vi.fn(),
   requestPasswordReset: vi.fn(),
   signInWithPassword: vi.fn(),
@@ -18,12 +17,10 @@ vi.mock("@/features/auth/auth", () => ({
 
 describe("SignInPage", () => {
   beforeEach(() => {
-    authMocks.activateInvitation.mockResolvedValue(undefined);
     authMocks.registerAdult.mockResolvedValue(undefined);
     authMocks.requestPasswordReset.mockResolvedValue(undefined);
     authMocks.signInWithPassword.mockResolvedValue(undefined);
     authMocks.useAuth.mockReturnValue({
-      activateInvitation: authMocks.activateInvitation,
       isConfigured: true,
       isDevAuthBypass: false,
       isLoading: false,
@@ -122,7 +119,7 @@ describe("SignInPage", () => {
     ).toBeInTheDocument();
   });
 
-  it("sends email only when a user requests a password reset", async () => {
+  it("requests a password-reset email from the sign-in page", async () => {
     const user = userEvent.setup();
     render(
       <MemoryRouter>
@@ -150,7 +147,7 @@ describe("SignInPage", () => {
     ).toBeInTheDocument();
   });
 
-  it("tells readers that an administrator invitation is required", async () => {
+  it("tells readers to use the credentials created from their invitation", async () => {
     const user = userEvent.setup();
     render(
       <MemoryRouter>
@@ -163,14 +160,14 @@ describe("SignInPage", () => {
     );
 
     expect(
-      screen.getByText(/Reader access requires an invitation/i),
+      screen.getByText(/email and password you created from your invitation/i),
     ).toBeInTheDocument();
     expect(
       screen.getByRole("button", { name: "Choose another role" }),
     ).toBeInTheDocument();
   });
 
-  it("activates an invited reader without sending email", async () => {
+  it("directs existing readers to use the account created from their email invitation", async () => {
     const user = userEvent.setup();
     render(
       <MemoryRouter>
@@ -181,23 +178,11 @@ describe("SignInPage", () => {
     await user.click(
       screen.getByRole("button", { name: "Continue as Reader" }),
     );
-    await user.click(
-      screen.getByRole("button", { name: "Show activate invite form" }),
-    );
-    await user.type(
-      screen.getByRole("textbox", { name: "Email address" }),
-      "reader@example.com",
-    );
-    await user.type(screen.getByLabelText("Password"), "safe-password");
-    await user.type(screen.getByLabelText("Confirm password"), "safe-password");
-    await user.click(
-      screen.getByRole("button", { name: "Activate invited account" }),
-    );
-
-    expect(authMocks.activateInvitation).toHaveBeenCalledWith({
-      accountType: "reader",
-      email: "reader@example.com",
-      password: "safe-password",
-    });
+    expect(
+      screen.getByText(/password you created from your invitation link/i),
+    ).toBeInTheDocument();
+    expect(
+      screen.queryByRole("button", { name: /activate invite/i }),
+    ).not.toBeInTheDocument();
   });
 });

@@ -207,7 +207,7 @@ function RewardGuide() {
 
   return (
     <Card className="mb-5 overflow-hidden border-[#d5ded8] bg-[#f8fbf8]">
-      <details open className="group">
+      <details className="group">
         <summary className="flex cursor-pointer list-none items-center justify-between gap-4 p-5 marker:content-none sm:px-6">
           <div>
             <p className="text-xs font-bold tracking-[0.13em] text-[#c65c43] uppercase">

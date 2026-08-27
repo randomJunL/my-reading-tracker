@@ -22,8 +22,10 @@ class Settings(BaseSettings):
         default="postgresql+psycopg://my_reading_tracker:my_reading_tracker_local@localhost:5432/my_reading_tracker"
     )
     cors_origins: str = "http://localhost:5173"
+    frontend_url: str = "http://localhost:5173"
     log_level: str = "INFO"
     supabase_url: str = ""
+    supabase_secret_key: str = ""
     supabase_jwt_issuer: str = ""
     supabase_jwks_url: str = ""
     supabase_jwt_audience: str = "authenticated"
@@ -50,6 +52,8 @@ class Settings(BaseSettings):
         problems: list[str] = []
         if not (self.supabase_url or self.supabase_jwt_issuer):
             problems.append("Supabase authentication is not configured")
+        if not self.supabase_secret_key:
+            problems.append("SUPABASE_SECRET_KEY is required for reader invitations")
 
         database = urlsplit(self.database_url)
         if not database.scheme.startswith("postgresql"):
@@ -75,6 +79,17 @@ class Settings(BaseSettings):
                     "CORS_ORIGINS must contain only exact HTTPS production origins"
                 )
                 break
+
+        frontend = urlsplit(self.frontend_url)
+        if (
+            frontend.scheme != "https"
+            or not frontend.netloc
+            or frontend.hostname in {"localhost", "127.0.0.1", "::1"}
+            or frontend.path not in {"", "/"}
+            or frontend.query
+            or frontend.fragment
+        ):
+            problems.append("FRONTEND_URL must be an exact production HTTPS origin")
 
         if problems:
             raise ValueError("Invalid production configuration: " + "; ".join(problems))

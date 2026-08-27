@@ -1,8 +1,10 @@
 import { zodResolver } from "@hookform/resolvers/zod";
 import {
   KeyRound,
+  Mail,
   Pencil,
   Plus,
+  ShieldCheck,
   Trash2,
   UserRound,
   UsersRound,
@@ -18,6 +20,7 @@ import { Card } from "@/components/ui/card";
 import {
   type Reader,
   type ReaderCreate,
+  type ReaderLoginInvitation,
   useCreateReader,
   useCreateReaderLoginInvitation,
   useDeleteReader,
@@ -58,6 +61,8 @@ export function ReadersPage() {
   const [showCreateForm, setShowCreateForm] = useState(false);
   const [editingReader, setEditingReader] = useState<Reader | null>(null);
   const [deletingReader, setDeletingReader] = useState<Reader | null>(null);
+  const [accessToRemove, setAccessToRemove] =
+    useState<ReaderLoginInvitation | null>(null);
 
   async function handleCreate(data: ReaderCreate) {
     const reader = await createMutation.mutateAsync(data);
@@ -97,44 +102,28 @@ export function ReadersPage() {
           <KeyRound className="mt-1 size-5 text-[#c65c43]" />
           <div>
             <h2 className="font-serif text-xl font-bold text-[#21483e]">
-              Reader login access
+              Invite a reader
             </h2>
             <p className="mt-1 text-sm leading-6 text-[#667b74]">
-              Approve an email for this reader, then tell them to choose Reader
-              and Activate invite. No invitation email is sent.
+              Enter the reader’s email to create an invitation. When they click
+              the link in the invitation email, they’ll enter their name and
+              password. Their profile card will be created automatically.
             </p>
           </div>
         </div>
         <form
-          className="mt-4 grid gap-3 sm:grid-cols-[1fr_1.5fr_auto]"
+          className="mt-4 grid gap-3 sm:grid-cols-[1fr_auto]"
           onSubmit={(event) => {
             event.preventDefault();
             const form = new FormData(event.currentTarget);
-            const readerId = form.get("reader_id");
             const email = form.get("email");
-            if (typeof readerId !== "string" || typeof email !== "string") {
+            if (typeof email !== "string") {
               return;
             }
-            createInvitation.mutate({
-              reader_id: readerId,
-              email,
-            });
+            createInvitation.mutate({ email });
             event.currentTarget.reset();
           }}
         >
-          <select
-            name="reader_id"
-            aria-label="Reader for login access"
-            required
-            className="h-11 rounded-xl border border-[#d7d5c9] bg-white px-3 text-sm"
-          >
-            <option value="">Choose reader</option>
-            {readers.map((reader) => (
-              <option key={reader.id} value={reader.id}>
-                {reader.name}
-              </option>
-            ))}
-          </select>
           <input
             name="email"
             type="email"
@@ -143,36 +132,104 @@ export function ReadersPage() {
             placeholder="reader@school.org"
             className="h-11 rounded-xl border border-[#d7d5c9] bg-white px-3 text-sm"
           />
-          <Button disabled={createInvitation.isPending}>Approve reader</Button>
+          <Button disabled={createInvitation.isPending}>
+            {createInvitation.isPending ? "Inviting…" : "Invite reader"}
+          </Button>
         </form>
+        <p className="mt-2 text-xs leading-5 text-[#667b74]">
+          The activation link will be sent to this email address.
+        </p>
+        {createInvitation.isSuccess ? (
+          <p role="status" className="mt-3 text-sm text-[#28705f]">
+            Invitation email sent. The reader can now use its activation link.
+          </p>
+        ) : null}
         {createInvitation.error ? (
           <p role="alert" className="mt-3 text-sm text-[#943f30]">
             {createInvitation.error.message}
           </p>
         ) : null}
-        <div className="mt-4 flex flex-wrap gap-2">
-          {invitations.data?.map((item) => {
-            const reader = readers.find((value) => value.id === item.reader_id);
-            return (
-              <span
-                key={item.id}
-                className="inline-flex items-center gap-2 rounded-full bg-[#edf2ee] px-3 py-2 text-xs text-[#31564c]"
-              >
-                <strong>{reader?.name ?? "Reader"}</strong>
-                {item.email} ·{" "}
-                {item.accepted ? "Active" : "Waiting for activation"}
-                <button
-                  type="button"
-                  aria-label={`Remove login access for ${item.email}`}
-                  onClick={() => deleteInvitation.mutate(item.id)}
-                  className="cursor-pointer text-[#a34435]"
-                >
-                  <X className="size-3.5" />
-                </button>
-              </span>
-            );
-          })}
+      </Card>
+
+      <Card className="mb-6 overflow-hidden">
+        <div className="border-b border-[#e8e6dc] p-5 sm:p-6">
+          <div className="flex items-start gap-3">
+            <ShieldCheck className="mt-1 size-5 text-[#28705f]" />
+            <div>
+              <h2 className="font-serif text-xl font-bold text-[#21483e]">
+                Manage reader access
+              </h2>
+              <p className="mt-1 text-sm leading-6 text-[#667b74]">
+                Review pending invitations and active reader logins. These
+                controls change sign-in access; they do not delete reader
+                profiles or reading history.
+              </p>
+            </div>
+          </div>
         </div>
+
+        {invitations.isLoading ? (
+          <p className="p-6 text-sm text-[#667b74]" role="status">
+            Loading reader access…
+          </p>
+        ) : invitations.data?.length ? (
+          <div className="divide-y divide-[#eceae2]">
+            {invitations.data.map((item) => {
+              const reader = readers.find(
+                (value) => value.id === item.reader_id,
+              );
+              return (
+                <div
+                  key={item.id}
+                  className="flex flex-col gap-4 p-5 sm:flex-row sm:items-center sm:justify-between sm:px-6"
+                >
+                  <div className="flex min-w-0 items-start gap-3">
+                    <span className="flex size-10 shrink-0 items-center justify-center rounded-full bg-[#edf3ef] text-[#28705f]">
+                      <Mail className="size-4.5" />
+                    </span>
+                    <div className="min-w-0">
+                      <div className="flex flex-wrap items-center gap-2">
+                        <h3 className="font-semibold text-[#21483e]">
+                          {reader?.name ?? "Invited reader"}
+                        </h3>
+                        <span
+                          className={cn(
+                            "rounded-full px-2.5 py-1 text-[10px] font-bold tracking-wide uppercase",
+                            item.accepted
+                              ? "bg-[#e5f2ec] text-[#276653]"
+                              : "bg-[#fff3d8] text-[#8a5b18]",
+                          )}
+                        >
+                          {item.accepted
+                            ? "Active access"
+                            : "Pending invitation"}
+                        </span>
+                      </div>
+                      <p className="mt-1 truncate text-sm text-[#667b74]">
+                        {item.email}
+                      </p>
+                    </div>
+                  </div>
+                  <Button
+                    variant="secondary"
+                    size="sm"
+                    className="self-start text-[#9e4232] hover:bg-[#fbece8] sm:self-auto"
+                    onClick={() => {
+                      deleteInvitation.reset();
+                      setAccessToRemove(item);
+                    }}
+                  >
+                    {item.accepted ? "Revoke access" : "Cancel invitation"}
+                  </Button>
+                </div>
+              );
+            })}
+          </div>
+        ) : (
+          <p className="p-6 text-sm leading-6 text-[#667b74]">
+            No pending invitations or separate reader logins yet.
+          </p>
+        )}
       </Card>
 
       {showCreateForm ? (
@@ -276,7 +333,104 @@ export function ReadersPage() {
           }}
         />
       ) : null}
+
+      {accessToRemove ? (
+        <RemoveReaderAccessDialog
+          invitation={accessToRemove}
+          readerName={
+            readers.find((reader) => reader.id === accessToRemove.reader_id)
+              ?.name
+          }
+          isPending={deleteInvitation.isPending}
+          error={deleteInvitation.error}
+          onDismiss={() => {
+            deleteInvitation.reset();
+            setAccessToRemove(null);
+          }}
+          onConfirm={async () => {
+            await deleteInvitation.mutateAsync(accessToRemove.id);
+            setAccessToRemove(null);
+          }}
+        />
+      ) : null}
     </section>
+  );
+}
+
+function RemoveReaderAccessDialog({
+  invitation,
+  readerName,
+  error,
+  isPending,
+  onConfirm,
+  onDismiss,
+}: {
+  invitation: ReaderLoginInvitation;
+  readerName?: string;
+  error: Error | null;
+  isPending: boolean;
+  onConfirm: () => Promise<void>;
+  onDismiss: () => void;
+}) {
+  const isActive = invitation.accepted;
+
+  return (
+    <div
+      className="fixed inset-0 z-50 flex items-center justify-center bg-[#102f29]/55 p-4 backdrop-blur-sm"
+      role="presentation"
+      onMouseDown={(event) => {
+        if (event.target === event.currentTarget && !isPending) onDismiss();
+      }}
+    >
+      <Card
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="remove-reader-access-title"
+        className="w-full max-w-md p-6 sm:p-7"
+      >
+        <span className="mb-4 flex size-11 items-center justify-center rounded-full bg-[#fbe8e3] text-[#ad4936]">
+          <KeyRound className="size-5" />
+        </span>
+        <h2
+          id="remove-reader-access-title"
+          className="font-serif text-2xl font-bold text-[#21483e]"
+        >
+          {isActive
+            ? `Revoke access for ${readerName ?? invitation.email}?`
+            : "Cancel this invitation?"}
+        </h2>
+        <p className="mt-3 text-sm leading-6 text-[#667b74]">
+          {isActive
+            ? `${invitation.email} will no longer be able to sign in. The reader profile, books, and reading history will remain.`
+            : `The activation link sent to ${invitation.email} will no longer grant reader access, and no profile will be created from this invitation.`}
+        </p>
+
+        {error ? (
+          <p role="alert" className="mt-3 text-sm text-[#9e4232]">
+            {error.message}
+          </p>
+        ) : null}
+
+        <div className="mt-6 flex flex-wrap gap-2.5">
+          <Button
+            className="bg-[#b94d38] hover:bg-[#9f3f2d]"
+            disabled={isPending}
+            onClick={() => void onConfirm()}
+          >
+            {isPending
+              ? isActive
+                ? "Revoking…"
+                : "Cancelling…"
+              : isActive
+                ? "Revoke reader access"
+                : "Cancel invitation"}
+          </Button>
+          <Button variant="secondary" disabled={isPending} onClick={onDismiss}>
+            {isActive ? "Keep access" : "Keep invitation"}
+          </Button>
+        </div>
+      </Card>
+    </div>
   );
 }
 

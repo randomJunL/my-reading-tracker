@@ -93,7 +93,7 @@ function AccessUnavailableScreen({
         </h1>
         <p className="mt-3 text-sm leading-6 text-[#667972]">
           This email does not have an active reader invitation. Ask the account
-          owner to approve this exact email, or confirm that your access has not
+          owner to invite this exact email, or confirm that your access has not
           been removed.
         </p>
         <Button className="mt-6" onClick={() => void signOut()}>

@@ -54,11 +54,24 @@ def get_or_create_household(
         )
     )
     if invitation is not None:
+        reader_id = invitation.reader_id
+        if reader_id is None:
+            reader_name = (user.full_name or "").strip()
+            if not reader_name:
+                raise ReaderProfileNameRequiredError
+            reader = Reader(
+                household_id=invitation.household_id,
+                name=reader_name[:80],
+            )
+            session.add(reader)
+            session.flush()
+            reader_id = reader.id
+            invitation.reader_id = reader_id
         membership = HouseholdMember(
             household_id=invitation.household_id,
             user_id=user.id,
             role=HouseholdRole.READER,
-            reader_id=invitation.reader_id,
+            reader_id=reader_id,
         )
         invitation.accepted_user_id = user.id
         invitation.accepted_at = datetime.now(UTC)
@@ -109,6 +122,10 @@ class LoginInvitationRequiredError(Exception):
     pass
 
 
+class ReaderProfileNameRequiredError(Exception):
+    pass
+
+
 def list_reader_login_invitations(
     session: Session, household_id: uuid.UUID
 ) -> list[ReaderLoginInvitation]:
@@ -124,29 +141,20 @@ def list_reader_login_invitations(
 def create_reader_login_invitation(
     session: Session,
     household_id: uuid.UUID,
-    reader_id: uuid.UUID,
     email: str,
 ) -> ReaderLoginInvitation:
     normalized_email = email.strip().lower()
     if "@" not in normalized_email:
         raise ValueError("Enter a valid email address")
-    reader = session.scalar(
-        select(Reader.id).where(
-            Reader.id == reader_id, Reader.household_id == household_id
-        )
-    )
     existing = session.scalar(
         select(ReaderLoginInvitation).where(
-            (ReaderLoginInvitation.reader_id == reader_id)
-            | (func.lower(ReaderLoginInvitation.email) == normalized_email)
+            func.lower(ReaderLoginInvitation.email) == normalized_email
         )
     )
-    if reader is None:
-        raise ReaderLoginInvitationNotFoundError
     if existing is not None:
         raise ReaderLoginInvitationConflictError
     invitation = ReaderLoginInvitation(
-        household_id=household_id, reader_id=reader_id, email=normalized_email
+        household_id=household_id, email=normalized_email
     )
     session.add(invitation)
     session.commit()

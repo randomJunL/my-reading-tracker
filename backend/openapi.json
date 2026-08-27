@@ -1932,15 +1932,9 @@
           "email": {
             "title": "Email",
             "type": "string"
-          },
-          "reader_id": {
-            "format": "uuid",
-            "title": "Reader Id",
-            "type": "string"
           }
         },
         "required": [
-          "reader_id",
           "email"
         ],
         "title": "ReaderLoginInvitationCreate",
@@ -1962,9 +1956,16 @@
             "type": "string"
           },
           "reader_id": {
-            "format": "uuid",
-            "title": "Reader Id",
-            "type": "string"
+            "anyOf": [
+              {
+                "format": "uuid",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Reader Id"
           }
         },
         "required": [

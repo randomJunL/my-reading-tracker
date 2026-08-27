@@ -606,15 +606,20 @@ account creation and invitation delivery remain part of Step 4.
 
 ### Step 4: Add administrator-managed account invitations
 
-Status: implemented on 2026-08-25. The owner can approve an email for reader
-access linked to one reader profile. No invitation email is sent: the owner
-shares the approved email directly, and the reader chooses **Activate invite**
-to create a password. FastAPI consumes the pending invitation on first access
-and assigns the server-controlled reader role. A reader activation without a
-matching invitation is rejected instead of creating a new owner household.
+Status: implemented on 2026-08-25 and revised on 2026-08-26. The owner can
+invite a reader using only an email address. FastAPI records the invitation and
+uses the Supabase Auth admin API to send a real activation email. The reader
+opens its link, enters their name, and creates a password. On first access,
+FastAPI creates the reader profile card, links it to the login, and assigns the
+server-controlled reader role. The separate **Add reader** flow remains
+available for children who share the owner’s login. A reader activation
+without a matching invitation is rejected instead of creating a new owner household.
 Removing pending access cancels it; removing accepted access revokes the linked
 reader membership without deleting reading data. Each household has only one
-adult management login: its owner.
+adult management login: its owner. The Readers page presents invitations and
+active logins in a dedicated **Manage reader access** section. Explicit
+**Cancel invitation** and **Revoke access** actions replace ambiguous removable
+badges, and confirmation dialogs explain their effect before access changes.
 
 ### Step 5: Harden account and session experience
 

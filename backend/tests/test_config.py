@@ -64,6 +64,8 @@ def test_valid_production_configuration_is_accepted() -> None:
         app_env="production",
         database_url="postgresql+psycopg://user:password@db.example.com/app",
         cors_origins="https://reading.example.com",
+        frontend_url="https://reading.example.com",
+        supabase_secret_key="test-secret-key",
         supabase_url="https://project.supabase.co",
     )
 

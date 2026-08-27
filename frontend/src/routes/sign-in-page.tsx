@@ -17,7 +17,7 @@ import { useAuth } from "@/features/auth/auth";
 import { cn } from "@/lib/utils";
 
 type AccountPath = "adult" | "reader";
-type AuthMode = "sign-in" | "register" | "activate" | "forgot-password";
+type AuthMode = "sign-in" | "register" | "forgot-password";
 
 const accountPaths = {
   adult: {
@@ -35,7 +35,7 @@ const accountPaths = {
     description:
       "Log reading, manage your books, earn rewards, request gifts, and view your progress.",
     emailHint:
-      "Reader access requires an invitation. Use the exact email your parent or teacher linked to your reader profile.",
+      "Use the email and password you created from your invitation link.",
     placeholder: "reader@example.com",
     icon: BookOpenCheck,
   },
@@ -43,7 +43,6 @@ const accountPaths = {
 
 export function SignInPage() {
   const {
-    activateInvitation,
     isConfigured,
     isDevAuthBypass,
     isLoading,
@@ -99,19 +98,6 @@ export function SignInPage() {
           password,
         });
         setMessage("Your account is ready. Signing you in…");
-      } else if (authMode === "activate") {
-        if (password.length < 8) {
-          throw new Error("Use at least 8 characters for your password.");
-        }
-        if (password !== confirmPassword) {
-          throw new Error("The passwords do not match.");
-        }
-        await activateInvitation({
-          accountType: "reader",
-          email,
-          password,
-        });
-        setMessage("Invitation activated. Signing you in…");
       } else if (authMode === "forgot-password") {
         await requestPasswordReset(email);
         setMessage(
@@ -285,7 +271,6 @@ function SignInCard({
 }) {
   const option = accountPaths[accountPath];
   const isRegistering = accountPath === "adult" && authMode === "register";
-  const isActivating = authMode === "activate";
   const isRequestingReset = authMode === "forgot-password";
 
   return (
@@ -301,7 +286,7 @@ function SignInCard({
 
       <div className="mt-5 text-center">
         <span className="mx-auto flex size-12 items-center justify-center rounded-2xl bg-[#e4f0eb] text-[#28705f]">
-          {isRegistering || isActivating ? (
+          {isRegistering ? (
             <UserPlus className="size-5" />
           ) : (
             <LockKeyhole className="size-5" />
@@ -313,25 +298,26 @@ function SignInCard({
         <h1 className="mt-1 font-serif text-3xl font-bold tracking-[-0.025em] text-[#173f36]">
           {isRegistering
             ? "Create your account"
-            : isActivating
-              ? "Activate your invitation"
-              : isRequestingReset
-                ? "Reset your password"
-                : "Sign in to your account"}
+            : isRequestingReset
+              ? "Reset your password"
+              : "Sign in to your account"}
         </h1>
         <p className="mt-2 text-sm leading-6 text-[#6b7e77]">
           {isRegistering
             ? "Tell us a little about your family or classroom. You’ll become its owner."
-            : isActivating
-              ? `Use the exact email your ${accountPath === "reader" ? "parent or teacher" : "household owner"} approved, then choose a password.`
-              : isRequestingReset
-                ? "Enter your account email and we’ll send a secure reset link."
-                : option.emailHint}
+            : isRequestingReset
+              ? "Enter your account email and we’ll send a secure reset link."
+              : option.emailHint}
         </p>
       </div>
 
       {!isRequestingReset && (
-        <div className="mt-6 grid grid-cols-2 rounded-xl bg-[#edf1ed] p-1">
+        <div
+          className={cn(
+            "mt-6 grid rounded-xl bg-[#edf1ed] p-1",
+            accountPath === "adult" ? "grid-cols-2" : "grid-cols-1",
+          )}
+        >
           <AuthModeButton
             active={authMode === "sign-in"}
             onClick={() => onChangeAuthMode("sign-in")}
@@ -344,14 +330,6 @@ function SignInCard({
               onClick={() => onChangeAuthMode("register")}
             >
               Create account
-            </AuthModeButton>
-          )}
-          {accountPath === "reader" && (
-            <AuthModeButton
-              active={authMode === "activate"}
-              onClick={() => onChangeAuthMode("activate")}
-            >
-              Activate invite
             </AuthModeButton>
           )}
         </div>
@@ -404,25 +382,19 @@ function SignInCard({
               id="password"
               name="password"
               type="password"
-              autoComplete={
-                isRegistering || isActivating
-                  ? "new-password"
-                  : "current-password"
-              }
+              autoComplete={isRegistering ? "new-password" : "current-password"}
               minLength={8}
               required
               value={password}
               onChange={(event) => onChangePassword(event.target.value)}
               className="mt-2 h-12 w-full rounded-xl border border-[#d7d5c9] bg-white px-4 text-sm text-[#173f36] transition outline-none focus:border-[#28705f] focus:ring-3 focus:ring-[#28705f]/15"
               placeholder={
-                isRegistering || isActivating
-                  ? "At least 8 characters"
-                  : "Your password"
+                isRegistering ? "At least 8 characters" : "Your password"
               }
             />
           </>
         )}
-        {(isRegistering || isActivating) && (
+        {isRegistering && (
           <>
             <label
               htmlFor="confirm-password"
@@ -444,7 +416,7 @@ function SignInCard({
             />
           </>
         )}
-        {!isRegistering && !isActivating && !isRequestingReset && (
+        {!isRegistering && !isRequestingReset && (
           <button
             type="button"
             onClick={() => onChangeAuthMode("forgot-password")}
@@ -477,18 +449,14 @@ function SignInCard({
           {isSending
             ? isRegistering
               ? "Creating account…"
-              : isActivating
-                ? "Activating invitation…"
-                : isRequestingReset
-                  ? "Sending reset link…"
-                  : "Signing in…"
+              : isRequestingReset
+                ? "Sending reset link…"
+                : "Signing in…"
             : isRegistering
               ? "Create parent or teacher account"
-              : isActivating
-                ? "Activate invited account"
-                : isRequestingReset
-                  ? "Send password reset link"
-                  : "Sign in"}
+              : isRequestingReset
+                ? "Send password reset link"
+                : "Sign in"}
         </Button>
         {isRequestingReset && (
           <button

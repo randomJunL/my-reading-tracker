@@ -2,6 +2,7 @@ import { createBrowserRouter } from "react-router-dom";
 
 import { AppLayout } from "@/layouts/app-layout";
 import { AccountPage } from "@/routes/account-page";
+import { AcceptInvitationPage } from "@/routes/accept-invitation-page";
 import { AdminRoute } from "@/features/auth/admin-route";
 import { ProtectedRoute } from "@/features/auth/protected-route";
 import { DashboardPage } from "@/routes/dashboard-page";
@@ -18,6 +19,7 @@ import { SignInPage } from "@/routes/sign-in-page";
 
 export const router = createBrowserRouter([
   { path: "/sign-in", element: <SignInPage /> },
+  { path: "/accept-invite", element: <AcceptInvitationPage /> },
   { path: "/reset-password", element: <ResetPasswordPage /> },
   {
     element: <ProtectedRoute />,

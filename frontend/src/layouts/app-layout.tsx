@@ -17,6 +17,7 @@ import { Button } from "@/components/ui/button";
 import { APP_NAME } from "@/config/branding";
 import { useAuth } from "@/features/auth/auth";
 import { useCurrentUser } from "@/features/auth/current-user";
+import { getUserFirstName } from "@/features/auth/user-display-name";
 import { ReaderSelector } from "@/features/readers/reader-selector";
 import { cn } from "@/lib/utils";
 
@@ -36,8 +37,10 @@ export function AppLayout() {
   const navigation = primaryNavigation.filter(
     (item) => !item.adminOnly || currentUser?.is_admin,
   );
-  const displayName =
-    (user?.email ?? currentUser?.email)?.split("@")[0] ?? "Reader";
+  const displayName = getUserFirstName(
+    user?.user_metadata.full_name,
+    user?.email ?? currentUser?.email,
+  );
   const initial = displayName.charAt(0).toUpperCase();
   const currentDate = new Intl.DateTimeFormat(undefined, {
     weekday: "long",
