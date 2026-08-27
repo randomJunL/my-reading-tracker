@@ -1,4 +1,4 @@
-import { useQuery } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
 import { apiFetch } from "@/api/client";
 
@@ -17,5 +17,19 @@ export function useCurrentUser() {
     queryKey: ["current-user"],
     queryFn: () => apiFetch<CurrentUser>("/me"),
     staleTime: 5 * 60_000,
+  });
+}
+
+export function useUpdateCurrentUser() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (data: { household_name: string }) =>
+      apiFetch<CurrentUser>("/me", {
+        method: "PATCH",
+        body: JSON.stringify(data),
+      }),
+    onSuccess: (currentUser) => {
+      queryClient.setQueryData(["current-user"], currentUser);
+    },
   });
 }

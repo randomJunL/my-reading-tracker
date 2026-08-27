@@ -152,6 +152,11 @@ def test_me_provisions_one_owner_household(
             second_response = client.get(
                 "/api/v1/me", headers={"Authorization": "Bearer valid"}
             )
+            update_response = client.patch(
+                "/api/v1/me",
+                headers={"Authorization": "Bearer valid"},
+                json={"household_name": "  The Bookworms  "},
+            )
     finally:
         app.dependency_overrides.clear()
 
@@ -159,6 +164,8 @@ def test_me_provisions_one_owner_household(
     assert first_response.json() == second_response.json()
     assert first_response.json()["email"] == "parent@example.com"
     assert first_response.json()["role"] == "owner"
+    assert update_response.status_code == 200
+    assert update_response.json()["household_name"] == "The Bookworms"
     membership = db_session.scalar(
         select(HouseholdMember).where(HouseholdMember.user_id == user.id)
     )

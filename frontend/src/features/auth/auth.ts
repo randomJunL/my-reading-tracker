@@ -19,6 +19,7 @@ export type AuthContextValue = {
     password: string;
   }) => Promise<void>;
   requestPasswordReset: (email: string) => Promise<void>;
+  updateProfile: (details: { fullName: string }) => Promise<void>;
   updatePassword: (password: string) => Promise<void>;
   signOut: () => Promise<void>;
 };

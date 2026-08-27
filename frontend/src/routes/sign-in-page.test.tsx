@@ -64,6 +64,10 @@ describe("SignInPage", () => {
     await user.click(
       screen.getByRole("button", { name: "Continue as Parent or teacher" }),
     );
+    expect(
+      screen.queryByRole("button", { name: "Show sign in form" }),
+    ).not.toBeInTheDocument();
+    expect(screen.getAllByRole("button", { name: "Sign in" })).toHaveLength(1);
     await user.type(
       screen.getByRole("textbox", { name: "Email address" }),
       "parent@example.com",
@@ -88,9 +92,7 @@ describe("SignInPage", () => {
     await user.click(
       screen.getByRole("button", { name: "Continue as Parent or teacher" }),
     );
-    await user.click(
-      screen.getByRole("button", { name: "Show create account form" }),
-    );
+    await user.click(screen.getByRole("button", { name: "Create an account" }));
     await user.type(screen.getByLabelText("Your name"), "Jordan Parent");
     await user.type(
       screen.getByLabelText("Family or classroom name"),

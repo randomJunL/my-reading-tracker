@@ -65,7 +65,7 @@ def update_reader(
     context: Annotated[HouseholdContext, Depends(get_household_context)],
     session: Annotated[Session, Depends(get_db)],
 ) -> ReaderResponse:
-    require_admin(context)
+    require_reader_access(reader_id, context)
     try:
         reader = ReaderService(session).update(reader_id, context.household.id, data)
     except ReaderNotFoundError as error:
