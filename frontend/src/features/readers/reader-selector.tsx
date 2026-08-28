@@ -35,6 +35,7 @@ export function ReaderSelector() {
     return (
       <Link
         to="/readers"
+        state={{ openCreateReader: true }}
         className="flex h-11 items-center gap-2 rounded-xl border border-[#d7d5c9] bg-white px-3 text-sm font-semibold text-[#31564c] hover:bg-[#f9f7f1]"
       >
         <UserPlus className="size-4" aria-hidden="true" />

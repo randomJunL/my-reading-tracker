@@ -2,6 +2,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import type { ReactNode } from "react";
+import { MemoryRouter } from "react-router-dom";
 
 import { ApiError } from "@/api/client";
 import type { Reader } from "@/features/readers/reader-api";
@@ -54,6 +55,21 @@ describe("ReadersPage", () => {
       "/readers",
       expect.objectContaining({ method: "POST" }),
     );
+  });
+
+  it("opens the create form when requested by the reader selector", async () => {
+    apiMocks.fetch.mockImplementation((path: string) => {
+      if (path === "/readers") return Promise.resolve([]);
+      if (path === "/reader-login-invitations") return Promise.resolve([]);
+      throw new Error(`Unexpected request: ${path}`);
+    });
+
+    renderReadersPage({ openCreateReader: true });
+
+    expect(
+      await screen.findByRole("heading", { name: "Add a reader" }),
+    ).toBeVisible();
+    expect(screen.getByLabelText("Name")).toBeVisible();
   });
 
   it("sends a reader invitation using only an email address", async () => {
@@ -188,13 +204,15 @@ describe("ReadersPage", () => {
   });
 });
 
-function renderReadersPage() {
+function renderReadersPage(state?: { openCreateReader: boolean }) {
   const queryClient = new QueryClient({
     defaultOptions: { queries: { retry: false }, mutations: { retry: false } },
   });
   const Wrapper = ({ children }: { children: ReactNode }) => (
     <QueryClientProvider client={queryClient}>
-      <ReaderSelectionProvider>{children}</ReaderSelectionProvider>
+      <MemoryRouter initialEntries={[{ pathname: "/readers", state }]}>
+        <ReaderSelectionProvider>{children}</ReaderSelectionProvider>
+      </MemoryRouter>
     </QueryClientProvider>
   );
   return render(<ReadersPage />, { wrapper: Wrapper });
