@@ -1,7 +1,6 @@
 # My Reading Tracker
 
-My Reading Tracker is the stable internal name for a private family website
-that logs children's books, reading sessions, and progress over time. Its
+My Reading Tracker is a website that logs children's books, reading sessions, and progress over time. Its
 user-facing name is configured separately with `VITE_APP_NAME`.
 
 ## Current status
