@@ -12,6 +12,7 @@ import {
 } from "lucide-react";
 import { useState } from "react";
 import { useForm, useWatch } from "react-hook-form";
+import { useLocation, useNavigate } from "react-router-dom";
 import { z } from "zod";
 
 import { ApiError } from "@/api/client";
@@ -51,6 +52,8 @@ const readerFormSchema = z.object({
 type ReaderFormValues = z.infer<typeof readerFormSchema>;
 
 export function ReadersPage() {
+  const location = useLocation();
+  const navigate = useNavigate();
   const { data: readers = [], isLoading, error } = useReaders();
   const createMutation = useCreateReader();
   const invitations = useReaderLoginInvitations();
@@ -63,11 +66,23 @@ export function ReadersPage() {
   const [deletingReader, setDeletingReader] = useState<Reader | null>(null);
   const [accessToRemove, setAccessToRemove] =
     useState<ReaderLoginInvitation | null>(null);
+  const navigationState = location.state as {
+    openCreateReader?: boolean;
+  } | null;
+  const createFormRequested = Boolean(navigationState?.openCreateReader);
+  const isCreateFormOpen = showCreateForm || createFormRequested;
+
+  function closeCreateForm() {
+    setShowCreateForm(false);
+    if (createFormRequested) {
+      void navigate(location.pathname, { replace: true, state: null });
+    }
+  }
 
   async function handleCreate(data: ReaderCreate) {
     const reader = await createMutation.mutateAsync(data);
     if (!selectedReaderId) setSelectedReaderId(reader.id);
-    setShowCreateForm(false);
+    closeCreateForm();
   }
 
   async function handleUpdate(data: ReaderCreate) {
@@ -232,7 +247,7 @@ export function ReadersPage() {
         )}
       </Card>
 
-      {showCreateForm ? (
+      {isCreateFormOpen ? (
         <Card className="mb-6 p-5 sm:p-7">
           <div className="mb-5 flex items-start justify-between gap-4">
             <div>
@@ -247,7 +262,7 @@ export function ReadersPage() {
               variant="ghost"
               size="icon"
               aria-label="Close new reader form"
-              onClick={() => setShowCreateForm(false)}
+              onClick={closeCreateForm}
             >
               <X className="size-5" />
             </Button>
@@ -257,7 +272,7 @@ export function ReadersPage() {
             isPending={createMutation.isPending}
             error={createMutation.error}
             onSubmit={handleCreate}
-            onCancel={() => setShowCreateForm(false)}
+            onCancel={closeCreateForm}
           />
         </Card>
       ) : null}
@@ -270,7 +285,7 @@ export function ReadersPage() {
         </Card>
       ) : null}
 
-      {!isLoading && !error && readers.length === 0 && !showCreateForm ? (
+      {!isLoading && !error && readers.length === 0 && !isCreateFormOpen ? (
         <Card className="flex flex-col items-center px-6 py-14 text-center">
           <span className="mb-5 flex size-16 items-center justify-center rounded-full bg-[#e8efe9] text-[#35675a]">
             <UsersRound className="size-8" />
