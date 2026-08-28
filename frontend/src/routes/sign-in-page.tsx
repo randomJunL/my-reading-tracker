@@ -1,6 +1,9 @@
 import {
   ArrowLeft,
+  Award,
   BookOpenCheck,
+  ChartNoAxesColumnIncreasing,
+  Clock3,
   LockKeyhole,
   ShieldCheck,
   UserPlus,
@@ -22,24 +25,45 @@ type AuthMode = "sign-in" | "register" | "forgot-password";
 const accountPaths = {
   adult: {
     eyebrow: "Parent or teacher",
-    title: "Manage a family or classroom",
+    title: "Create or manage a family or classroom",
     description:
-      "Set up readers, recommend books, manage gifts, approve redemptions, and review reports.",
+      "Manage readers, recommend books, review progress, manage rewards, and download reports.",
     emailHint: "Use the email for this family or classroom account.",
     placeholder: "parent@example.com",
     icon: UsersRound,
   },
   reader: {
     eyebrow: "Reader",
-    title: "Open your reading account",
+    title: "Open your invited reading account",
     description:
-      "Log reading, manage your books, earn rewards, request gifts, and view your progress.",
+      "Log reading, manage your books, earn rewards, and view your progress.",
     emailHint:
       "Use the email and password you created from your invitation link.",
     placeholder: "reader@example.com",
     icon: BookOpenCheck,
   },
 } as const;
+
+const benefits = [
+  {
+    title: "Log reading quickly",
+    description:
+      "Record books, minutes, pages, reading activities, and completed sessions.",
+    icon: Clock3,
+  },
+  {
+    title: "Follow progress",
+    description:
+      "See reading days, history, finished books, streaks, badges, and other achievements.",
+    icon: ChartNoAxesColumnIncreasing,
+  },
+  {
+    title: "Encourage every reader",
+    description:
+      "Recommend books, offer rewards, celebrate milestones, and print achievement reports.",
+    icon: Award,
+  },
+] as const;
 
 export function SignInPage() {
   const {
@@ -118,9 +142,9 @@ export function SignInPage() {
   }
 
   return (
-    <main className="flex min-h-screen items-center justify-center bg-[#f5f3eb] px-5 py-12">
-      <div className={cn("w-full", accountPath ? "max-w-md" : "max-w-3xl")}>
-        <div className="mb-7 flex items-center justify-center gap-3 text-[#173f36]">
+    <main className="flex min-h-screen items-center justify-center bg-[#f5f3eb] px-3 py-6 sm:px-5 sm:py-12">
+      <div className={cn("w-full", accountPath ? "max-w-md" : "max-w-5xl")}>
+        <div className="mb-4 flex items-center justify-center gap-3 text-[#173f36] sm:mb-7">
           <BrandMark />
           <span className="font-serif text-2xl font-bold">{APP_NAME}</span>
         </div>
@@ -178,51 +202,93 @@ function AccountPathChooser({
   onChoose: (path: AccountPath) => void;
 }) {
   return (
-    <Card className="p-7 sm:p-9">
-      <div className="text-center">
-        <span className="mx-auto flex size-12 items-center justify-center rounded-2xl bg-[#e4f0eb] text-[#28705f]">
-          <ShieldCheck className="size-5" />
-        </span>
-        <h1 className="mt-5 font-serif text-3xl font-bold tracking-[-0.025em] text-[#173f36]">
-          How will you use {APP_NAME}?
-        </h1>
-        <p className="mx-auto mt-2 max-w-xl text-sm leading-6 text-[#6b7e77]">
-          Choose your account type so we can explain the right access. Your
-          permissions are securely assigned by the application.
-        </p>
-      </div>
+    <Card className="overflow-hidden">
+      <div className="grid lg:grid-cols-[1.08fr_0.92fr]">
+        <section className="bg-[#173f36] px-5 py-5 text-white sm:px-9 sm:py-9 lg:flex lg:flex-col lg:justify-center lg:px-11 lg:py-12">
+          <p className="text-xs font-bold tracking-[0.14em] text-[#f4bd62] uppercase">
+            Read · Track · Celebrate
+          </p>
+          <h1 className="mt-2 max-w-2xl font-serif text-2xl leading-[1.12] font-bold tracking-[-0.03em] sm:mt-3 sm:text-3xl">
+            Build a reading habit—and watch it grow
+          </h1>
+          <p className="mt-3 max-w-xl text-sm leading-6 text-[#d6e2de] sm:mt-4 sm:text-base sm:leading-7">
+            {APP_NAME} is a reading-tracking app for families and classrooms.
+          </p>
+          <p className="mt-2 hidden max-w-xl text-sm leading-6 text-[#b9cdc6] sm:block">
+            Log books and reading time, follow each reader’s progress, celebrate
+            achievements, manage rewards, and create printable reports.
+          </p>
 
-      <div className="mt-7 grid gap-4 sm:grid-cols-2">
-        {(
-          Object.entries(accountPaths) as [
-            AccountPath,
-            (typeof accountPaths)[AccountPath],
-          ][]
-        ).map(([path, option]) => {
-          const Icon = option.icon;
-          return (
-            <button
-              key={path}
-              type="button"
-              aria-label={`Continue as ${option.eyebrow}`}
-              onClick={() => onChoose(path)}
-              className="cursor-pointer rounded-2xl border border-[#d7d5c9] bg-white p-5 text-left transition hover:-translate-y-0.5 hover:border-[#78a99c] hover:shadow-[0_12px_30px_rgba(35,68,59,0.09)] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#28705f]"
-            >
-              <span className="flex size-11 items-center justify-center rounded-xl bg-[#edf3ef] text-[#28705f]">
-                <Icon className="size-5" />
-              </span>
-              <span className="mt-4 block text-xs font-bold tracking-[0.12em] text-[#c65c43] uppercase">
-                {option.eyebrow}
-              </span>
-              <span className="mt-1 block font-serif text-xl font-bold text-[#21483e]">
-                {option.title}
-              </span>
-              <span className="mt-2 block text-sm leading-6 text-[#667b74]">
-                {option.description}
-              </span>
-            </button>
-          );
-        })}
+          <div
+            aria-label="What you can do"
+            className="mt-8 hidden gap-5 border-t border-white/15 pt-7 lg:grid"
+          >
+            {benefits.map(({ description, icon: Icon, title }) => (
+              <section key={title} className="flex gap-3">
+                <span className="flex size-10 shrink-0 items-center justify-center rounded-xl bg-white/10 text-[#f4bd62]">
+                  <Icon className="size-5" />
+                </span>
+                <div>
+                  <h2 className="font-serif text-lg font-bold text-white">
+                    {title}
+                  </h2>
+                  <p className="mt-1 text-sm leading-5 text-[#b9cdc6]">
+                    {description}
+                  </p>
+                </div>
+              </section>
+            ))}
+          </div>
+        </section>
+
+        <section className="bg-white p-5 sm:p-8 lg:flex lg:flex-col lg:justify-center lg:p-10">
+          <span className="hidden size-11 items-center justify-center rounded-2xl bg-[#e4f0eb] text-[#28705f] sm:flex">
+            <ShieldCheck className="size-5" />
+          </span>
+          <h2 className="font-serif text-2xl font-bold tracking-[-0.025em] text-[#173f36] sm:mt-4 sm:text-3xl">
+            How will you use {APP_NAME}?
+          </h2>
+          <p className="mt-2 text-sm leading-6 text-[#6b7e77]">
+            Choose an account type to continue.
+          </p>
+
+          <div className="mt-4 grid gap-3 sm:mt-6">
+            {(
+              Object.entries(accountPaths) as [
+                AccountPath,
+                (typeof accountPaths)[AccountPath],
+              ][]
+            ).map(([path, option]) => {
+              const Icon = option.icon;
+              return (
+                <button
+                  key={path}
+                  type="button"
+                  aria-label={`Continue as ${option.eyebrow}`}
+                  onClick={() => onChoose(path)}
+                  className="group cursor-pointer rounded-2xl border border-[#d7d5c9] bg-[#faf9f5] p-4 text-left transition hover:-translate-y-0.5 hover:border-[#78a99c] hover:bg-white hover:shadow-[0_12px_30px_rgba(35,68,59,0.09)] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#28705f] sm:p-5"
+                >
+                  <span className="flex items-start gap-3">
+                    <span className="flex size-10 shrink-0 items-center justify-center rounded-xl bg-[#e4f0eb] text-[#28705f]">
+                      <Icon className="size-5" />
+                    </span>
+                    <span>
+                      <span className="block text-xs font-bold tracking-[0.12em] text-[#c65c43] uppercase">
+                        {option.eyebrow}
+                      </span>
+                      <span className="mt-1 block font-serif text-lg leading-6 font-bold text-[#21483e]">
+                        {option.title}
+                      </span>
+                    </span>
+                  </span>
+                  <span className="mt-3 hidden text-sm leading-5 text-[#667b74] sm:block">
+                    {option.description}
+                  </span>
+                </button>
+              );
+            })}
+          </div>
+        </section>
       </div>
     </Card>
   );

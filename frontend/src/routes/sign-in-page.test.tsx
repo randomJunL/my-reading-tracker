@@ -42,15 +42,28 @@ describe("SignInPage", () => {
 
     expect(
       screen.getByRole("heading", {
+        name: "Build a reading habit—and watch it grow",
+      }),
+    ).toBeInTheDocument();
+    expect(
+      screen.getByText(
+        "My Reading Tracker is a reading-tracking app for families and classrooms.",
+      ),
+    ).toBeInTheDocument();
+    expect(screen.getByText("Log reading quickly")).toBeInTheDocument();
+    expect(screen.getByText("Follow progress")).toBeInTheDocument();
+    expect(screen.getByText("Encourage every reader")).toBeInTheDocument();
+    expect(
+      screen.getByRole("heading", {
         name: "How will you use My Reading Tracker?",
       }),
     ).toBeInTheDocument();
     expect(
       screen.getByRole("button", { name: "Continue as Parent or teacher" }),
-    ).toHaveTextContent("Manage a family or classroom");
+    ).toHaveTextContent("Create or manage a family or classroom");
     expect(
       screen.getByRole("button", { name: "Continue as Reader" }),
-    ).toHaveTextContent("Open your reading account");
+    ).toHaveTextContent("Open your invited reading account");
   });
 
   it("signs a parent in with an email and password", async () => {
