@@ -1,5 +1,6 @@
 import uuid
 
+import pytest
 from fastapi.testclient import TestClient
 
 from app.api.dependencies.auth import get_current_user
@@ -107,6 +108,22 @@ def test_provider_outage_returns_generic_recoverable_error() -> None:
     assert "provider" not in response.text.lower()
 
 
+@pytest.mark.parametrize(
+    "url", ["/api/v1/book-search?q=robot", "/api/v1/book-search/isbn/9780316381994"]
+)
+def test_reader_can_search_books(url: str) -> None:
+    service = StubBookSearchService(results=[_result()])
+    _override_dependencies(service, reader=True)
+    try:
+        with TestClient(app) as client:
+            response = client.get(url)
+    finally:
+        app.dependency_overrides.clear()
+    assert response.status_code == 200
+    assert response.json()[0]["title"] == "The Wild Robot"
+    assert service.last_query is not None
+
+
 class StubBookSearchService:
     def __init__(
         self,
@@ -129,7 +146,9 @@ class StubBookSearchService:
         return self.results
 
 
-def _override_dependencies(service: StubBookSearchService) -> None:
+def _override_dependencies(
+    service: StubBookSearchService, *, reader: bool = False
+) -> None:
     user = AuthenticatedUser(
         id=uuid.uuid4(), email="parent@example.com", session_id=uuid.uuid4()
     )
@@ -137,7 +156,8 @@ def _override_dependencies(service: StubBookSearchService) -> None:
     membership = HouseholdMember(
         household=household,
         user_id=user.id,
-        role=HouseholdRole.OWNER,
+        role=HouseholdRole.READER if reader else HouseholdRole.OWNER,
+        reader_id=uuid.uuid4() if reader else None,
     )
     context = HouseholdContext(household=household, membership=membership)
     app.dependency_overrides[get_current_user] = lambda: user

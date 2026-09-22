@@ -5,6 +5,7 @@ import { MemoryRouter } from "react-router-dom";
 import { LibraryPage } from "@/routes/library-page";
 
 const mocks = vi.hoisted(() => ({
+  isAdmin: true,
   create: vi.fn(),
   createRecommendation: vi.fn(),
   addRecommendation: vi.fn(),
@@ -21,7 +22,7 @@ vi.mock("@/features/readers/use-reader-selection", () => ({
 }));
 
 vi.mock("@/features/auth/current-user", () => ({
-  useCurrentUser: () => ({ data: { is_admin: true } }),
+  useCurrentUser: () => ({ data: { is_admin: mocks.isAdmin } }),
 }));
 
 vi.mock("@/features/books/book-api", () => ({
@@ -81,6 +82,7 @@ vi.mock("@/features/books/book-api", () => ({
 describe("LibraryPage", () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    mocks.isAdmin = true;
     mocks.recommendations = [];
     mocks.books = [];
   });
@@ -106,24 +108,58 @@ describe("LibraryPage", () => {
     });
   });
 
-  it("supports manual book entry", async () => {
+  it.each([true, false])(
+    "supports manual book entry (admin: %s)",
+    async (isAdmin) => {
+      mocks.isAdmin = isAdmin;
+      const user = userEvent.setup();
+      render(<LibraryPage />, { wrapper: MemoryRouter });
+
+      await user.click(screen.getByRole("button", { name: "Manual entry" }));
+      await user.type(screen.getByLabelText("Title"), "Family Story Book");
+      await user.type(
+        screen.getByLabelText("Authors (comma separated)"),
+        "A. Parent",
+      );
+      await user.click(screen.getByRole("button", { name: "Save to library" }));
+
+      expect(mocks.create).toHaveBeenCalledOnce();
+      expect(mocks.create.mock.calls[0]?.[0] as unknown).toMatchObject({
+        data: {
+          title: "Family Story Book",
+          authors: ["A. Parent"],
+          metadata_source: "manual",
+        },
+      });
+    },
+  );
+
+  it("lets a reader search and import a book without recommendation controls", async () => {
+    mocks.isAdmin = false;
     const user = userEvent.setup();
     render(<LibraryPage />, { wrapper: MemoryRouter });
 
-    await user.click(screen.getByRole("button", { name: "Manual entry" }));
-    await user.type(screen.getByLabelText("Title"), "Family Story Book");
     await user.type(
-      screen.getByLabelText("Authors (comma separated)"),
-      "A. Parent",
+      screen.getByRole("textbox", { name: "Search books" }),
+      "  Wild Robot  ",
     );
+    await user.click(screen.getByRole("button", { name: "Search" }));
+    expect(mocks.search).toHaveBeenCalledWith("Wild Robot");
+    expect(
+      screen.queryByRole("button", { name: "Recommend" }),
+    ).not.toBeInTheDocument();
+    await user.click(
+      screen.getByRole("button", { name: "Review and add The Wild Robot" }),
+    );
+    await user.selectOptions(screen.getByLabelText("Add as"), "reading");
     await user.click(screen.getByRole("button", { name: "Save to library" }));
-
-    expect(mocks.create).toHaveBeenCalledOnce();
     expect(mocks.create.mock.calls[0]?.[0] as unknown).toMatchObject({
+      readerId: "reader-1",
+      status: "reading",
       data: {
-        title: "Family Story Book",
-        authors: ["A. Parent"],
-        metadata_source: "manual",
+        title: "The Wild Robot",
+        metadata_source: "google_books",
+        external_source_id: "volume-1",
       },
     });
   });
@@ -147,6 +183,7 @@ describe("LibraryPage", () => {
   });
 
   it("lets a reader add a recommendation with a selected status", async () => {
+    mocks.isAdmin = false;
     mocks.recommendations = [
       {
         id: "recommendation-1",

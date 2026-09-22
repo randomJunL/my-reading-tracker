@@ -88,10 +88,14 @@ export function LibraryPage() {
     data: Parameters<typeof create.mutateAsync>[0]["data"],
     status: ReadingStatus,
   ) {
-    await create.mutateAsync({ readerId: selectedReaderId!, data, status });
-    setEditing(null);
-    search.reset();
-    setQuery("");
+    try {
+      await create.mutateAsync({ readerId: selectedReaderId!, data, status });
+      setEditing(null);
+      search.reset();
+      setQuery("");
+    } catch {
+      // Keep the form and its mutation error visible so the reader can retry.
+    }
   }
 
   async function removeSelectedBook() {
@@ -118,40 +122,36 @@ export function LibraryPage() {
             Library
           </h1>
         </div>
-        {isAdmin ? (
-          <Button variant="secondary" onClick={() => setEditing("manual")}>
-            <Plus className="size-4" />
-            Manual entry
-          </Button>
-        ) : null}
+        <Button variant="secondary" onClick={() => setEditing("manual")}>
+          <Plus className="size-4" />
+          Manual entry
+        </Button>
       </div>
 
-      {isAdmin ? (
-        <Card className="mb-6 p-5 sm:p-6">
-          <form
-            className="flex gap-2"
-            onSubmit={(e) => {
-              e.preventDefault();
-              if (query.trim().length >= 2) search.mutate(query.trim());
-            }}
-          >
-            <label className="relative flex-1">
-              <span className="sr-only">Search books</span>
-              <Search className="absolute top-3.5 left-3.5 size-4 text-[#74857f]" />
-              <input
-                aria-label="Search books"
-                value={query}
-                onChange={(e) => setQuery(e.target.value)}
-                placeholder="Search by title, author, or ISBN"
-                className="h-11 w-full rounded-xl border border-[#d7d5c9] bg-[#fcfbf7] pr-3 pl-10"
-              />
-            </label>
-            <Button type="submit" disabled={search.isPending}>
-              {search.isPending ? "Searching…" : "Search"}
-            </Button>
-          </form>
-        </Card>
-      ) : null}
+      <Card className="mb-6 p-5 sm:p-6">
+        <form
+          className="flex gap-2"
+          onSubmit={(e) => {
+            e.preventDefault();
+            if (query.trim().length >= 2) search.mutate(query.trim());
+          }}
+        >
+          <label className="relative flex-1">
+            <span className="sr-only">Search books</span>
+            <Search className="absolute top-3.5 left-3.5 size-4 text-[#74857f]" />
+            <input
+              aria-label="Search books"
+              value={query}
+              onChange={(e) => setQuery(e.target.value)}
+              placeholder="Search by title, author, or ISBN"
+              className="h-11 w-full rounded-xl border border-[#d7d5c9] bg-[#fcfbf7] pr-3 pl-10"
+            />
+          </label>
+          <Button type="submit" disabled={search.isPending}>
+            {search.isPending ? "Searching…" : "Search"}
+          </Button>
+        </form>
+      </Card>
 
       {search.error ? (
         <p
@@ -185,6 +185,11 @@ export function LibraryPage() {
             </Button>
           </div>
           <BookEditor
+            key={
+              editing === "manual"
+                ? "manual"
+                : `${editing.source}-${editing.external_source_id}-${editing.title}`
+            }
             source={editing === "manual" ? undefined : editing}
             isPending={create.isPending}
             error={create.error}
@@ -194,7 +199,7 @@ export function LibraryPage() {
         </Card>
       ) : null}
 
-      {isAdmin && search.data && !editing ? (
+      {search.data && !editing ? (
         <div className="mb-8">
           <h2 className="mb-3 font-serif text-2xl font-bold">Search results</h2>
           {search.data.length ? (
@@ -225,24 +230,27 @@ export function LibraryPage() {
                           aria-label={`Review and add ${result.title}`}
                           onClick={() => setEditing(result)}
                         >
-                          Add to reader
+                          {isAdmin ? "Add to reader" : "Add to library"}
                         </Button>
-                        <Button
-                          type="button"
-                          size="sm"
-                          variant="secondary"
-                          disabled={
-                            alreadyRecommended || createRecommendation.isPending
-                          }
-                          onClick={() =>
-                            createRecommendation.mutate({
-                              book: bookCreateFromSearchResult(result),
-                              note: null,
-                            })
-                          }
-                        >
-                          {alreadyRecommended ? "Recommended" : "Recommend"}
-                        </Button>
+                        {isAdmin ? (
+                          <Button
+                            type="button"
+                            size="sm"
+                            variant="secondary"
+                            disabled={
+                              alreadyRecommended ||
+                              createRecommendation.isPending
+                            }
+                            onClick={() =>
+                              createRecommendation.mutate({
+                                book: bookCreateFromSearchResult(result),
+                                note: null,
+                              })
+                            }
+                          >
+                            {alreadyRecommended ? "Recommended" : "Recommend"}
+                          </Button>
+                        ) : null}
                       </div>
                       {createRecommendation.error &&
                       createRecommendation.variables?.book
@@ -306,7 +314,9 @@ export function LibraryPage() {
               No recommendations yet
             </p>
             <p className="mt-1 text-sm text-[#687b74]">
-              Search for a book, then choose Recommend on its result card.
+              {isAdmin
+                ? "Search for a book, then choose Recommend on its result card."
+                : "Search above or add a book manually to start your library."}
             </p>
           </Card>
         ) : null}
@@ -385,9 +395,7 @@ export function LibraryPage() {
               No books here yet
             </h2>
             <p className="mt-2 text-sm text-[#687b74]">
-              {isAdmin
-                ? "Search above or add a book manually."
-                : "Choose a book from the recommended collection above."}
+              Choose a recommendation, search for a book, or add one manually.
             </p>
           </Card>
         ) : null}

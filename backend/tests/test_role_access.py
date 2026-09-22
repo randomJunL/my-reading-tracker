@@ -178,3 +178,60 @@ def test_failed_invitation_email_does_not_leave_pending_access(
 
     assert response.status_code == 502
     assert client.get("/api/v1/reader-login-invitations").json() == []
+
+
+@pytest.mark.parametrize("source", ["manual", "google_books"])
+def test_reader_can_import_only_into_own_library(
+    role_client: tuple[TestClient, dict[str, AuthenticatedUser]], source: str
+) -> None:
+    client, current = role_client
+    email = f"reader-{source}@example.com"
+    other_reader = client.post("/api/v1/readers", json={"name": "Leo"}).json()
+    recommendation = client.post(
+        "/api/v1/book-recommendations", json={"book": {"title": "Teacher pick"}}
+    ).json()
+    client.post("/api/v1/reader-login-invitations", json={"email": email})
+    current["user"] = AuthenticatedUser(
+        id=uuid.uuid4(),
+        email=email,
+        session_id=uuid.uuid4(),
+        full_name="Reader",
+        account_type="reader",
+    )
+    reader_id = client.get("/api/v1/me").json()["reader_id"]
+    book_data = {"title": "My book", "metadata_source": source}
+    if source == "google_books":
+        book_data["external_source_id"] = "volume-1"
+    payload = {
+        "book": book_data,
+        "status": "reading",
+    }
+    response = client.post(f"/api/v1/readers/{reader_id}/books/import", json=payload)
+    assert response.status_code == 201
+    book = response.json()
+    assert book["metadata_source"] == source
+    assert book["reader_books"][0]["reader_id"] == reader_id
+    assert book["reader_books"][0]["status"] == "reading"
+    assert client.get(f"/api/v1/books/{book['id']}").status_code == 200
+    assert len(client.get("/api/v1/books").json()) == 1
+    assert (
+        client.post(
+            f"/api/v1/readers/{other_reader['id']}/books/import", json=payload
+        ).status_code
+        == 403
+    )
+    assert len(client.get("/api/v1/books").json()) == 1
+    assert (
+        client.patch(
+            f"/api/v1/books/{book['id']}", json={"title": "Changed"}
+        ).status_code
+        == 403
+    )
+    assert client.delete(f"/api/v1/books/{book['id']}").status_code == 403
+    assert (
+        client.post(
+            f"/api/v1/readers/{reader_id}/books",
+            json={"book_id": recommendation["book_id"], "status": "planned"},
+        ).status_code
+        == 201
+    )

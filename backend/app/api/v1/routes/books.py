@@ -17,6 +17,7 @@ from app.schemas.books import (
     BookResponse,
     BookUpdate,
     ReaderBookCreate,
+    ReaderBookImport,
     ReaderBookResponse,
     ReaderBookUpdate,
 )
@@ -66,6 +67,28 @@ def create_book(
     return BookResponse.model_validate(
         BookService(session).create(context.household.id, data)
     )
+
+
+@router.post(
+    "/readers/{reader_id}/books/import",
+    response_model=BookResponse,
+    status_code=status.HTTP_201_CREATED,
+)
+def create_reader_book(
+    reader_id: uuid.UUID,
+    data: ReaderBookImport,
+    context: Annotated[HouseholdContext, Depends(get_household_context)],
+    session: Annotated[Session, Depends(get_db)],
+) -> BookResponse:
+    require_reader_access(reader_id, context)
+    try:
+        return BookResponse.model_validate(
+            BookService(session).create_for_reader(
+                reader_id, context.household.id, data.book, data.status
+            )
+        )
+    except ReaderNotFoundError as error:
+        raise _not_found("Reader") from error
 
 
 @router.get("/books/{book_id}", response_model=BookResponse)
