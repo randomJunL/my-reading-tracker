@@ -68,6 +68,23 @@ class BookService:
         self.session.refresh(book)
         return self.get(book.id, household_id)
 
+    def create_for_reader(
+        self,
+        reader_id: uuid.UUID,
+        household_id: uuid.UUID,
+        data: BookCreate,
+        status: ReadingStatus,
+    ) -> Book:
+        if self.readers.get_for_household(reader_id, household_id) is None:
+            raise ReaderNotFoundError
+        book = Book(household_id=household_id, **data.model_dump())
+        self.books.add(book)
+        self.session.flush()
+        self.books.add(ReaderBook(reader_id=reader_id, book_id=book.id, status=status))
+        self.session.commit()
+        RewardService(self.session).evaluate(reader_id, household_id)
+        return self.get(book.id, household_id)
+
     def update(
         self, book_id: uuid.UUID, household_id: uuid.UUID, data: BookUpdate
     ) -> Book:

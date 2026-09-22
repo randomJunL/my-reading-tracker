@@ -97,6 +97,16 @@ vi.mock("@/features/reports/report-api", () => ({
 }));
 
 describe("DashboardPage", () => {
+  beforeEach(() => {
+    // Match the report fixtures without faking user-event's asynchronous timers.
+    vi.useFakeTimers({ toFake: ["Date"] });
+    vi.setSystemTime(new Date(2026, 7, 12, 12));
+  });
+
+  afterEach(() => {
+    vi.useRealTimers();
+  });
+
   it("shows monthly activity, book progress, and recent activity", async () => {
     const user = userEvent.setup();
     render(<DashboardPage />, { wrapper: MemoryRouter });

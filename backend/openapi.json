@@ -1805,6 +1805,22 @@
         "title": "ReaderBookCreate",
         "type": "object"
       },
+      "ReaderBookImport": {
+        "properties": {
+          "book": {
+            "$ref": "#/components/schemas/BookCreate"
+          },
+          "status": {
+            "$ref": "#/components/schemas/ReadingStatus",
+            "default": "planned"
+          }
+        },
+        "required": [
+          "book"
+        ],
+        "title": "ReaderBookImport",
+        "type": "object"
+      },
       "ReaderBookResponse": {
         "properties": {
           "book_id": {
@@ -4318,6 +4334,64 @@
           }
         ],
         "summary": "Add Book To Reader",
+        "tags": [
+          "library"
+        ]
+      }
+    },
+    "/api/v1/readers/{reader_id}/books/import": {
+      "post": {
+        "operationId": "create_reader_book_api_v1_readers__reader_id__books_import_post",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "reader_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Reader Id",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ReaderBookImport"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BookResponse"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "Create Reader Book",
         "tags": [
           "library"
         ]

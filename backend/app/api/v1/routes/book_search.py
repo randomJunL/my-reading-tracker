@@ -4,7 +4,7 @@ from typing import Annotated
 from fastapi import APIRouter, Depends, HTTPException, Path, status
 
 from app.api.dependencies.book_search import get_book_search_service
-from app.api.dependencies.household import get_household_context, require_admin
+from app.api.dependencies.household import get_household_context
 from app.integrations.books import BookSearchQuery
 from app.schemas.book_search import (
     BookSearchParameters,
@@ -22,7 +22,6 @@ async def search_books(
     context: Annotated[HouseholdContext, Depends(get_household_context)],
     service: Annotated[BookSearchService, Depends(get_book_search_service)],
 ) -> list[BookSearchResult]:
-    require_admin(context)
     if not any((parameters.q, parameters.title, parameters.author)):
         raise HTTPException(
             status_code=status.HTTP_422_UNPROCESSABLE_CONTENT,
@@ -42,7 +41,6 @@ async def search_book_by_isbn(
     context: Annotated[HouseholdContext, Depends(get_household_context)],
     service: Annotated[BookSearchService, Depends(get_book_search_service)],
 ) -> list[BookSearchResult]:
-    require_admin(context)
     normalized_isbn = re.sub(r"[-\s]", "", isbn).upper()
     if not re.fullmatch(r"(?:\d{13}|\d{9}[\dX])", normalized_isbn):
         raise HTTPException(

@@ -57,22 +57,10 @@ export async function createAndAssignBook(
   data: BookCreate,
   status: ReadingStatus,
 ) {
-  const book = await apiFetch<Book>("/books", {
+  return apiFetch<Book>(`/readers/${readerId}/books/import`, {
     method: "POST",
-    body: JSON.stringify(data),
+    body: JSON.stringify({ book: data, status }),
   });
-  try {
-    await apiFetch(`/readers/${readerId}/books`, {
-      method: "POST",
-      body: JSON.stringify({ book_id: book.id, status }),
-    });
-  } catch (error) {
-    await apiFetch(`/books/${book.id}`, { method: "DELETE" }).catch(
-      () => undefined,
-    );
-    throw error;
-  }
-  return book;
 }
 
 export function useBooks(

@@ -46,6 +46,11 @@ class BookCreate(BookFields):
     pass
 
 
+class ReaderBookImport(BaseModel):
+    book: BookCreate
+    status: ReadingStatus = ReadingStatus.PLANNED
+
+
 class BookUpdate(BaseModel):
     title: RequiredText | None = None
     subtitle: OptionalText | None = None
